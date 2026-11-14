@@ -19,6 +19,34 @@ jobs:
       - uses: actions/checkout@v4
         with:
           submodules: recursive
+      - name: Read immutable SDK artifact pin
+        id: sdk-pin
+        shell: bash
+        run: node -e 'const p = JSON.parse(require("node:fs").readFileSync("sdk.lock", "utf8")); for (const [k, v] of Object.entries(p)) console.log(`${k}=${v}`)' >> "$GITHUB_OUTPUT"
+      - name: Verify pinned Protocol revision
+        env:
+          EXPECTED_PROTOCOL: ${{ steps.sdk-pin.outputs.protocol }}
+        shell: bash
+        run: |
+          test "$(git ls-tree HEAD protocol | awk '{print $3}')" = "$EXPECTED_PROTOCOL"
+          test "$(git -C protocol rev-parse HEAD)" = "$EXPECTED_PROTOCOL"
+      - name: Download verified SDK artifacts
+        id: sdk
+        uses: Xynoplex/sdk/.github/actions/download-bundle@e15cfe2996b0da2e115cdc2e2e8f9bb1551c208d
+        with:
+          tag: ${{ steps.sdk-pin.outputs.tag }}
+          commit: ${{ steps.sdk-pin.outputs.commit }}
+          protocol-commit: ${{ steps.sdk-pin.outputs.protocol }}
+          sha256: ${{ steps.sdk-pin.outputs.sha256 }}
+          languages: go
+      - name: Set the Go file proxy
+        env:
+          SDK_ARTIFACTS: ${{ steps.sdk.outputs.path }}
+        shell: bash
+        run: |
+          proxy="$(node -e 'const { pathToFileURL } = require("node:url"); const { join } = require("node:path"); process.stdout.write(pathToFileURL(join(process.argv[1], "go", "go-proxy")).href)' "$SDK_ARTIFACTS")"
+          echo "GOPROXY=$proxy,https://proxy.golang.org" >> "$GITHUB_ENV"
+          echo 'GONOSUMDB=github.com/Xynoplex/sdk/go' >> "$GITHUB_ENV"
       - uses: actions/setup-go@v5
         with:
           go-version-file: go.mod
