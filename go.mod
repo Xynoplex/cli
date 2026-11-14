@@ -5,7 +5,7 @@ go 1.27.0
 toolchain go1.27.4
 
 require (
-	github.com/Xynoplex/sdk/go v0.0.0-20261114054644-a7a7401d1488
+	github.com/Xynoplex/sdk/go v0.7.3
 	github.com/modelcontextprotocol/go-sdk v1.8.0
 	github.com/nats-io/nats-server/v2 v2.15.2
 	github.com/santhosh-tekuri/jsonschema/v6 v6.0.3
