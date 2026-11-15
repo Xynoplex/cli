@@ -140,14 +140,11 @@ func TestControlRootsInitRunsLauncherInitWithConfiguredFlags(t *testing.T) {
 	if !reflect.DeepEqual(record.Args, wantArgs) {
 		t.Fatalf("launcher args = %#v, want %#v", record.Args, wantArgs)
 	}
-	// The child reads its working directory with symbolic links resolved:
-	// macOS's temporary directory is under /var, a link to /private/var.
-	resolved, err := filepath.EvalSymlinks(root)
-	if err != nil {
-		t.Fatal(err)
-	}
-	if record.Directory != resolved || record.RootEnv != "" || record.Preserved != "preserved" {
-		t.Fatalf("launcher environment = %+v, want the directory %s", record, resolved)
+	// The child names its working directory as the system does: on macOS
+	// through /private/var, which /var links to, and on Windows perhaps by a
+	// short name. It is the same directory.
+	if !sameDirectory(t, record.Directory, root) || record.RootEnv != "" || record.Preserved != "preserved" {
+		t.Fatalf("launcher environment = %+v, want the directory %s", record, root)
 	}
 	if !strings.Contains(strings.Join(*lines, "\n"), "Creating local knowledge base") {
 		t.Fatalf("progress did not include the initial message: %v", *lines)
@@ -224,9 +221,24 @@ func TestControlRootsInitDecodesParamsAndReportsFailures(t *testing.T) {
 		func(ctx context.Context, _ string, _ ...string) *exec.Cmd {
 			return exec.CommandContext(ctx, filepath.Join(root, "missing-launcher"))
 		})
-	if failure == nil || failure.code != controlCodeFailed || !strings.Contains(failure.message, "fork/exec") {
-		t.Fatalf("failure = %+v, want process launch error", failure)
+	// Each system words a missing program its own way; each names it.
+	if failure == nil || failure.code != controlCodeFailed || !strings.Contains(failure.message, "missing-launcher") {
+		t.Fatalf("failure = %+v, want the launch of missing-launcher refused", failure)
 	}
+}
+
+// sameDirectory: whether a and b name one directory.
+func sameDirectory(t *testing.T, a, b string) bool {
+	t.Helper()
+	aInfo, err := os.Stat(a)
+	if err != nil {
+		t.Fatal(err)
+	}
+	bInfo, err := os.Stat(b)
+	if err != nil {
+		t.Fatal(err)
+	}
+	return os.SameFile(aInfo, bInfo)
 }
 
 func TestControlRootsInitCancellationAndOutputHelpers(t *testing.T) {

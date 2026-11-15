@@ -7,6 +7,8 @@ import (
 	"path/filepath"
 	"strings"
 	"testing"
+
+	"github.com/Xynoplex/cli/internal/launcher/harness"
 )
 
 // onBareMachine: a machine with no launcher state, no settings and nothing on
@@ -14,8 +16,7 @@ import (
 // returns the machine's home.
 func onBareMachine(t *testing.T) string {
 	t.Helper()
-	home := t.TempDir()
-	t.Setenv("HOME", home)
+	home := harness.Home(t)
 	t.Setenv("XDG_STATE_HOME", filepath.Join(home, "state"))
 	t.Setenv("XDG_CONFIG_HOME", filepath.Join(home, "config"))
 	t.Setenv("SEMIONT_ROOT", "")
