@@ -1,9 +1,10 @@
 name: CI
 
-# Every push and pull request gets the checks: generated code, vet for each
-# release platform, and the build, on one Linux runner. The test suite runs
-# on macOS, Linux and Windows nightly, only when main has moved since the
-# last full run, or when dispatched by hand.
+# Every push and pull request, in under ten minutes: the checks (generated
+# code, vet for each release platform, the build); internal/... on macOS,
+# Linux and Windows; and cmd/xynolog's scenarios on Linux, split by test name
+# across three runners. The whole suite on all three systems, with coverage,
+# runs nightly when main has moved since the last full run, or by dispatch.
 on:
   pull_request:
   push:
@@ -99,6 +100,7 @@ jobs:
     needs: sdk
     if: ${{ !cancelled() && needs.sdk.result == 'success' }}
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     steps:
       - uses: actions/checkout@v7.0.1
         with:
@@ -130,6 +132,58 @@ jobs:
             GOOS=$goos go vet ./...
           done
       - run: go build ./cmd/xynolog
+
+  unit:
+    name: Unit tests (${{ matrix.os }})
+    needs: sdk
+    if: ${{ !cancelled() && needs.sdk.result == 'success' && (github.event_name == 'pull_request' || github.event_name == 'push') }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [macos-latest, ubuntu-latest, windows-latest]
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v7.0.1
+        with:
+          submodules: recursive
+      - uses: ./.github/actions/sdk-go-proxy
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+          cache: true
+      - run: go test -timeout 8m ./internal/...
+
+  scenarios:
+    name: Launcher scenarios, shard ${{ matrix.shard }}
+    needs: sdk
+    if: ${{ !cancelled() && needs.sdk.result == 'success' && (github.event_name == 'pull_request' || github.event_name == 'push') }}
+    strategy:
+      fail-fast: false
+      matrix:
+        shard: [0, 1, 2]
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v7.0.1
+        with:
+          submodules: recursive
+      - uses: ./.github/actions/sdk-go-proxy
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+          cache: true
+      - name: Run this shard's share of cmd/xynolog's tests
+        env:
+          SHARD: ${{ strategy.job-index }}
+          SHARDS: ${{ strategy.job-total }}
+        shell: bash
+        run: |
+          tests=$(go test -list '^Test' ./cmd/xynolog | grep '^Test' | sort)
+          mine=$(printf '%s\n' "$tests" | awk -v n="$SHARDS" -v i="$SHARD" '(NR - 1) % n == i' | paste -sd '|' -)
+          [ -n "$mine" ] || { echo "cmd/xynolog listed no tests for shard $SHARD of $SHARDS" >&2; exit 1; }
+          echo "$(printf '%s\n' "$tests" | wc -l) tests; this shard runs $(printf '%s' "$mine" | tr '|' '\n' | wc -l)"
+          go test -timeout 8m -run "^($mine)\$" ./cmd/xynolog
 
   test:
     needs: sdk
