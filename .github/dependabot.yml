@@ -5,6 +5,10 @@ version: 2
 # one PR open. A release waits a week before it is proposed, and a major Go
 # release a month (GitHub Actions does not read semver).
 
+# Security updates are grouped the same way, in a group of each entry's own,
+# and Dependabot raises them when an advisory is published, not on the
+# schedule; neither the cooldown nor the one-PR limit holds them back.
+
 updates:
   - package-ecosystem: gomod
     labels: ["dependencies"]
@@ -17,6 +21,9 @@ updates:
       default-days: 7
       semver-major-days: 30
     groups:
+      go-modules-security:
+        applies-to: security-updates
+        patterns: ["*"]
       go-modules:
         patterns: ["*"]
     commit-message:
@@ -34,6 +41,9 @@ updates:
     cooldown:
       default-days: 7
     groups:
+      github-actions-security:
+        applies-to: security-updates
+        patterns: ["*"]
       github-actions:
         patterns: ["*"]
     commit-message:
