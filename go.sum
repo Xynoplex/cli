@@ -35,9 +35,7 @@ github.com/AzureAD/microsoft-authentication-library-for-go v1.8.0/go.mod h1:Y33Q
 github.com/ProtonMail/go-crypto v1.4.1 h1:9RfcZHqEQUvP8RzecWEUafnZVtEvrBVL9BiF67IQOfM=
 github.com/ProtonMail/go-crypto v1.4.1/go.mod h1:e1OaTyu5SYVrO9gKOEhTc+5UcXtTUa+P3uLudwcgPqo=
 github.com/RaveNoX/go-jsoncommentstrip v1.0.0/go.mod h1:78ihd09MekBnJnxpICcwzCMzGrKSKYe4AqU6PDYYpjk=
-github.com/Xynoplex/sdk/go v0.0.0-20261114054644-a7a7401d1488 h1:YbXcnGj2c8wmvPklunrbV3nhCnWMTyjDqrhiZbwsHzg=
-github.com/Xynoplex/sdk/go v0.0.0-20261114054644-a7a7401d1488/go.mod h1:h2ikj13He/xYBoKDd8wskdHcMzA7A0IRxV6F1S3a6XQ=
-github.com/Xynoplex/sdk/go v0.7.3 h1:ZGhP0ZxYLOkSa1ZlaAlceTU1eZOXDgfERbuQ5ZfA2Uo=
+github.com/Xynoplex/sdk/go v0.7.3 h1:Adhq6yLpKW/22BmHCvDx65DSEnVf5djtIvwceHGAU/8=
 github.com/Xynoplex/sdk/go v0.7.3/go.mod h1:h2ikj13He/xYBoKDd8wskdHcMzA7A0IRxV6F1S3a6XQ=
 github.com/apapsch/go-jsonmerge/v2 v2.0.0 h1:axGnT1gRIfimI7gJifB699GoE/oq+F2MU7Dml6nw9rQ=
 github.com/apapsch/go-jsonmerge/v2 v2.0.0/go.mod h1:lvDnEdqiQrp0O42VQGgmlKpxL1AP2+08jFMw88y4klk=
