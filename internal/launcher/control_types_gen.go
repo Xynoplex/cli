@@ -1,6 +1,6 @@
 // Code generated from protocol/specs/src/control/methods.json and the schemas it names — DO NOT EDIT.
 //
-// Regenerate: node packages/codegen/schemas/generate-control.mjs
+// Regenerate: node scripts/generate-control.mjs
 
 package launcher
 
@@ -63,7 +63,7 @@ type ControlRootsListResult struct {
 	// Each root.
 	Roots []ControlRoot `json:"roots"`
 
-	// What xynaut roots warns of without failing: an invalid SEMIONT_ROOT, a
+	// What semiont roots warns of without failing: an invalid SEMIONT_ROOT, a
 	// clone whose project file is refused.
 	Warnings []string `json:"warnings,omitempty"`
 }
@@ -147,7 +147,7 @@ type ControlRoot struct {
 }
 
 // ControlRootsInitParams: roots.init's params: the local directory, permanent
-// identity, and optional configuration inputs xynaut init takes.
+// identity, and optional configuration inputs semiont init takes.
 type ControlRootsInitParams struct {
 	// The group and version of the control API. Every request's params state it;
 	// a launcher refuses a version it does not speak with
@@ -192,7 +192,7 @@ type ControlRootsInitParams struct {
 	OllamaRegistry *string `json:"ollamaRegistry,omitempty"`
 }
 
-// ControlRootsInitResult: The local directory where xynaut init created and
+// ControlRootsInitResult: The local directory where semiont init created and
 // registered the knowledge base.
 type ControlRootsInitResult struct {
 	Path string `json:"path"`
@@ -218,7 +218,7 @@ type ControlRootsForgetResult struct {
 	DirectoryMissing bool `json:"directoryMissing"`
 
 	// The key whose persistent stack state remains, when some does and no
-	// surviving root shares its DID: xynaut clean --root <key> removes it.
+	// surviving root shares its DID: semiont clean --root <key> removes it.
 	PersistentState *string `json:"persistentState,omitempty"`
 }
 
@@ -254,7 +254,7 @@ type ControlTarget struct {
 	Repo *string `json:"repo,omitempty"`
 }
 
-// ControlStatusSnapshotResult: What xynaut status reports: each knowledge
+// ControlStatusSnapshotResult: What semiont status reports: each knowledge
 // base with its own services, and each service the knowledge bases share,
 // once, with the knowledge bases it serves.
 type ControlStatusSnapshotResult struct {
@@ -267,7 +267,7 @@ type ControlStatusSnapshotResult struct {
 	Shared []ControlServiceStatus `json:"shared"`
 }
 
-// ControlKnowledgeBaseStatus: One knowledge base's stack as xynaut status
+// ControlKnowledgeBaseStatus: One knowledge base's stack as semiont status
 // reads it: what it is, where it runs, and each of its own services. The
 // services every knowledge base shares are reported once, in the snapshot's
 // shared list.
@@ -331,11 +331,11 @@ type ControlKnowledgeBaseStatus struct {
 	// network lan.
 	Lan *string `json:"lan,omitempty"`
 
-	// Whether a xynaut start of it holds its start lock: its services are not
+	// Whether a semiont start of it holds its start lock: its services are not
 	// ready, whatever they report.
 	Starting bool `json:"starting"`
 
-	// The launcher's own stored sign-in for a stack (xynaut login), never
+	// The launcher's own stored sign-in for a stack (semiont login), never
 	// Desktop's. No token is in it.
 	Session *ControlSession `json:"session,omitempty"`
 
@@ -357,7 +357,7 @@ type ControlKnowledgeBaseStatus struct {
 // login), never Desktop's. No token is in it.
 type ControlSession struct {
 	// valid: the stack's gateway accepts the stored token. expired: it refuses
-	// it (a refresh, or xynaut login, renews it). unverified: the stack did not
+	// it (a refresh, or semiont login, renews it). unverified: the stack did not
 	// answer. none: nothing is stored.
 	State string `json:"state"`
 
@@ -365,13 +365,13 @@ type ControlSession struct {
 	Email *string `json:"email,omitempty"`
 }
 
-// ControlServiceStatus: One service, as xynaut status reads it: where it
+// ControlServiceStatus: One service, as semiont status reads it: where it
 // runs, its state, and whether it answers. Nothing is reported that the
 // launcher did not observe: an endpoint is named only when the stack's record
 // or the descriptor names one, and a page to open only when the service
 // answers.
 type ControlServiceStatus struct {
-	// The service, as xynaut status names it.
+	// The service, as semiont status names it.
 	Role string `json:"role"`
 
 	// The group it belongs to.
@@ -469,7 +469,7 @@ type ControlWorkloadStatusQueue struct {
 	Failed *int `json:"failed,omitempty"`
 }
 
-// ControlStackStartParams: stack.start's params: what xynaut start takes,
+// ControlStackStartParams: stack.start's params: what semiont start takes,
 // but its help and its narration switches.
 type ControlStackStartParams struct {
 	// The version of the control API the request is written to.
@@ -539,7 +539,7 @@ type ControlStackStartResult struct {
 	Shared []ControlServiceStatus `json:"shared,omitempty"`
 }
 
-// ControlStackStopParams: stack.stop's params: what xynaut stop takes, but
+// ControlStackStopParams: stack.stop's params: what semiont stop takes, but
 // its help.
 type ControlStackStopParams struct {
 	// The version of the control API the request is written to.
@@ -774,10 +774,10 @@ type ControlSettingsListResult struct {
 	Settings []ControlSetting `json:"settings"`
 }
 
-// ControlSetting: One setting the launcher keeps, as xynaut settings shows
+// ControlSetting: One setting the launcher keeps, as semiont settings shows
 // it.
 type ControlSetting struct {
-	// Its name, as xynaut settings takes it.
+	// Its name, as semiont settings takes it.
 	Name string `json:"name"`
 
 	// Whether this is the machine-wide form of a knowledge-base setting
@@ -787,7 +787,7 @@ type ControlSetting struct {
 	// What it applies to: every knowledge base on this machine, or one.
 	AppliesTo string `json:"appliesTo"`
 
-	// The values in effect, one per line xynaut settings shows.
+	// The values in effect, one per line semiont settings shows.
 	Values []ControlSettingLine `json:"values"`
 
 	// Whether settings.set and settings.unset change it.
@@ -798,7 +798,7 @@ type ControlSetting struct {
 }
 
 // ControlSettingLine: One value of a setting, and where it came from, as
-// xynaut settings shows it. A secret's value is never one: a secret setting
+// semiont settings shows it. A secret's value is never one: a secret setting
 // shows where the value is kept.
 type ControlSettingLine struct {
 	// The value in effect.
@@ -813,7 +813,7 @@ type ControlSettingsGetParams struct {
 	// The version of the control API the request is written to.
 	ApiVersion string `json:"apiVersion"`
 
-	// The setting, as xynaut settings names it.
+	// The setting, as semiont settings names it.
 	Name string `json:"name"`
 
 	// The machine-wide form of a knowledge-base setting: --default.
@@ -829,7 +829,7 @@ type ControlSettingsSetParams struct {
 	// The version of the control API the request is written to.
 	ApiVersion string `json:"apiVersion"`
 
-	// The setting, as xynaut settings names it.
+	// The setting, as semiont settings names it.
 	Name string `json:"name"`
 
 	// The machine-wide form of a knowledge-base setting: --default.
@@ -848,7 +848,7 @@ type ControlSettingsUnsetParams struct {
 	// The version of the control API the request is written to.
 	ApiVersion string `json:"apiVersion"`
 
-	// The setting, as xynaut settings names it.
+	// The setting, as semiont settings names it.
 	Name string `json:"name"`
 
 	// The machine-wide form of a knowledge-base setting: --default.
@@ -924,7 +924,7 @@ type ControlLogRecord struct {
 	// as the client gave it.
 	RequestId json.RawMessage `json:"requestId"`
 
-	// The role whose container wrote the line, as xynaut status names it.
+	// The role whose container wrote the line, as semiont status names it.
 	Service string `json:"service"`
 
 	// Which of the container's streams the line was on.
@@ -951,11 +951,11 @@ type ControlCancelled struct {
 }
 
 // ControlErrorData: The data of a control error: the launcher's code for the
-// failure, one of protocol/specs/src/errors/codes.json's control group, and
-// what a client can act on. A request's failure is never only a message.
+// failure, one of specs/src/errors/codes.json's control group, and what a
+// client can act on. A request's failure is never only a message.
 type ControlErrorData struct {
 	// Why the request failed: a code of the control group of
-	// protocol/specs/src/errors/codes.json.
+	// specs/src/errors/codes.json.
 	Code string `json:"code"`
 
 	// Whether the same request can succeed sent again unchanged, once something

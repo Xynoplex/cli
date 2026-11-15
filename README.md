@@ -993,9 +993,9 @@ existing knowledge base.
 
 - **The spec is `protocol/specs/src/control`.** `methods.json` names each
   method and the schemas of its params and result.
-  `packages/codegen/schemas/generate-control.mjs` generates the launcher's
-  types, Desktop's types, and the schemas both sides validate against. CI
-  fails when any of them drifts.
+  `scripts/generate-control.mjs` generates the launcher's types and the
+  schemas it validates against; Desktop generates its own types from the same
+  spec. Each repository's CI fails when its generated files drift.
 - **Every command-line option has a stated place in the API.** `cli.json`
   maps each option to a params field or a method, or says why it has none.
   `TestControlCLICensus` holds each command's parser to that table both ways.
