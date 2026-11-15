@@ -2,7 +2,7 @@
 
 .PHONY: help build test vet clean
 
-# `make help` prints the `##` lines below, in order (scripts/make-help.awk).
+# `make help` prints the `##` lines below, in order (build-tools/make-help.awk).
 ##@ Xynoplex CLI (xynolog): make [target] [VARIABLE=value ...]
 ##@ Variables
 ## CONTAINER_RUNTIME=name: container|docker|podman; else the first to respond
@@ -41,7 +41,7 @@ HOST_TARGET := $(HOST_GOOS)/$(HOST_GOARCH)
 HOST_EXTENSION := $(if $(filter windows,$(HOST_GOOS)),.exe)
 
 help:
-	@awk -f scripts/make-help.awk Makefile Makefile
+	@awk -f build-tools/make-help.awk Makefile Makefile
 
 ##@ Build
 ## build: The release binaries for every BUILD_TARGETS platform into dist/, and the host's as dist/xynolog
