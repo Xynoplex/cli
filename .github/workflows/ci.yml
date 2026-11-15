@@ -1,16 +1,46 @@
 name: CI
 
+# Every push and pull request gets the checks: generated code, vet for each
+# release platform, and the build, on one Linux runner. The test suite runs
+# on macOS, Linux and Windows nightly, only when main has moved since the
+# last full run, or when dispatched by hand.
 on:
   pull_request:
   push:
     branches: [main]
+  schedule:
+    - cron: "17 7 * * *"
+  workflow_dispatch:
 
 permissions:
   contents: read
 
+concurrency:
+  group: ci-${{ github.event_name }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' || github.event_name == 'push' }}
+
 jobs:
+  nightly-due:
+    name: Main moved since the last full run
+    if: github.event_name == 'schedule'
+    runs-on: ubuntu-latest
+    permissions:
+      actions: read
+    outputs:
+      due: ${{ steps.check.outputs.due }}
+    steps:
+      - id: check
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          full_runs=$(gh api "repos/$GITHUB_REPOSITORY/actions/workflows/ci.yml/runs?status=success&head_sha=$GITHUB_SHA" \
+            --jq '[.workflow_runs[] | select(.event == "schedule" or .event == "workflow_dispatch")] | length')
+          if [ "$full_runs" -eq 0 ]; then echo due=true; else echo due=false; fi >> "$GITHUB_OUTPUT"
+
   sdk:
     name: SDK bundle from the pinned SDK commit
+    needs: nightly-due
+    if: ${{ !cancelled() && (github.event_name != 'schedule' || needs.nightly-due.outputs.due == 'true') }}
     runs-on: ubuntu-latest
     env:
       SDK_LANGUAGES: go
@@ -64,8 +94,46 @@ jobs:
           if-no-files-found: error
           include-hidden-files: true
 
+  checks:
+    name: Checks
+    needs: sdk
+    if: ${{ !cancelled() && needs.sdk.result == 'success' }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7.0.1
+        with:
+          submodules: recursive
+      - name: Make help lists every public target
+        run: python3 scripts/test_make_help.py
+      - name: The generated Go matches the spec
+        run: |
+          for generator in control owner-only stack mcp-tools; do
+            node "scripts/generate-$generator.mjs" --check
+          done
+      - uses: ./.github/actions/sdk-go-proxy
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+          cache: true
+      - name: go generate leaves the tree as committed
+        run: |
+          go generate ./...
+          if [ -n "$(git status --porcelain)" ]; then
+            git status --porcelain
+            git diff
+            exit 1
+          fi
+      - name: go vet for each release platform
+        run: |
+          for goos in darwin linux windows; do
+            echo "GOOS=$goos"
+            GOOS=$goos go vet ./...
+          done
+      - run: go build ./cmd/xynolog
+
   test:
     needs: sdk
+    if: ${{ !cancelled() && needs.sdk.result == 'success' && (github.event_name == 'schedule' || github.event_name == 'workflow_dispatch') }}
     # An explicit budget: the suite drives a fake runtime through real
     # start/stop lifecycles, serially, and runs near Go's undeclared ten-minute
     # default on Linux, past it on macOS, and longest on Windows.
@@ -81,45 +149,14 @@ jobs:
             budget: 50m
     runs-on: ${{ matrix.os }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7.0.1
         with:
           submodules: recursive
-      - name: Make help lists every public target
-        if: runner.os == 'Linux'
-        run: python3 scripts/test_make_help.py
-      - name: The generated Go matches the spec
-        if: runner.os == 'Linux'
-        run: |
-          for generator in control owner-only stack mcp-tools; do
-            node "scripts/generate-$generator.mjs" --check
-          done
-      - name: Download the SDK bundle
-        uses: actions/download-artifact@v8
-        with:
-          name: sdk-artifacts
-          path: ${{ runner.temp }}/sdk-artifacts
-      - name: Set the Go file proxy
-        env:
-          SDK_ARTIFACTS: ${{ runner.temp }}/sdk-artifacts
-        shell: bash
-        run: |
-          proxy="$(node -e 'const { pathToFileURL } = require("node:url"); const { join } = require("node:path"); process.stdout.write(pathToFileURL(join(process.argv[1], "go", "go-proxy")).href)' "$SDK_ARTIFACTS")"
-          echo "GOPROXY=$proxy,https://proxy.golang.org" >> "$GITHUB_ENV"
-          echo 'GONOSUMDB=github.com/Xynoplex/sdk/go' >> "$GITHUB_ENV"
+      - uses: ./.github/actions/sdk-go-proxy
       - uses: actions/setup-go@v5
         with:
           go-version-file: go.mod
           cache: true
-      - name: go generate leaves the tree as committed
-        if: runner.os == 'Linux'
-        run: |
-          go generate ./...
-          if [ -n "$(git status --porcelain)" ]; then
-            git status --porcelain
-            git diff
-            exit 1
-          fi
-      - run: go vet ./...
       - name: Test with coverage
         if: matrix.os == 'ubuntu-latest'
         run: go test -timeout ${{ matrix.budget }} -coverprofile=coverage.out ./...
@@ -135,4 +172,3 @@ jobs:
           flags: go-xynolog
           name: go-xynolog
           fail_ci_if_error: false
-      - run: go build ./cmd/xynolog
