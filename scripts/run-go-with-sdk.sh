@@ -3,9 +3,9 @@ set -euo pipefail
 
 ROOT="$(cd "$(dirname "$0")/.." && pwd -P)"
 cd "$ROOT"
-source "$ROOT/scripts/container-runtime.sh"
+source "$ROOT/build-tools/container-runtime.sh"
 [[ $# -gt 0 ]] || { echo "Usage: $0 <go command> [args ...]" >&2; exit 2; }
-bundle="$(bash "$ROOT/scripts/prepare-sdk-artifacts.sh")"
+bundle="$(bash "$ROOT/build-tools/prepare-sdk-artifacts.sh" go)"
 bundle_id="$(basename "$bundle")"
 bundle_dir="$ROOT/.local/sdk-artifacts/$bundle_id"
 mkdir -p "$bundle_dir"

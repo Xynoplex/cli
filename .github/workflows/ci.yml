@@ -114,7 +114,7 @@ jobs:
         with:
           submodules: recursive
       - name: Make help lists every public target
-        run: python3 scripts/test_make_help.py
+        run: python3 build-tools/test_make_help.py --root .
       - name: The generated Go matches the spec
         run: |
           for generator in control owner-only stack mcp-tools; do
