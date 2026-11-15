@@ -1,6 +1,6 @@
 package verbs
 
-// bind.go — `xynaut bind`: resolve a linking annotation to a target
+// bind.go — `xynolog bind`: resolve a linking annotation to a target
 // resource by adding a SpecificResource body item (purpose: linking). One
 // bus operation, bind:update-body, whose payload is a list of body
 // operations — so unbinding is the same call with op "remove".
@@ -14,11 +14,11 @@ import (
 	"github.com/Xynoplex/sdk/go/api"
 )
 
-const bindIDs = "xynaut bind [options] -- <resourceId> <annotationId> <targetResourceId>"
+const bindIDs = "xynolog bind [options] -- <resourceId> <annotationId> <targetResourceId>"
 
-const bindUsage = `Usage: xynaut bind <resourceId> <annotationId> <targetResourceId>
-       xynaut bind <resourceId> <annotationId> --unbind <targetResourceId>
-       xynaut bind --resource <id> --annotation <id> --target <id>
+const bindUsage = `Usage: xynolog bind <resourceId> <annotationId> <targetResourceId>
+       xynolog bind <resourceId> <annotationId> --unbind <targetResourceId>
+       xynolog bind --resource <id> --annotation <id> --target <id>
 
 Point a linking annotation at the resource it refers to.
 
@@ -37,7 +37,7 @@ Options:
 ` + idsNote + `
   ` + bindIDs + `
 
-Requires a session:  xynaut login
+Requires a session:  xynolog login
 `
 
 func Bind(args []string) int {

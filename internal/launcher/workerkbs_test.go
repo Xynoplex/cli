@@ -1,7 +1,7 @@
 package launcher
 
 // The knowledge bases on the shared worker's list: what a start and
-// `xynaut worker kb` keep, where, and to whom; what the worker's document
+// `xynolog worker kb` keep, where, and to whom; what the worker's document
 // makes of them; what a start takes off it; and the start a knowledge base
 // added to it refuses.
 
@@ -41,7 +41,7 @@ func gatewayNaming(t *testing.T, issuers ...string) string {
 	return srv.URL
 }
 
-// addedKBOf: an added knowledge base, as `xynaut worker kb add` keeps one
+// addedKBOf: an added knowledge base, as `xynolog worker kb add` keeps one
 // run inside the local knowledge base at lender.
 func addedKBOf(domain, gateway, issuer, clientID, lender string) addedKB {
 	kb := addedKB{Domain: domain, GatewayUrl: gateway, EnginesOf: lender}
@@ -247,7 +247,7 @@ func TestAKnowledgeBaseAddedToItsOwnStartIsRefused(t *testing.T) {
 		t.Fatal(err)
 	}
 	_, err := planWorkerServing(exampleKB.Domain, 14000)
-	if err == nil || !strings.Contains(err.Error(), "xynaut worker kb remove "+exampleKB.Domain) {
+	if err == nil || !strings.Contains(err.Error(), "xynolog worker kb remove "+exampleKB.Domain) {
 		t.Errorf("want a refusal saying how to remove %s, got %v", exampleKB.Domain, err)
 	}
 }

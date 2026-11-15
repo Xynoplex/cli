@@ -1,7 +1,7 @@
 package launcher
 
 // rootstate.go — persistent per-root local-stack state.
-// Each local xynaut root gets its own directory under the launcher's data
+// Each local xynolog root gets its own directory under the launcher's data
 // home; infra containers bind-mount their store subdirs from it, so postgres
 // rows (which include users the event log does NOT record) survive restarts,
 // and the qdrant/neo4j projections skip their rebuild. The mount shapes

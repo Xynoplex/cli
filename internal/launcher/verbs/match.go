@@ -1,10 +1,10 @@
 package verbs
 
-// match.go — `xynaut match`: search the knowledge base. Two forms, one
+// match.go — `xynolog match`: search the knowledge base. Two forms, one
 // per question:
 //
-//	xynaut match --search <text>               resources by text
-//	xynaut match <resourceId> <annotationId>   candidates an annotation could bind to
+//	xynolog match --search <text>               resources by text
+//	xynolog match <resourceId> <annotationId>   candidates an annotation could bind to
 //
 // The text form is one exchange (match:resources-requested). The annotation
 // form is two, in order: gather the annotation's context first, then hand
@@ -24,10 +24,10 @@ import (
 	"github.com/Xynoplex/sdk/go/api"
 )
 
-const matchIDs = "xynaut match [options] -- <resourceId> <annotationId>"
+const matchIDs = "xynolog match [options] -- <resourceId> <annotationId>"
 
-const matchUsage = `Usage: xynaut match --search <text> [options]
-       xynaut match <resourceId> <annotationId> [options]
+const matchUsage = `Usage: xynolog match --search <text> [options]
+       xynolog match <resourceId> <annotationId> [options]
 
 Search the knowledge base. Give one of the two forms:
 
@@ -55,7 +55,7 @@ Options:
 ` + idsNote + `
   ` + matchIDs + `
 
-Requires a session:  xynaut login
+Requires a session:  xynolog login
 `
 
 func Match(args []string) int {
@@ -141,14 +141,14 @@ options:
 		u.Fail("--search wants the text to search for.")
 		return 1
 	case searching && noSemantic:
-		u.Fail("--no-semantic only applies to: xynaut match <resourceId> <annotationId>")
+		u.Fail("--no-semantic only applies to: xynolog match <resourceId> <annotationId>")
 		return 1
 	case !searching && entityType != "":
 		u.Fail("--entity-type only applies with --search.")
 		return 1
 	case !searching && (resourceID == "" || annotationID == ""):
 		u.Fail("match needs --search <text>, or <resourceId> <annotationId> (--resource and --annotation, or bare).")
-		fmt.Fprintln(os.Stderr, "  xynaut match --help")
+		fmt.Fprintln(os.Stderr, "  xynolog match --help")
 		return 1
 	}
 	var rid api.ResourceId
@@ -227,7 +227,7 @@ options:
 		}
 		fmt.Printf("  %-28s %-40s %s\n", r.Id, r.Name, u.Dim(trailer))
 	}
-	fmt.Printf("\n  %s\n", u.Dim(fmt.Sprintf("%d candidate(s) — bind one with: xynaut bind %s %s <resourceId>",
+	fmt.Printf("\n  %s\n", u.Dim(fmt.Sprintf("%d candidate(s) — bind one with: xynolog bind %s %s <resourceId>",
 		len(rows), resourceID, annotationID)))
 	return 0
 }

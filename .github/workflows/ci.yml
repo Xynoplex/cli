@@ -132,7 +132,7 @@ jobs:
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
           files: ./coverage.out
-          flags: go-xynaut
-          name: go-xynaut
+          flags: go-xynolog
+          name: go-xynolog
           fail_ci_if_error: false
-      - run: go build ./cmd/xynaut
+      - run: go build ./cmd/xynolog

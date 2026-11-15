@@ -11,7 +11,7 @@ import "fmt"
 // the host reach and the network does not. Under Docker and Podman every
 // port is still published on every interface, until D1 is ruled for them.
 //
-// With `xynaut settings network lan` (D3), the network reaches two things
+// With `xynolog settings network lan` (D3), the network reaches two things
 // more: the gateway, published on every interface, and the issuer, at this
 // Mac's address on the network, served by the launcher's filtering proxy
 // (issuerproxy.go) with Keycloak behind it on the bridge address.

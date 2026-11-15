@@ -134,7 +134,7 @@ spec:
 	return path
 }
 
-// `xynaut settings worker` shows a document that does not hold as refused,
+// `xynolog settings worker` shows a document that does not hold as refused,
 // with every start that runs a worker; `--path` refuses it too.
 func TestABrokenWorkerDocumentIsShownRefused(t *testing.T) {
 	harness.Home(t)

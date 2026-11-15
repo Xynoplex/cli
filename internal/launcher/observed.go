@@ -1,6 +1,6 @@
 package launcher
 
-// observed.go — what `xynaut status` can say about work in flight, read from
+// observed.go — what `xynolog status` can say about work in flight, read from
 // surfaces the running stack already publishes.
 //
 // Two sources, both already there:

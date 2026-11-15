@@ -1,6 +1,6 @@
 package launcher
 
-// `xynaut identity sync`, the whole verb in process: the root, the config,
+// `xynolog identity sync`, the whole verb in process: the root, the config,
 // the plan, the admin password and the service secrets it resolves as start
 // does, against stubAdmin's realm. The reconciler is identitysync_test.go's;
 // these hold the verb around it.
@@ -80,7 +80,7 @@ func TestIdentitySyncCreatesWhatTheRealmLacks(t *testing.T) {
 		harness.MustContainAll(t, "stdout", stdout, "created "+serviceClientID(svc))
 	}
 	harness.MustContainAll(t, "stdout", stdout, "Reconciling realm example.github.io-test-kb", "created,")
-	harness.MustContainAll(t, "stderr", stderr, "Run `xynaut start` again")
+	harness.MustContainAll(t, "stderr", stderr, "Run `xynolog start` again")
 	if len(admin.created) != len(accountServices()) {
 		t.Errorf("%d clients created, want one per service (%d)", len(admin.created), len(accountServices()))
 	}
@@ -128,7 +128,7 @@ func TestIdentitySyncNeedsTheSharedKeycloakRunning(t *testing.T) {
 	if code != 1 {
 		t.Fatalf("exit %d, want 1\nstderr:\n%s", code, stderr)
 	}
-	harness.MustContainAll(t, "stderr", stderr, "The shared Keycloak is not running", "xynaut start")
+	harness.MustContainAll(t, "stderr", stderr, "The shared Keycloak is not running", "xynolog start")
 	if len(admin.paths) != 0 {
 		t.Errorf("the realm was reached with no Keycloak recorded: %v", admin.paths)
 	}
@@ -163,7 +163,7 @@ func TestIdentitySyncUsesTheConfigAStartRecorded(t *testing.T) {
 	harness.MustContainAll(t, "stdout", stdout, "Config: anthropic", "created "+serviceClientID(secretClients[0]))
 }
 
-// keyFile: what `xynaut worker key` printed on the worker's machine, saved
+// keyFile: what `xynolog worker key` printed on the worker's machine, saved
 // where the operator keeps it.
 func keyFile(t *testing.T, k workerKey) string {
 	t.Helper()
@@ -206,7 +206,7 @@ func TestIdentityGrantPrintsWhatTheWorkersOwnerNeeds(t *testing.T) {
 		"Domain:     example.github.io:test-kb\n",
 		"Client id:  semiont-worker-alice\n",
 		"Gateway:    "+gateway+"\n",
-		"xynaut worker kb add example.github.io:test-kb --gateway "+gateway+" --client-id semiont-worker-alice\n")
+		"xynolog worker kb add example.github.io:test-kb --gateway "+gateway+" --client-id semiont-worker-alice\n")
 	if strings.Contains(stdout, "Issuer") || strings.Contains(stdout, "--issuer") {
 		t.Errorf("the grant states an issuer; the gateway names the one it trusts:\n%s", stdout)
 	}

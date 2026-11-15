@@ -13,7 +13,7 @@ import (
 	"github.com/Xynoplex/sdk/go/xynoplextest"
 )
 
-// `xynaut frame`, in process against the fake transport. These were
+// `xynolog frame`, in process against the fake transport. These were
 // black-box tests: build the binary, `start` a fake stack, `login`, then run
 // the verb against fakert's HTTP server — ~3 s each to observe two requests.
 // The verb's behaviour is entirely about WHAT it sends and WHEN it stops,
@@ -123,7 +123,7 @@ func TestFrameArgumentRefusals(t *testing.T) {
 		args []string
 		want string
 	}{
-		{"nothing to add", nil, "Usage: xynaut frame"},
+		{"nothing to add", nil, "Usage: xynolog frame"},
 		{"bare positional", []string{"Person"}, "--entity-type"},
 	} {
 		t.Run(c.name, func(t *testing.T) {

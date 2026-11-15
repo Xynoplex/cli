@@ -5,7 +5,7 @@ package launcher
 // jobs has an engine, as that start places it, and takes it off when none
 // does (flowWorker). A knowledge base someone else runs is added by `semiont
 // worker kb add`, from what its operator printed on granting this machine's
-// key (`xynaut identity grant`), and is offered the engines of the local
+// key (`xynolog identity grant`), and is offered the engines of the local
 // knowledge base it was added from. The list is kept shared, beside
 // the key. Nothing in it is secret: the worker proves itself at each with the
 // worker key (workerkey.go), and an engine names the variable holding its
@@ -195,7 +195,7 @@ func (l workerList) served() (entries []api.WorkerKnowledgeBaseConfig, unserved 
 func refuseOwnKB(domain string, added []addedKB) error {
 	for _, kb := range added {
 		if kb.Domain == domain {
-			return fmt.Errorf("%s is added to the shared worker as a knowledge base someone else runs, and it is the knowledge base this start runs: remove it (xynaut worker kb remove %s)", domain, domain)
+			return fmt.Errorf("%s is added to the shared worker as a knowledge base someone else runs, and it is the knowledge base this start runs: remove it (xynolog worker kb remove %s)", domain, domain)
 		}
 	}
 	return nil

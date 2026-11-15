@@ -1,6 +1,6 @@
 package verbs
 
-// mcp_tools.go — the work of each of `xynaut mcp`'s tools (mcp-tools.json
+// mcp_tools.go — the work of each of `xynolog mcp`'s tools (mcp-tools.json
 // names them, and the SDK methods each calls). A tool's arguments are read
 // into the SDK's generated types after its input schema has held them, and
 // each is passed on as it was given: one the caller left out is left out, and

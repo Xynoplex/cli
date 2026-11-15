@@ -2,11 +2,11 @@ package launcher
 
 // identityrealm.go — the knowledge base's realm, created through Keycloak's
 // admin API when a start finds the Keycloak the launcher runs without it, and
-// deleted through it by `xynaut clean`.
+// deleted through it by `xynolog clean`.
 //
 // The start asks the realm's public root first. A realm Keycloak holds is left
 // as it is: a start needs no admin login once its realm exists, and a realm
-// somebody has customised is never rewritten. `xynaut identity sync`
+// somebody has customised is never rewritten. `xynolog identity sync`
 // reconciles one that exists; only an absent realm is created here, from
 // keycloakRealmJSON.
 

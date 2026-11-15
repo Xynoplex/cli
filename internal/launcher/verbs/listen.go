@@ -1,6 +1,6 @@
 package verbs
 
-// listen.go — `xynaut listen`: subscribe to the KB's live event stream and
+// listen.go — `xynolog listen`: subscribe to the KB's live event stream and
 // print events until interrupted. The pure-streaming verb: no reply to wait
 // for, just the bus. Only BRIDGED channels and operations' requests reach a
 // stream over a transport, so the default set is the bridged broadcasts —
@@ -25,7 +25,7 @@ import (
 	"github.com/Xynoplex/sdk/go/bus"
 )
 
-const listenUsage = `Usage: xynaut listen [--channel <name>]... [options]
+const listenUsage = `Usage: xynolog listen [--channel <name>]... [options]
 
 Subscribe to the knowledge base's live event stream and print events as they
 arrive. Runs until interrupted (Ctrl-C).
@@ -41,7 +41,7 @@ Options:
   --runtime <rt>       Target a stack here
   --help               Show this help
 
-Requires a session:  xynaut login
+Requires a session:  xynolog login
 
 Only channels the transport bridges, and the requests a service answers, can
 be received. A channel that exists but is neither will deliver nothing at

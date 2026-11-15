@@ -1,6 +1,6 @@
 package launcher
 
-// cleanissuer.go — the shared issuer, for `xynaut clean`: run for a realm's
+// cleanissuer.go — the shared issuer, for `xynolog clean`: run for a realm's
 // delete when none is recorded as running.
 
 import (

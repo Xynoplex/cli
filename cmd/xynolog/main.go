@@ -1,4 +1,4 @@
-// Xynaut — host-installed launcher for local Semiont stacks.
+// Xynolog — host-installed launcher for local Semiont stacks.
 //
 // Drives the container runtime CLI (Apple `container`, docker, or podman)
 // directly via subprocesses.
@@ -14,7 +14,7 @@ import (
 )
 
 func usage(w *os.File) {
-	fmt.Fprint(w, `Usage: xynaut <command> [options]
+	fmt.Fprint(w, `Usage: xynolog <command> [options]
 
 Local Semiont stack launcher — drives your container runtime
 (Apple container, Docker, or Podman) directly.
@@ -64,10 +64,10 @@ Data:
   import    Restore a KB from an export archive into a new root
 
 Info:
-  about     What Xynaut is, project links, and detected runtimes
+  about     What Xynolog is, project links, and detected runtimes
   version   Print the launcher version
 
-Run 'xynaut <command> --help' for command options.
+Run 'xynolog <command> --help' for command options.
 `)
 }
 
@@ -149,7 +149,7 @@ func main() {
 		// A leading flag means the subcommand was left out: the launcher needs
 		// it first. Say where the flags go.
 		if strings.HasPrefix(cmd, "-") {
-			fmt.Fprintf(os.Stderr, "Flags go after a subcommand — did you mean:  xynaut start %s\n", strings.Join(os.Args[1:], " "))
+			fmt.Fprintf(os.Stderr, "Flags go after a subcommand — did you mean:  xynolog start %s\n", strings.Join(os.Args[1:], " "))
 		}
 		fmt.Fprintln(os.Stderr)
 		usage(os.Stderr)

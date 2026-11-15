@@ -19,7 +19,7 @@ import (
 // the codespace NAME is a PID (shown by status, input only via the
 // --codespace disambiguation corner). The launcher keeps at most ONE
 // codespace per repo: it resumes what exists, and creates only when nothing
-// does. Inside the codespace its own launcher runs the stack (`xynaut start
+// does. Inside the codespace its own launcher runs the stack (`xynolog start
 // --runtime docker`, from the KB's post-start hook); this one orchestrates the
 // outside only (create, wait, forward, lifecycle) by shelling out to `gh`,
 // which owns auth and the tunnel client.
@@ -110,7 +110,7 @@ func startCodespace(u *UI, opts startOptions, browser browserDocument) int {
 		} else if len(cs) > 1 {
 			u.Fail("%d codespace stacks are recorded — say which:", len(cs))
 			for _, c := range cs {
-				fmt.Fprintf(os.Stderr, "    xynaut start --runtime codespace --repo %s\n", c.Codespace.Repo)
+				fmt.Fprintf(os.Stderr, "    xynolog start --runtime codespace --repo %s\n", c.Codespace.Repo)
 			}
 			return 1
 		} else {
@@ -157,7 +157,7 @@ func startCodespace(u *UI, opts startOptions, browser browserDocument) int {
 				// registered, name the one command that bridges it.
 				if ref, ok := loadRoots().Secrets["ANTHROPIC_API_KEY"]; ok {
 					fmt.Fprintf(os.Stderr, "  You have a local source registered (%s). Push its current value:\n", refDisplay(ref))
-					fmt.Fprintf(os.Stderr, "    xynaut settings secret push ANTHROPIC_API_KEY --repo %s\n", repo)
+					fmt.Fprintf(os.Stderr, "    xynolog settings secret push ANTHROPIC_API_KEY --repo %s\n", repo)
 				} else {
 					fmt.Fprintln(os.Stderr, "  Fix:  gh secret set ANTHROPIC_API_KEY --user --app codespaces   (then select the repo)")
 				}
@@ -277,7 +277,7 @@ func startCodespace(u *UI, opts startOptions, browser browserDocument) int {
 			if last := lastForwardError(pid); last != "" {
 				fmt.Fprintf(os.Stderr, "  gh said: %s\n", last)
 			}
-			fmt.Fprintln(os.Stderr, "  Rerun to respawn it:  xynaut start --runtime codespace --repo "+repo)
+			fmt.Fprintln(os.Stderr, "  Rerun to respawn it:  xynolog start --runtime codespace --repo "+repo)
 			return false
 		default:
 			return true
@@ -335,7 +335,7 @@ func startCodespace(u *UI, opts startOptions, browser browserDocument) int {
 	if httpOK(browser.endpoint()) {
 		fmt.Printf("  Semiont Browser    %s %s\n", u.Bold(browser.endpoint()), u.Dim("(discovery-synced — this KB appears in its panel)"))
 	} else {
-		fmt.Printf("  Semiont Browser    %s %s\n", u.Bold("xynaut start --service browser"),
+		fmt.Printf("  Semiont Browser    %s %s\n", u.Bold("xynolog start --service browser"),
 			u.Dim("(no local container runtime found — install one, or browse from another machine)"))
 	}
 	fmt.Println()
@@ -353,11 +353,11 @@ func startCodespace(u *UI, opts startOptions, browser browserDocument) int {
 	// No account exists yet — nothing auto-creates one. This is the actual next
 	// step after a first start, so it leads the follow-ups.
 	fmt.Printf("  First user:    %s\n", u.Bold(useraddHint(repo)))
-	fmt.Printf("  Check health:  %s\n", u.Bold("xynaut status"))
-	fmt.Printf("  Follow logs:   %s %s\n", u.Bold("xynaut logs --repo "+repo), u.Dim("(bare logs when unambiguous)"))
+	fmt.Printf("  Check health:  %s\n", u.Bold("xynolog status"))
+	fmt.Printf("  Follow logs:   %s %s\n", u.Bold("xynolog logs --repo "+repo), u.Dim("(bare logs when unambiguous)"))
 	// "Halt compute", not "halt billing": stopping halts COMPUTE billing;
 	// storage bills until retention auto-deletes the codespace.
-	fmt.Printf("  Halt compute:  %s %s\n", u.Bold("xynaut stop --repo "+repo), u.Dim("(storage bills until auto-delete; --delete destroys now)"))
+	fmt.Printf("  Halt compute:  %s %s\n", u.Bold("xynolog stop --repo "+repo), u.Dim("(storage bills until auto-delete; --delete destroys now)"))
 	fmt.Println()
 	return 0
 }
@@ -565,7 +565,7 @@ func adoptRepoCodespace(u *UI, repo, pick string) (name string, found, ok bool) 
 		for _, c := range instances {
 			fmt.Fprintf(os.Stderr, "    %s  (%s)\n", c.Name, c.State)
 		}
-		fmt.Fprintf(os.Stderr, "  Pick one:  xynaut start --runtime codespace --repo %s --codespace <name>\n", repo)
+		fmt.Fprintf(os.Stderr, "  Pick one:  xynolog start --runtime codespace --repo %s --codespace <name>\n", repo)
 		fmt.Fprintln(os.Stderr, "  Or delete extras:  gh codespace delete -c <name>")
 		return "", false, false
 	}
@@ -738,8 +738,8 @@ func ensureCodespaceAvailable(u *UI, repo, name string) int {
 	// explicit choice.
 	if state == "deleted" {
 		u.Fail("Codespace %s no longer exists — %s.", name, codespaceGone)
-		fmt.Fprintln(os.Stderr, "  Forget the record:  xynaut stop --repo "+repo+" --delete")
-		fmt.Fprintln(os.Stderr, "  Then create fresh:  xynaut start --runtime codespace --repo "+repo)
+		fmt.Fprintln(os.Stderr, "  Forget the record:  xynolog stop --repo "+repo+" --delete")
+		fmt.Fprintln(os.Stderr, "  Then create fresh:  xynolog start --runtime codespace --repo "+repo)
 		return 1
 	}
 	// Waking is the wait's decision, not this one's: a start right after a
@@ -790,7 +790,7 @@ func waitCodespaceAvailable(u *UI, repo, name string) int {
 				fmt.Print("\r\033[K")
 			}
 			u.Fail("Codespace %s no longer exists — deleted while waiting for it.", name)
-			fmt.Fprintln(os.Stderr, "  Forget the record:  xynaut stop --repo "+repo+" --delete")
+			fmt.Fprintln(os.Stderr, "  Forget the record:  xynolog stop --repo "+repo+" --delete")
 			return 1
 		}
 		if i == 0 {
@@ -1019,7 +1019,7 @@ func spawnForward(u *UI, name string, remote, local int) (int, <-chan struct{}, 
 		u.Fail("Could not start the port forward: %v", err)
 		return 0, nil, 1
 	}
-	u.Log("Port forward running %s", u.Dim(fmt.Sprintf("(detached, pid %d — recorded; xynaut stop ends it)", pid)))
+	u.Log("Port forward running %s", u.Dim(fmt.Sprintf("(detached, pid %d — recorded; xynolog stop ends it)", pid)))
 	return pid, dead, 0
 }
 
@@ -1094,7 +1094,7 @@ func reconcileDid(u *UI, st *StackState, force bool) {
 		fmt.Fprintf(os.Stderr, "    running:  %s\n", remote)
 		fmt.Fprintln(os.Stderr, "    The codespace is running a different KB than when the record was made")
 		fmt.Fprintln(os.Stderr, "    (a re-created codespace, or an edited .semiont/config.yaml). Nothing was")
-		fmt.Fprintln(os.Stderr, "    changed here — delete that codespace and its record with: xynaut stop --repo "+st.Codespace.Repo+" --delete")
+		fmt.Fprintln(os.Stderr, "    changed here — delete that codespace and its record with: xynolog stop --repo "+st.Codespace.Repo+" --delete")
 	}
 }
 
@@ -1122,7 +1122,7 @@ func fetchRemoteDid(u *UI, name string) (string, bool) {
 // renderCodespacePlan is --dry-run for the codespace placement: the gh
 // commands a real run would execute. Reaches for nothing.
 func renderCodespacePlan(opts startOptions, repo, recorded string) {
-	fmt.Println("# xynaut start --runtime codespace --dry-run — the gh commands a real run")
+	fmt.Println("# xynolog start --runtime codespace --dry-run — the gh commands a real run")
 	fmt.Println("# would execute, in order. Values known only at runtime appear as <placeholders>.")
 	fmt.Println(`gh auth status                                   # preflight: 'codespace' scope`)
 	fmt.Println("gh api user/codespaces/secrets/ANTHROPIC_API_KEY/repositories   # preflight: secret selected for " + repo)
@@ -1145,7 +1145,7 @@ func renderCodespacePlan(opts startOptions, repo, recorded string) {
 	fmt.Println("gh codespace ssh -c <codespace> -- cat /workspaces/*/.semiont/config.yaml   # KB identity, when the record lacks one")
 }
 
-// stopCodespace: `xynaut stop` for a codespace stack. Stop halts billing
+// stopCodespace: `xynolog stop` for a codespace stack. Stop halts billing
 // and KEEPS the record — the rule is that the record mirrors existence, and
 // a stopped codespace still exists (state, credentials, billing identity).
 // --delete destroys and forgets. Both kill the recorded forward first.
@@ -1158,7 +1158,7 @@ func stopCodespace(u *UI, st *StackState, service string, del, dryRun bool) int 
 		return 1
 	}
 	if dryRun {
-		fmt.Println("# xynaut stop --dry-run — the exact commands a real run would execute.")
+		fmt.Println("# xynolog stop --dry-run — the exact commands a real run would execute.")
 		if st.Codespace.ForwardPID != 0 {
 			fmt.Printf("# kill the recorded port forward (pid %d)\n", st.Codespace.ForwardPID)
 		}
@@ -1220,7 +1220,7 @@ func stopCodespace(u *UI, st *StackState, service string, del, dryRun bool) int 
 	if gone {
 		// Nothing to stop, and forgetting the record is --delete's job.
 		u.Fail("Codespace %s no longer exists — %s.", st.Codespace.Name, codespaceGone)
-		fmt.Fprintln(os.Stderr, "  Forget the record:  xynaut stop --repo "+st.Codespace.Repo+" --delete")
+		fmt.Fprintln(os.Stderr, "  Forget the record:  xynolog stop --repo "+st.Codespace.Repo+" --delete")
 		return 1
 	}
 	u.Log("Stopping codespace %s %s", u.Bold(st.Codespace.Name), u.Dim("("+st.Codespace.Repo+" — billing halts; state persists)"))
@@ -1236,12 +1236,12 @@ func stopCodespace(u *UI, st *StackState, service string, del, dryRun bool) int 
 		verifyPortsReleased(u, st.Ports)
 	}
 	fmt.Println("Codespace stopped — billing halted; state and credentials persist.")
-	fmt.Println("  Resume:   xynaut start --runtime codespace --repo " + st.Codespace.Repo)
-	fmt.Println("  Destroy:  xynaut stop --repo " + st.Codespace.Repo + " --delete")
+	fmt.Println("  Resume:   xynolog start --runtime codespace --repo " + st.Codespace.Repo)
+	fmt.Println("  Destroy:  xynolog stop --repo " + st.Codespace.Repo + " --delete")
 	return 0
 }
 
-// statusCodespace: `xynaut status` for a codespace stack — VM state from
+// statusCodespace: `xynolog status` for a codespace stack — VM state from
 // gh, health through the forwards (re-established if the recorded one
 // died), the KB identity reconciled, and a LOCAL section that doesn't pretend
 // the remote VM's directories are here.
@@ -1278,7 +1278,7 @@ func statusCodespace(u *UI, st *StackState, refresh bool) int {
 	// launch. Say so and skip rather than do it quietly.
 	if refresh && state != "Available" {
 		u.Warn("--refresh needs to ssh in, which would wake this codespace (state: %s) — skipped.", state)
-		fmt.Fprintln(os.Stderr, "  Resume it first, then refresh:  xynaut start --runtime codespace --repo "+st.Codespace.Repo)
+		fmt.Fprintln(os.Stderr, "  Resume it first, then refresh:  xynolog start --runtime codespace --repo "+st.Codespace.Repo)
 	}
 	switch state {
 	case "unqueryable":
@@ -1287,20 +1287,20 @@ func statusCodespace(u *UI, st *StackState, refresh bool) int {
 		printRootsPointer(u, nil, nil)
 		return 1
 	case "deleted":
-		u.Warn("The recorded codespace no longer exists — forget the record with: xynaut stop --repo %s --delete", st.Codespace.Repo)
+		u.Warn("The recorded codespace no longer exists — forget the record with: xynolog stop --repo %s --delete", st.Codespace.Repo)
 		printRootsPointer(u, nil, nil)
 		return 1
 	case "Available":
 	case "Shutdown":
 		fmt.Printf("  %s\n", u.Dim("stopped — state and credentials persist; compute billing halted (storage still bills)"))
-		fmt.Printf("  Resume:   %s\n", u.Bold("xynaut start"))
+		fmt.Printf("  Resume:   %s\n", u.Bold("xynolog start"))
 		printRootsPointer(u, nil, nil)
 		return 1
 	default:
 		// Queued / Provisioning / Starting / Rebuilding / Failed …: coming
 		// up (and billing) — NOT stopped. Saying "stopped, billing halted"
 		// here would be wrong on both counts.
-		fmt.Printf("  %s\n", u.Dim("not ready yet (state: "+state+") — GitHub is still working on it; re-run xynaut status"))
+		fmt.Printf("  %s\n", u.Dim("not ready yet (state: "+state+") — GitHub is still working on it; re-run xynolog status"))
 		printRootsPointer(u, nil, nil)
 		return 1
 	}
@@ -1342,7 +1342,7 @@ func statusCodespace(u *UI, st *StackState, refresh bool) int {
 	fmt.Printf("  KB          %s  %s\n", mark, u.Dim(url))
 	fmt.Printf("  %s\n", u.Dim("(the codespace's own launcher runs the stack inside it; only the KB is forwarded)"))
 
-	fmt.Printf("  %s\n", u.Dim(fmt.Sprintf("(connect at Host localhost, Port %d — xynaut useradd --repo %s creates a user)", st.Codespace.ForwardPort, st.Codespace.Repo)))
+	fmt.Printf("  %s\n", u.Dim(fmt.Sprintf("(connect at Host localhost, Port %d — xynolog useradd --repo %s creates a user)", st.Codespace.ForwardPort, st.Codespace.Repo)))
 
 	// Backfill a missing identity, or re-verify a recorded one on --refresh.
 	reconcileDid(u, st, refresh)
@@ -1390,7 +1390,7 @@ func dropCollidingForwards(u *UI, needs []portNeed) {
 			port int
 		}{{"KB", &cs.ForwardPID, cs.ForwardPort}, {"issuer", &cs.KeycloakForwardPID, cs.KeycloakPort}} {
 			if forwardProcAlive(*f.pid) && claimed[f.port] {
-				u.Warn("Dropping %s's %s forward on port %d — a stack here needs it; the codespace keeps running (re-attach: xynaut start --runtime codespace --repo %s).",
+				u.Warn("Dropping %s's %s forward on port %d — a stack here needs it; the codespace keeps running (re-attach: xynolog start --runtime codespace --repo %s).",
 					cs.Repo, f.what, f.port, cs.Repo)
 				retireForward(*f.pid)
 				*f.pid = 0
@@ -1469,7 +1469,7 @@ func formatUptime(d time.Duration) string {
 	return fmt.Sprintf("%dh%dm", h, m)
 }
 
-// knownCodespace: one codespace stack xynaut roots lists, and what GitHub
+// knownCodespace: one codespace stack xynolog roots lists, and what GitHub
 // and the forward say of it.
 type knownCodespace struct {
 	stack *StackState
@@ -1582,15 +1582,15 @@ func printRemoteKBs(u *UI, cs []*StackState) int {
 			}
 			fmt.Printf("%sKB %s  %s\n", pad, mark, u.Dim(fmt.Sprintf("http://localhost:%d", c.Codespace.ForwardPort)))
 		case state == "Available":
-			fmt.Printf("%s%s\n", pad, u.Dim("not forwarded — xynaut start --runtime codespace --repo "+c.Codespace.Repo))
+			fmt.Printf("%s%s\n", pad, u.Dim("not forwarded — xynolog start --runtime codespace --repo "+c.Codespace.Repo))
 		case state == "Shutdown":
 			bill := "stopped (storage still bills"
 			if row.hasFacts && row.facts.AutoDel != "" {
 				bill += "; auto-deletes " + row.facts.AutoDel + ", state and all"
 			}
-			fmt.Printf("%s%s\n", pad, u.Dim(bill+") — resume: xynaut start --runtime codespace --repo "+c.Codespace.Repo))
+			fmt.Printf("%s%s\n", pad, u.Dim(bill+") — resume: xynolog start --runtime codespace --repo "+c.Codespace.Repo))
 		default:
-			fmt.Printf("%s%s\n", pad, u.Dim("details: xynaut status --repo "+c.Codespace.Repo))
+			fmt.Printf("%s%s\n", pad, u.Dim("details: xynolog status --repo "+c.Codespace.Repo))
 		}
 	})
 	return len(cs)
@@ -1645,7 +1645,7 @@ func forwardAlive(pid, port int) bool {
 // ssh so nothing touches the port forward (which does not exist yet, and which
 // a premature probe would destroy — see the call site).
 //
-// The probe is the codespace's own `xynaut status` (askRemoteKB), asked
+// The probe is the codespace's own `xynolog status` (askRemoteKB), asked
 // inside the VM, where a "not ready" costs nothing. Each attempt is a fresh
 // `gh codespace ssh`, so the cadence is slow on purpose — ssh setup dwarfs
 // the request, and a fresh create is a minutes-long wait where seconds of
@@ -1699,7 +1699,7 @@ func waitForRemoteKB(u *UI, name, repo string, created bool) int {
 				}
 			}
 			fmt.Fprintf(os.Stderr, "\n  Full log:  gh codespace logs -c %s\n", name)
-			fmt.Fprintf(os.Stderr, "  The codespace exists; delete it once fixed:  xynaut stop --repo %s --delete\n", repo)
+			fmt.Fprintf(os.Stderr, "  The codespace exists; delete it once fixed:  xynolog stop --repo %s --delete\n", repo)
 			return 1
 		}
 		if !time.Now().Before(deadline) {
@@ -1752,7 +1752,7 @@ const (
 // `semiont` is not found and the answer is "wait".
 func askRemoteKB(name string) remoteReadiness {
 	probe := fmt.Sprintf(
-		"cd /workspaces/* && xynaut status --root . >/dev/null 2>&1 && echo %s || echo %s",
+		"cd /workspaces/* && xynolog status --root . >/dev/null 2>&1 && echo %s || echo %s",
 		readySentinel, notReadySentinel)
 	out, _ := capture("gh", "codespace", "ssh", "-c", name, "--", probe)
 	switch {
@@ -2065,7 +2065,7 @@ func loopbackHost(host string) bool {
 // every resume's post-start keeps it. Its sticky runtime and config are the
 // post-start's.
 func restartRemoteStack(u *UI, name string, port int) int {
-	remote := fmt.Sprintf("cd /workspaces/* && xynaut settings keycloak-port %d && xynaut start", port)
+	remote := fmt.Sprintf("cd /workspaces/* && xynolog settings keycloak-port %d && xynolog start", port)
 	u.EchoCmd("gh", "codespace", "ssh", "-c", name, "--", remote)
 	// Captured, not streamed: the inner launcher's summary is the codespace's
 	// own view, and its URLs (localhost:4000) are wrong from this machine,
@@ -2101,7 +2101,7 @@ func waitForRemoteStack(u *UI, name string) int {
 		}
 		if time.Since(t0) >= remoteReadyBudget {
 			u.Fail("The codespace's stack did not report ready within %s.", took(remoteReadyBudget))
-			fmt.Fprintf(os.Stderr, "  Look inside:  gh codespace ssh -c %s -- 'cd /workspaces/* && xynaut status'\n", name)
+			fmt.Fprintf(os.Stderr, "  Look inside:  gh codespace ssh -c %s -- 'cd /workspaces/* && xynolog status'\n", name)
 			return 1
 		}
 		time.Sleep(remoteReadyPoll)

@@ -1,7 +1,7 @@
 package launcher
 
 // secretscrub.go — the secret values this process has generated or read,
-// kept so that no line xynaut control sends carries one: a progress line, a
+// kept so that no line xynolog control sends carries one: a progress line, a
 // log record, a diagnostic, an error's message. Each place a value enters the
 // launcher notes it — custody's reads and writes, a provider's read, the
 // environment's, a generated password, a sign-in's tokens — and scrubSecrets

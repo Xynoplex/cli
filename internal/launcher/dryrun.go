@@ -39,7 +39,7 @@ func (x *planExec) stateHomeDocumentWrites(browser browserDocument, plan *launch
 // values the flow treats as runtime-scoped.
 func renderStartPlan(rt, lan string, kb kbRoot, opts startOptions, userEnv []string, st *stack.Stack, plan *launchPlan, browser browserDocument) {
 	x := &planExec{rt: rt, lan: lan, kb: kb}
-	x.c("xynaut start --dry-run — the exact runtime commands a real run would")
+	x.c("xynolog start --dry-run — the exact runtime commands a real run would")
 	x.c("execute, in order. Values known only at runtime appear as <placeholders>.")
 	x.stateHomeDocumentWrites(browser, plan)
 	flowFullStart(x, flowCtx{plan: plan, stack: st, opts: opts, kb: kb, userEnv: userEnv, browser: browser})

@@ -26,7 +26,7 @@ type controlInitHelperRecord struct {
 
 // TestControlInitHelper is re-executed as the fake launcher executable. It
 // captures the command and emits output through the same subprocess pipes as
-// `xynaut init` would.
+// `xynolog init` would.
 func TestControlInitHelper(t *testing.T) {
 	if os.Getenv(controlInitHelperEnv) != "1" {
 		return

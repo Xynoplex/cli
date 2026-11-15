@@ -1,4 +1,4 @@
-# xynaut start --dry-run — the exact runtime commands a real run would
+# xynolog start --dry-run — the exact runtime commands a real run would
 # execute, in order. Values known only at runtime appear as <placeholders>.
 # write <state-home>/stack/browser.yaml: the Browser's document, from the launcher's catalog
 # write <state-home>/stack/workers.yaml: the worker's document, from the launcher's catalog
@@ -169,7 +169,7 @@ container run -d --name semiont-example.github.io-test-kb-weaver --memory 2G --p
 # wait: http://<host-addr>:24102/health (30s)
 # verify ghcr.io/the-ai-alliance/semiont-browser:latest: its build provenance, signed by publish-browser.yml at a release tag (refs/tags/v…); then pull and run it by its digest
 # browser: keep if running with image identity matching ghcr.io/the-ai-alliance/semiont-browser:latest@sha256:<verified>, recorded at http://localhost:3000 with 1G; else stop/rm + pull + run
-# (the Browser is not a stack member: xynaut stop --service browser stops it alone)
+# (the Browser is not a stack member: xynolog stop --service browser stops it alone)
 # else:
 container stop semiont-browser
 container rm semiont-browser

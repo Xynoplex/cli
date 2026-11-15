@@ -9,7 +9,7 @@ import (
 	"time"
 )
 
-var stopUsage = fmt.Sprintf(`Usage: xynaut stop [--service <name> | --group <name>] [--root <path>] [--runtime container|docker|podman] [--repo <owner/name>] [--delete] [--dry-run]
+var stopUsage = fmt.Sprintf(`Usage: xynolog stop [--service <name> | --group <name>] [--root <path>] [--runtime container|docker|podman] [--repo <owner/name>] [--delete] [--dry-run]
 
 Stop a knowledge base's Semiont stack — its services and dependencies — and
 clean up its staged configs. The shared containers (the issuer, the worker,
@@ -18,7 +18,7 @@ every knowledge base here, so they stop with the last knowledge base's
 stack, and a stop that leaves another recorded leaves them. Safe to run when nothing is up: every
 step is a no-op then. Persistent stack state (Qdrant and Neo4j data, and
 the realms in the issuer's PostgreSQL) is deliberately LEFT: the next start
-reuses it. Removing it is its own explicit command: xynaut clean.
+reuses it. Removing it is its own explicit command: xynolog clean.
 
 Which stack: --root <path> names a knowledge base's, --repo <owner/name> a
 codespace's. Without either, the knowledge base you stand in names its own:
@@ -64,7 +64,7 @@ mounting them.
 
 A CODESPACE stack (started with --runtime codespace) stops with
 'gh codespace stop': billing halts, state and credentials persist, and the
-record is kept — resume with xynaut start. --delete destroys the codespace
+record is kept — resume with xynolog start. --delete destroys the codespace
 (state and all) and forgets the record; it applies only to codespace stacks.
 A stop named with --repo stops that codespace stack alone, and leaves the
 Browser.
@@ -281,7 +281,7 @@ func stopCodespaceAndShared(u *UI, st *StackState, service string, del, dryRun b
 	return 0
 }
 
-// Stop implements `xynaut stop`, saying what it does through u.
+// Stop implements `xynolog stop`, saying what it does through u.
 func Stop(u *UI, args []string) int {
 	runtime := ""
 	service := ""
@@ -459,8 +459,8 @@ func Stop(u *UI, args []string) int {
 
 	// Which runtimes to sweep: the requested one, or EVERY installed runtime.
 	// Stopping is idempotent (stop/rm of absent names are no-ops), so sweeping
-	// all runtimes structurally kills the classic trap: a bare `xynaut stop`
-	// after `xynaut start --runtime docker` picking a different runtime,
+	// all runtimes structurally kills the classic trap: a bare `xynolog stop`
+	// after `xynolog start --runtime docker` picking a different runtime,
 	// reporting success, and leaving the real stack running.
 	// The recorded stack state (when present) says which runtime started the
 	// stack and what identifiers it reported — stop computes its work from
@@ -590,7 +590,7 @@ func Stop(u *UI, args []string) int {
 	staged := scope.staged()
 
 	if dryRun {
-		fmt.Println("# xynaut stop --dry-run — the exact runtime commands a real run would")
+		fmt.Println("# xynolog stop --dry-run — the exact runtime commands a real run would")
 		fmt.Println("# execute, in order.")
 		// Placeholder, not the resolved path: goldens and users both read
 		// this, and the concrete dir is printed by a real run's snapshot.
@@ -661,7 +661,7 @@ func Stop(u *UI, args []string) int {
 	// name (the next `run --name` would fail with "already exists"); rm makes
 	// this idempotent across all three states: running, stopped, absent.
 	u.Log("Sweeping %d container(s) across %s %s", len(targets),
-		strings.Join(runtimes, ", "), u.Dim("(stop+rm each; exact commands: xynaut stop --dry-run)"))
+		strings.Join(runtimes, ", "), u.Dim("(stop+rm each; exact commands: xynolog stop --dry-run)"))
 	totalRemoved := 0
 	for _, rt := range runtimes {
 		t0 := time.Now()
@@ -737,11 +737,11 @@ func Stop(u *UI, args []string) int {
 	// its record still describes reality.
 	if st != nil && !useState {
 		u.Warn("Recorded stack (under %s) left untouched — staged configs and stack.json kept.", st.Runtime)
-		fmt.Printf("Swept %s only. Run xynaut stop (without --runtime) to tear down the recorded stack.\n", strings.Join(runtimes, ", "))
+		fmt.Printf("Swept %s only. Run xynolog stop (without --runtime) to tear down the recorded stack.\n", strings.Join(runtimes, ", "))
 		return 0
 	}
 
-	// The documents xynaut start staged for the bind mounts.
+	// The documents xynolog start staged for the bind mounts.
 	removeStaged(staged)
 	if len(staged) > 0 {
 		u.Ok("Removed %d staged config dir(s)", len(staged))
@@ -843,7 +843,7 @@ func resolveStop(u *UI, ss *StackSet, root, runtime string, del bool) (scope sto
 		st := localStack(ss, asked.key())
 		if st != nil && st.KBRoot != asked.dir {
 			u.Fail("%s's stack runs from %s, not %s (per %s).", asked.ident.didWeb(), st.KBRoot, asked.dir, statePath())
-			fmt.Fprintln(os.Stderr, "  Stop it there:  xynaut stop --root "+st.KBRoot)
+			fmt.Fprintln(os.Stderr, "  Stop it there:  xynolog stop --root "+st.KBRoot)
 			return stopScope{}, nil, false
 		}
 		// A clone whose stack is not recorded is still the knowledge base
@@ -982,8 +982,8 @@ func verifyPortsReleased(u *UI, ports []int) {
 	}
 }
 
-// Version implements `xynaut version`.
+// Version implements `xynolog version`.
 func Version(args []string) int {
-	fmt.Printf("xynaut %s (commit %s, built %s)\n", BuildVersion, BuildCommit, BuildDate)
+	fmt.Printf("xynolog %s (commit %s, built %s)\n", BuildVersion, BuildCommit, BuildDate)
 	return 0
 }

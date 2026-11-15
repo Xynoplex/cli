@@ -143,7 +143,7 @@ func TestNoAddressTravelsInAnEnvironment(t *testing.T) {
 	}
 }
 
-// The documents `xynaut init` writes state no address: a new knowledge base's
+// The documents `xynolog init` writes state no address: a new knowledge base's
 // documents are the same on every machine, and the launcher places every daemon
 // they name.
 func TestAGeneratedStackLeavesEveryAddressToTheLauncher(t *testing.T) {

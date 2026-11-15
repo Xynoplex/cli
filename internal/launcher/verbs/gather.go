@@ -1,6 +1,6 @@
 package verbs
 
-// gather.go — `xynaut gather`: assemble LLM-optimized context for a
+// gather.go — `xynolog gather`: assemble LLM-optimized context for a
 // resource or an annotation. Either focus is a plain request/reply.
 
 import (
@@ -13,10 +13,10 @@ import (
 	"github.com/Xynoplex/sdk/go/api"
 )
 
-const gatherIDs = "xynaut gather [options] -- <resourceId> [<annotationId>]"
+const gatherIDs = "xynolog gather [options] -- <resourceId> [<annotationId>]"
 
-const gatherUsage = `Usage: xynaut gather <resourceId> [options]
-       xynaut gather <resourceId> <annotationId> [options]
+const gatherUsage = `Usage: xynolog gather <resourceId> [options]
+       xynolog gather <resourceId> <annotationId> [options]
 
 Assemble context for an LLM: the resource with its neighbourhood, or the
 context surrounding one annotation.
@@ -40,7 +40,7 @@ Options:
 ` + idsNote + `
   ` + gatherIDs + `
 
-Requires a session:  xynaut login
+Requires a session:  xynolog login
 `
 
 // Resource-gather values when the caller names none — the same ones the TS

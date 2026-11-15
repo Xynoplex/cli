@@ -1,4 +1,4 @@
-# xynaut start --dry-run — the exact runtime commands a real run would
+# xynolog start --dry-run — the exact runtime commands a real run would
 # execute, in order. Values known only at runtime appear as <placeholders>.
 # probe: container run --rm busybox:1.38.0@sha256:fd7dc98638c8e305f4dc34e979f1c0fdfdcaeb0fbf8fcff77ae834b6da3d7e6e sh -c "ip route | awk '/default/{print $3}'" → <host-addr>
 # unverified: ghcr.io/the-ai-alliance/semiont-gateway:local, ghcr.io/the-ai-alliance/semiont-archivist:local, ghcr.io/the-ai-alliance/semiont-librarian:local, ghcr.io/the-ai-alliance/semiont-dispatcher:local, ghcr.io/the-ai-alliance/semiont-smelter:local, ghcr.io/the-ai-alliance/semiont-weaver:local, ghcr.io/the-ai-alliance/semiont-worker:local — built on this machine (:local) and never pulled; for development only
@@ -154,7 +154,7 @@ container run -d --name semiont-example.github.io-test-kb-weaver --memory 2G --p
 # wait: http://<host-addr>:24102/health (30s)
 # unverified: ghcr.io/the-ai-alliance/semiont-browser:local — built on this machine (:local) and never pulled; for development only
 # browser: keep if running with image identity matching ghcr.io/the-ai-alliance/semiont-browser:local, recorded at http://localhost:3000 with 1G; else stop/rm + pull + run
-# (the Browser is not a stack member: xynaut stop --service browser stops it alone)
+# (the Browser is not a stack member: xynolog stop --service browser stops it alone)
 # else:
 container stop semiont-browser
 container rm semiont-browser

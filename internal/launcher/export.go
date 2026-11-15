@@ -1,6 +1,6 @@
 package launcher
 
-// export.go — `xynaut export`: the KB's durable half, as a plain tar.gz.
+// export.go — `xynolog export`: the KB's durable half, as a plain tar.gz.
 //
 // This verb is unlike every other one here: it does NOT dial the SDK. It reads
 // the working tree, because that is where a KB actually lives.
@@ -33,7 +33,7 @@ import (
 	"time"
 )
 
-const exportUsage = `Usage: xynaut export [options]
+const exportUsage = `Usage: xynolog export [options]
 
 Write a KB's durable state to a .tar.gz — the content files and the event log.
 Nothing derived: projections, jobs, anchored text and the databases all rebuild
@@ -138,7 +138,7 @@ func exportLocal(u *UI, rootFlag, output string, force, withGit bool) int {
 		if err != nil {
 			u.Fail("%v", err)
 			if !projectFileRefused(err) {
-				fmt.Fprintln(os.Stderr, "  Name one:  xynaut export --root <path|name>")
+				fmt.Fprintln(os.Stderr, "  Name one:  xynolog export --root <path|name>")
 			}
 			return 1
 		}
@@ -178,7 +178,7 @@ func exportLocal(u *UI, rootFlag, output string, force, withGit bool) int {
 		if len(changed) > len(show) {
 			fmt.Printf("    %s\n", u.Dim(fmt.Sprintf("… and %d more", len(changed)-len(show))))
 		}
-		fmt.Printf("  %s\n", u.Dim("`xynaut stop` before exporting for a quiescent archive."))
+		fmt.Printf("  %s\n", u.Dim("`xynolog stop` before exporting for a quiescent archive."))
 	}
 	fmt.Printf("  %s\n", u.Dim("tar -xzf "+filepath.Base(output)+"  → a working KB directory"))
 	return 0
@@ -189,7 +189,7 @@ func exportLocal(u *UI, rootFlag, output string, force, withGit bool) int {
 // on the remote by default — the two facts that make this a single command
 // rather than a remote toolchain.
 func exportRemote(u *UI, repo, output string, force, withGit bool) int {
-	if !requireGh(u, "xynaut export --repo") {
+	if !requireGh(u, "xynolog export --repo") {
 		return 1
 	}
 	ss := LoadStackSet()

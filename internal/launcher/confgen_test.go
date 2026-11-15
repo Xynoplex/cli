@@ -38,7 +38,7 @@ func bornStack(t *testing.T, p genParams, name string) *stack.Stack {
 	return st
 }
 
-// A KB born from `xynaut init` must be one `xynaut start` can bring up, and
+// A KB born from `xynolog init` must be one `xynolog start` can bring up, and
 // the dispatcher's queue is JetStream: a generated KnowledgeBase whose jobs
 // type is anything else is one the launcher refuses.
 func TestGeneratedStackSelectsAJobsDriverTheDispatcherCanRun(t *testing.T) {
@@ -128,16 +128,16 @@ func TestInitRecordsTheConfigItWroteAsTheRootsPreference(t *testing.T) {
 
 	pref := recordedConfig(root)
 	if pref == "" {
-		t.Fatal("init recorded no config preference, so `xynaut start` falls through to its hardcoded default — which no born KB has a document for")
+		t.Fatal("init recorded no config preference, so `xynolog start` falls through to its hardcoded default — which no born KB has a document for")
 	}
 	if _, err := os.Stat(filepath.Join(root, stack.InferencePath(pref))); err != nil {
 		t.Errorf("init recorded %q as this root's config, but wrote no such Inference document: %v", pref, err)
 	}
 }
 
-// `xynaut init --yes` must produce a KB that starts: with no --inference and
+// `xynolog init --yes` must produce a KB that starts: with no --inference and
 // no --model it writes the documents all the same, or the very next command
-// it prints — `xynaut start` — cannot run.
+// it prints — `xynolog start` — cannot run.
 //
 // The defaults are ollama inference on a small model: the provider that needs
 // no credential and the size that a first KB can actually pull.
@@ -157,7 +157,7 @@ func TestBareInitProducesAStartableKB(t *testing.T) {
 
 	pref := recordedConfig(root)
 	if pref == "" {
-		t.Fatal("no config preference recorded — `xynaut start` would fall through to its hardcoded default")
+		t.Fatal("no config preference recorded — `xynolog start` would fall through to its hardcoded default")
 	}
 	st, err := stack.Load(root, pref)
 	if err != nil {

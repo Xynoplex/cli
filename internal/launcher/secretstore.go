@@ -1,6 +1,6 @@
 package launcher
 
-// secretstore.go — the secret-store setting (`xynaut settings secret-store`):
+// secretstore.go — the secret-store setting (`xynolog settings secret-store`):
 // which store keeps a knowledge base's custody values, and moving them
 // between stores. One setting per KB root — a team KB can keep its secrets in
 // a team vault while a personal one stays on files — keyed like the values it

@@ -3,7 +3,7 @@ package launcher
 // logsnap.go — crash evidence at the two moments it would otherwise die.
 // The runtime's log capture is the ONLY copy of a stack's stdout story
 // (services log to stdout; nothing writes files), and both teardown paths
-// delete it: `xynaut stop` and the start preflight rm every container. So:
+// delete it: `xynolog stop` and the start preflight rm every container. So:
 // every teardown snapshots the capture into the root's state area first, and
 // every `run` bounds the capture so a long-lived stack cannot grow it without
 // limit.

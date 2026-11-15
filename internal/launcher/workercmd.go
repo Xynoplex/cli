@@ -1,9 +1,9 @@
 package launcher
 
-// workercmd.go — `xynaut worker key`: the public half of the key this
+// workercmd.go — `xynolog worker key`: the public half of the key this
 // machine's worker proves itself with, for an issuer the launcher does not run
 // to register. A realm the launcher runs is given it when a start creates it,
-// or by `xynaut identity sync`. And `xynaut worker kb`: the knowledge bases on the
+// or by `xynolog identity sync`. And `xynolog worker kb`: the knowledge bases on the
 // machine's worker's list (workerkbs.go) — the local ones each start puts
 // there, and the ones someone else runs, added here.
 
@@ -21,10 +21,10 @@ import (
 	xynoplex "github.com/Xynoplex/sdk/go"
 )
 
-const workerUsage = `Usage: xynaut worker key [--pem]
-       xynaut worker kb add <domain> --gateway <url> --client-id <id>
-       xynaut worker kb remove <domain>
-       xynaut worker kb list
+const workerUsage = `Usage: xynolog worker key [--pem]
+       xynolog worker kb add <domain> --gateway <url> --client-id <id>
+       xynolog worker kb remove <domain>
+       xynolog worker kb list
 
 key
   Print the public half of the key the shared worker signs its sign-ins
@@ -33,12 +33,12 @@ key
   printed.
 
   An issuer the launcher runs holds it already: the start that creates its
-  realm registers it, and ` + "`xynaut identity sync`" + ` brings an older
+  realm registers it, and ` + "`xynolog identity sync`" + ` brings an older
   realm to it. For an
   issuer you run yourself, create a confidential client for the worker that
   authenticates with a signed JWT, enable its client-credentials grant, and
   register this key on it. For a knowledge base someone else runs, send it to
-  its operator, who grants it (` + "`xynaut identity grant`" + `).
+  its operator, who grants it (` + "`xynolog identity grant`" + `).
 
   Printed as a JWK Set by default, which carries the key id each of the
   worker's assertions names (the key's RFC 7638 thumbprint). With --pem, the
@@ -48,7 +48,7 @@ key
 kb add
   Add a knowledge base someone else runs to the shared worker: its
   did:web domain, where its gateway is, and the client its operator granted
-  the worker key on. Its operator's ` + "`xynaut identity grant`" + ` prints
+  the worker key on. Its operator's ` + "`xynolog identity grant`" + ` prints
   this line, ready to run. The gateway names the issuer to sign in at, and add
   asks it now: a gateway that cannot be reached, or names no issuer, adds
   nothing. Adding a domain already added replaces it.
@@ -169,7 +169,7 @@ func workerKBAdd(u *UI, args []string) int {
 		return 1
 	}
 	if len(positional) != 1 {
-		u.Fail("add takes one domain, the knowledge base's: xynaut worker kb add <domain> --gateway <url> --client-id <id>")
+		u.Fail("add takes one domain, the knowledge base's: xynolog worker kb add <domain> --gateway <url> --client-id <id>")
 		return 1
 	}
 	domain := positional[0]
@@ -179,7 +179,7 @@ func workerKBAdd(u *UI, args []string) int {
 	}
 	gateway, clientID := flags["--gateway"], flags["--client-id"]
 	if gateway == "" || clientID == "" {
-		u.Fail("add needs --gateway <url> and --client-id <id>: what `xynaut identity grant` printed at the knowledge base.")
+		u.Fail("add needs --gateway <url> and --client-id <id>: what `xynolog identity grant` printed at the knowledge base.")
 		return 1
 	}
 	list, err := loadWorkerList()
@@ -229,7 +229,7 @@ func workerKBAdd(u *UI, args []string) int {
 		u.Ok("worker — added %s", u.Bold(domain))
 	}
 	printAddedKB(kb)
-	fmt.Fprintln(os.Stderr, "  The next `xynaut start` serves it.")
+	fmt.Fprintln(os.Stderr, "  The next `xynolog start` serves it.")
 	return 0
 }
 
@@ -239,7 +239,7 @@ func workerKBRemove(u *UI, args []string) int {
 		return 1
 	}
 	if len(positional) != 1 {
-		u.Fail("remove takes one domain, the knowledge base's: xynaut worker kb remove <domain>")
+		u.Fail("remove takes one domain, the knowledge base's: xynolog worker kb remove <domain>")
 		return 1
 	}
 	domain := positional[0]
@@ -251,7 +251,7 @@ func workerKBRemove(u *UI, args []string) int {
 	if _, local := list.local(domain); local {
 		if borrowers := list.borrowers(domain); len(borrowers) > 0 {
 			u.Fail("%s's engines are offered to %s, added from it.", domain, strings.Join(borrowers, ", "))
-			fmt.Fprintf(os.Stderr, "  Remove them first (xynaut worker kb remove <domain>), or add them again from another local knowledge base.\n")
+			fmt.Fprintf(os.Stderr, "  Remove them first (xynolog worker kb remove <domain>), or add them again from another local knowledge base.\n")
 			return 1
 		}
 		list.take(domain)
@@ -260,7 +260,7 @@ func workerKBRemove(u *UI, args []string) int {
 			return 1
 		}
 		u.Ok("worker — removed %s", u.Bold(domain))
-		fmt.Fprintln(os.Stderr, "  The worker stops serving it at the next `xynaut start`; a start of it puts it back.")
+		fmt.Fprintln(os.Stderr, "  The worker stops serving it at the next `xynolog start`; a start of it puts it back.")
 		return 0
 	}
 	at := slices.IndexFunc(list.Added, func(a addedKB) bool { return a.Domain == domain })
@@ -279,7 +279,7 @@ func workerKBRemove(u *UI, args []string) int {
 		return 1
 	}
 	u.Ok("worker — removed %s", u.Bold(domain))
-	fmt.Fprintln(os.Stderr, "  The worker stops serving it at the next `xynaut start`; its grant there stays until its operator revokes it.")
+	fmt.Fprintln(os.Stderr, "  The worker stops serving it at the next `xynolog start`; its grant there stays until its operator revokes it.")
 	return 0
 }
 

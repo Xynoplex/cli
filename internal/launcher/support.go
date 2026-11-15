@@ -27,7 +27,7 @@ const (
 )
 
 // UI is how a command speaks: to a person at a terminal, or, for a request of
-// `xynaut control`, as that request's progress (control.go).
+// `xynolog control`, as that request's progress (control.go).
 type UI struct {
 	quiet bool
 	color bool

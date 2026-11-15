@@ -1,6 +1,6 @@
 package verbs
 
-// The TypeScript server's bug, as cases `xynaut mcp` must not repeat (the
+// The TypeScript server's bug, as cases `xynolog mcp` must not repeat (the
 // user: "tool arguments are unvalidated, and it invents a 'Generated'
 // title"). A call is held to its tool's input schema, which is the spec's,
 // before anything is sent; a refusal names every fault; a value the caller

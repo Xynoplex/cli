@@ -12,7 +12,7 @@ import (
 )
 
 // workflowsDir: the Semiont service-image workflow fixtures. These are
-// source contracts, not xynaut workflows.
+// source contracts, not xynolog workflows.
 var workflowsDir = filepath.Join("..", "..", "testdata", "semiont-workflows")
 
 // actionsWorkflow: what a workflow file says about what its jobs attest.

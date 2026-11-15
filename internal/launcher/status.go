@@ -19,7 +19,7 @@ import (
 	xynoplex "github.com/Xynoplex/sdk/go"
 )
 
-const statusUsage = `Usage: xynaut status [--root <path|name>] [--repo <owner/name> [--refresh]] [--service <name>] [--runtime container|docker|podman] [--verbose] [--billing]
+const statusUsage = `Usage: xynolog status [--root <path|name>] [--repo <owner/name> [--refresh]] [--service <name>] [--runtime container|docker|podman] [--verbose] [--billing]
 
 Reports, by what each service is part of:
 
@@ -30,7 +30,7 @@ Reports, by what each service is part of:
                  issuer's line is its realm at the shared issuer, or an
                  issuer somebody else runs. Then how many KBs are known
                  (file:// clones the launcher has used, and https://
-                 codespace-hosted repos: xynaut roots)
+                 codespace-hosted repos: xynolog roots)
   ISSUER         the shared Keycloak and its PostgreSQL, which keep every
                  knowledge base's realm here
   KNOWLEDGE WORKERS
@@ -52,16 +52,16 @@ command that removes it).
 For every local service: the container state as the runtime reports it
 (running / exited / absent — across all installed runtimes unless --runtime
 narrows it), and a host-side application health probe (the same endpoints
-xynaut start gates on; a TCP dial for PostgreSQL). An Ollama serving from
+xynolog start gates on; a TCP dial for PostgreSQL). An Ollama serving from
 the host with no container is reported as runtime "host".
 
 Exit status: the default multi-stack report exits 0 whenever status itself
 ran — with several stacks, one code cannot speak for all of them. To script
 health, name ONE stack:
 
-  xynaut status --root <path|name>    && echo local-up
-  xynaut status --repo <owner/name>   && echo remote-up
-  xynaut status --service gateway     && echo gateway-up
+  xynolog status --root <path|name>    && echo local-up
+  xynolog status --repo <owner/name>   && echo remote-up
+  xynolog status --service gateway     && echo gateway-up
 
 Those forms exit 0 only when the named stack (or service) is healthy.
 
@@ -79,7 +79,7 @@ with a note, unless the codespace is already running.
 // "identity-store (PostgreSQL)".
 const serviceCell = 27
 
-// Status implements `xynaut status`.
+// Status implements `xynolog status`.
 //
 // The report follows the groups (serviceGroups): each knowledge base with its
 // own services, then a section for each group of the services they all
@@ -204,7 +204,7 @@ func Status(args []string) int {
 		// issuer (askRemoteKB).
 		st := reported.stacks[0]
 		if holder, busy := startInProgress(rootKey(st.KBDid, st.KBRoot)); busy {
-			u.Refuse(controlCodeStartInProgress, "A xynaut start is running for this KB (%s) — its stack is not ready yet.", holder)
+			u.Refuse(controlCodeStartInProgress, "A xynolog start is running for this KB (%s) — its stack is not ready yet.", holder)
 			return 1
 		}
 	}
@@ -688,7 +688,7 @@ func browserRow(ss *StackSet) statusRow {
 		r.rt = b.Runtime
 	}
 	if !p.Running && p.State == "" {
-		r.word, r.probe, r.hint = "absent", "", "any xynaut start brings it up (or: xynaut start --service browser)"
+		r.word, r.probe, r.hint = "absent", "", "any xynolog start brings it up (or: xynolog start --service browser)"
 		return r
 	}
 	if r.word == "" {
@@ -1076,16 +1076,16 @@ func printServiceRows(u *UI, views []stackView, service string, shared map[strin
 	return healthy
 }
 
-const rootsUsage = `Usage: xynaut roots
+const rootsUsage = `Usage: xynolog roots
 
 The full knowledge-base catalog: every KB this machine knows — file:// clones
 the launcher has used (roots.json), and https:// codespace-hosted repos with
-their state. The registry only remembers; drop an entry with xynaut forget.
+their state. The registry only remembers; drop an entry with xynolog forget.
 
   --help   Show this help
 `
 
-// Roots implements `xynaut roots` — the catalog, a verb of its own so that
+// Roots implements `xynolog roots` — the catalog, a verb of its own so that
 // it cannot push stack health out of status's view.
 func Roots(args []string) int {
 	u := NewUI(false)
@@ -1141,10 +1141,10 @@ func printRootsPointer(u *UI, locals, cs []*StackState) {
 		fmt.Printf("  %s\n", u.Dim("(none — cd into a KB clone, set SEMIONT_ROOT, start with --root, "+
 			"or --runtime codespace --repo <owner>/<name>)"))
 	} else {
-		fmt.Printf("  %d known — full catalog: %s\n", n, u.Bold("xynaut roots"))
+		fmt.Printf("  %d known — full catalog: %s\n", n, u.Bold("xynolog roots"))
 	}
 	// Each running local stack has its entry above. An active codespace
-	// stack is listed here, addressed exactly as its row in `xynaut roots`
+	// stack is listed here, addressed exactly as its row in `xynolog roots`
 	// (https://), so the jump from pointer to catalog is one glance. Active
 	// is a local fact: a codespace whose forward is alive AND answering
 	// (forwardAlive) — a record whose tunnel is gone is history, not
@@ -1165,7 +1165,7 @@ func printRootsPointer(u *UI, locals, cs []*StackState) {
 	}
 }
 
-// knownRoot: one local root xynaut roots lists, and each reason it lists it.
+// knownRoot: one local root xynolog roots lists, and each reason it lists it.
 type knownRoot struct {
 	path string
 	// current: how this command's directory selects it — "cwd" standing in
@@ -1233,7 +1233,7 @@ func knownRoots(locals []*StackState) (roots []*knownRoot, warning error) {
 	return roots, warning
 }
 
-// labels: why xynaut roots lists r, as it says it.
+// labels: why xynolog roots lists r, as it says it.
 func (r *knownRoot) labels() []string {
 	var out []string
 	switch r.current {
@@ -1316,7 +1316,7 @@ func printSessions(u *UI, ss *StackSet) {
 	u.Section("SESSIONS")
 	toks := LoadTokens()
 	if len(toks) == 0 {
-		fmt.Printf("  %s\n", u.Dim("(none — xynaut login)"))
+		fmt.Printf("  %s\n", u.Dim("(none — xynolog login)"))
 		return
 	}
 	keys := make([]string, 0, len(toks))
@@ -1350,7 +1350,7 @@ const (
 // sessionStateText: each state of a stored sign-in, as status says it.
 var sessionStateText = map[string]string{
 	sessionValid:      "valid",
-	sessionExpired:    "expired (auto-refreshes on next use, or xynaut login)",
+	sessionExpired:    "expired (auto-refreshes on next use, or xynolog login)",
 	sessionUnverified: "unverified (stack not reachable)",
 }
 
@@ -1479,7 +1479,7 @@ func printLauncherPaths(u *UI) {
 		all = fmt.Sprintf("1 knowledge base, %s on disk", humanBytes(total))
 	}
 	if n := len(orphanKeys); n > 0 {
-		all += fmt.Sprintf("; %d orphaned — KB root no longer exists; xynaut clean --root %s",
+		all += fmt.Sprintf("; %d orphaned — KB root no longer exists; xynolog clean --root %s",
 			n, strings.Join(orphanKeys, ", "))
 	}
 	row("all KBs", rootsDir, all)
@@ -1527,9 +1527,9 @@ func printKBPaths(u *UI, row func(label, path, note string), more func(string), 
 		}
 		switch {
 		case kept == 1:
-			more("and 1 kept secret (xynaut settings secret-store lists it)")
+			more("and 1 kept secret (xynolog settings secret-store lists it)")
 		case kept > 1:
-			more(fmt.Sprintf("and %d kept secrets (xynaut settings secret-store lists them)", kept))
+			more(fmt.Sprintf("and %d kept secrets (xynolog settings secret-store lists them)", kept))
 		}
 	}
 }
@@ -1605,7 +1605,7 @@ func containerState(runtimes []string, name string) (state, rt string) {
 // roleHealthy probes one role of the stack.
 //
 // The GATEWAY goes through the Go SDK. It is the only role in this table that
-// is a xynaut service with a generated client, and an application request to
+// is a xynolog service with a generated client, and an application request to
 // the gateway is the thing packages/go/sdk exists to own, never a hand-written
 // path here — as the TypeScript side covers it (`healthCheck` on
 // `IGatewayOperations`).

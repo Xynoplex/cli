@@ -1,6 +1,6 @@
 package verbs
 
-// beckon.go — `xynaut beckon`: draw a participant's attention to a
+// beckon.go — `xynolog beckon`: draw a participant's attention to a
 // resource or annotation. Fire-and-forget by design: beckon:focus is a
 // broadcast launcher.UI signal with no reply channel, so this verb reports what it
 // SENT, never that anyone saw it. Claiming delivery would be a lie the
@@ -16,10 +16,10 @@ import (
 	"github.com/Xynoplex/sdk/go/bus"
 )
 
-const beckonIDs = "xynaut beckon [options] -- <resourceId> [<annotationId>]"
+const beckonIDs = "xynolog beckon [options] -- <resourceId> [<annotationId>]"
 
-const beckonUsage = `Usage: xynaut beckon --resource <resourceId> [--annotation <id>] [--sparkle]
-       xynaut beckon <resourceId> [<annotationId>] [--sparkle]
+const beckonUsage = `Usage: xynolog beckon --resource <resourceId> [--annotation <id>] [--sparkle]
+       xynolog beckon <resourceId> [<annotationId>] [--sparkle]
 
 Draw attention to a resource (or one annotation in it) for anyone watching
 this KB in a Browser.
@@ -39,7 +39,7 @@ Options:
 ` + idsNote + `
   ` + beckonIDs + `
 
-Requires a session:  xynaut login
+Requires a session:  xynolog login
 
 This is a broadcast signal: it has no reply, so the command can confirm only
 that the signal was sent — not that a participant is watching.

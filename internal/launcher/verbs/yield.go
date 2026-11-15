@@ -1,6 +1,6 @@
 package verbs
 
-// yield.go — `xynaut yield --upload`: register local files as KB resources
+// yield.go — `xynolog yield --upload`: register local files as KB resources
 // through the SDK's yield namespace, and `--delegate`: generation from
 // gathered context, which rides the JOB lifecycle rather than a single
 // request/reply (see runYieldDelegate below).
@@ -20,7 +20,7 @@ import (
 	"github.com/Xynoplex/sdk/go/mediatypes"
 )
 
-const yieldUsage = `Usage: xynaut yield --upload <file> [--upload <file>...] [options]
+const yieldUsage = `Usage: xynolog yield --upload <file> [--upload <file>...] [options]
 
 Register local files as resources in a running stack's KB. Files must live
 under the KB root: the storage URI is repo-relative, and the content
@@ -34,8 +34,8 @@ Options:
   --runtime <rt>       Target a stack here
   --help               Show this help
 
-Requires a session:  xynaut login
-Generation from context: xynaut yield --delegate --help
+Requires a session:  xynolog login
+Generation from context: xynolog yield --delegate --help
 `
 
 func Yield(args []string) int {
@@ -161,7 +161,7 @@ options:
 		var request api.GenerationJobRequest
 		if err := jobParams(given, yieldJobFlags, &request, "--delegate"); err != nil {
 			u.Fail("%v", err)
-			fmt.Fprintln(os.Stderr, "  xynaut yield --delegate --help")
+			fmt.Fprintln(os.Stderr, "  xynolog yield --delegate --help")
 			return 1
 		}
 		rid, ok := parsed(u, "resource", resourceID, api.ParseResourceId)
@@ -301,10 +301,10 @@ func yieldOne(u *launcher.UI, c *launcher.VerbClient, root, up, name string) int
 			break
 		}
 		u.Fail("Gateway unreachable: %v", refusal)
-		fmt.Fprintln(os.Stderr, "  Is the stack up?  xynaut status")
+		fmt.Fprintln(os.Stderr, "  Is the stack up?  xynolog status")
 	default:
 		u.Fail("Gateway unreachable: %v", refusal)
-		fmt.Fprintln(os.Stderr, "  Is the stack up?  xynaut status")
+		fmt.Fprintln(os.Stderr, "  Is the stack up?  xynolog status")
 	}
 	return 1
 }
@@ -314,9 +314,9 @@ func yieldOne(u *launcher.UI, c *launcher.VerbClient, root, up, name string) int
 // Unlike the upload above, delegate is not one request and its reply: it
 // gathers context, creates a generation job, and follows it (job.go).
 
-const yieldIDs = "xynaut yield --delegate [options] -- <resourceId> [<annotationId>]"
+const yieldIDs = "xynolog yield --delegate [options] -- <resourceId> [<annotationId>]"
 
-const delegateUsage = `Usage: xynaut yield --delegate <resourceId> [<annotationId>] --storage-uri <file://…> [options]
+const delegateUsage = `Usage: xynolog yield --delegate <resourceId> [<annotationId>] --storage-uri <file://…> [options]
 
 Generate a new resource from gathered context: derived from a whole resource,
 or anchored to one annotation.
@@ -340,7 +340,7 @@ Options:
 ` + idsNote + `
   ` + yieldIDs + `
 
-Requires a session:  xynaut login
+Requires a session:  xynolog login
 `
 
 // yieldJobFlags: the flag that gives each parameter of a delegated yield's
@@ -404,7 +404,7 @@ func runYieldDelegate(u *launcher.UI, sess *launcher.Session, resourceID api.Res
 	params.Context = gathered
 	d := delegation{
 		verb: "yield --delegate", doing: "Generating", failed: "Generation",
-		check: "xynaut browse " + resourceID.String(),
+		check: "xynolog browse " + resourceID.String(),
 	}
 	done, ok := follow(u, c, d, c.Yield.Delegate(params, 0))
 	if !ok {

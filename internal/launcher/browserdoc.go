@@ -27,7 +27,7 @@ func browserDocumentPath() string {
 }
 
 // catalogBrowser: the Browser's document as the launcher writes it, from its
-// catalog, as `xynaut init` writes a knowledge base's.
+// catalog, as `xynolog init` writes a knowledge base's.
 func catalogBrowser() stack.Browser {
 	d := semiontDescriptor("browser")
 	return stack.Browser{

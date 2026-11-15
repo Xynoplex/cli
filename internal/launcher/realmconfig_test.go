@@ -6,7 +6,7 @@ import (
 	"github.com/Xynoplex/cli/internal/launcher/harness"
 )
 
-// The documented first run is `xynaut start` then `xynaut useradd`. It
+// The documented first run is `xynolog start` then `xynolog useradd`. It
 // refused on a healthy stack — "No config recorded for this root, so there is
 // no realm to administer. Start the stack first" — because it asked roots.json
 // for the sticky PREFERENCE, which a bare start deliberately never writes (an

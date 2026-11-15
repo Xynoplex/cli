@@ -138,7 +138,7 @@ func TestTheRealmRegistersTheWorkerByItsKey(t *testing.T) {
 	}
 }
 
-// What `xynaut worker key` prints for an issuer to register: one key, named
+// What `xynolog worker key` prints for an issuer to register: one key, named
 // by the thumbprint each assertion names, whose modulus and exponent are the
 // key's — and no private member.
 func TestTheWorkerKeySetNamesTheKeyByItsThumbprint(t *testing.T) {
@@ -188,7 +188,7 @@ func TestTheWorkerIsHandedItsKeyOffTheCommandLine(t *testing.T) {
 	}
 }
 
-// `xynaut worker key` prints the worker key — the one the realm holds — as
+// `xynolog worker key` prints the worker key — the one the realm holds — as
 // a key set, or with --pem as a PEM with its key id beside it, and never the
 // private half.
 func TestTheWorkerVerbPrintsThePublicKey(t *testing.T) {

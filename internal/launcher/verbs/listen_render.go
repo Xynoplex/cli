@@ -1,6 +1,6 @@
 package verbs
 
-// listen_render.go — the human half of `xynaut listen`.
+// listen_render.go — the human half of `xynolog listen`.
 //
 // One line per event, with whatever identifier the payload happens to carry,
 // is enough to follow a job and not enough to read a room. A tour guide

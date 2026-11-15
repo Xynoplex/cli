@@ -1,6 +1,6 @@
 package launcher
 
-// startlock.go — one `xynaut start` per KB root at a time.
+// startlock.go — one `xynolog start` per KB root at a time.
 //
 // Two starts on one root interleave destructively: each one's preflight sweeps
 // containers the other is about to use, and each recreates what the other
@@ -79,13 +79,13 @@ func acquireStartLock(u *UI, key string) bool {
 			return false
 		}
 		if !announced {
-			u.Log("Another xynaut start is running for this KB %s — waiting for it to finish",
+			u.Log("Another xynolog start is running for this KB %s — waiting for it to finish",
 				u.Dim("("+startLockHolder(p)+"; up to "+took(startLockBudget)+")"))
 			announced = true
 		}
 		if time.Since(t0) >= startLockBudget {
 			f.Close()
-			u.Refuse(controlCodeStartInProgress, "Another xynaut start has held this KB for %s (%s).", took(startLockBudget), startLockHolder(p))
+			u.Refuse(controlCodeStartInProgress, "Another xynolog start has held this KB for %s (%s).", took(startLockBudget), startLockHolder(p))
 			fmt.Fprintln(os.Stderr, "  If that process is gone, its lock went with it; if it is wedged, stop it and retry.")
 			return false
 		}
@@ -94,7 +94,7 @@ func acquireStartLock(u *UI, key string) bool {
 }
 
 // releaseStartLock lets go of the start lock this process holds, if any: a
-// process that outlives its start, xynaut control, would otherwise keep
+// process that outlives its start, xynolog control, would otherwise keep
 // every later start of the knowledge base waiting.
 func releaseStartLock() {
 	if heldStartLock != nil {

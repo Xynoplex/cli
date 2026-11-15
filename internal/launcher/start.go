@@ -79,12 +79,12 @@ type startOptions struct {
 	retention   string       // --retention-period: create-time only (codespace placement)
 }
 
-var startUsage = fmt.Sprintf(`Usage: xynaut start [options]
+var startUsage = fmt.Sprintf(`Usage: xynolog start [options]
 
 Start a local Semiont stack — the services and daemons the knowledge base's
 .semiont/stack/ documents describe, the Browser its own document describes
-(xynaut settings browser), and, for a knowledge base that names the shared
-issuer, the issuer its own document describes (xynaut settings issuer), with
+(xynolog settings browser), and, for a knowledge base that names the shared
+issuer, the issuer its own document describes (xynolog settings issuer), with
 the knowledge base's realm in it — all in containers.
 
 Options:
@@ -95,14 +95,14 @@ Options:
   --list-configs        List available configs and exit
   --root <path|name>    KB root to start: a directory (must contain .semiont/)
                         or the basename of a registered root (roots register on
-                        every real start; see xynaut status). Wins over
+                        every real start; see xynolog status). Wins over
                         SEMIONT_ROOT and cwd discovery.
   --service <name>      Start (restart) just this one service, leaving the rest
                         of the stack untouched:
                         %s.
                         Reads its own credential from this root's state;
                         OTel export is enabled iff the collector is up.
-  --group <name>        Start (restart) one group of services, as xynaut
+  --group <name>        Start (restart) one group of services, as xynolog
                         status names them:
                         %s.
                         What one of them needs that is not up starts first,
@@ -164,20 +164,20 @@ Environment:
 
 Examples:
   # Fully local with Ollama (default, no API key needed)
-  xynaut start
+  xynolog start
 
   # Anthropic cloud inference
   %s
-  xynaut start --config anthropic
+  xynolog start --config anthropic
 
   # First user, once the stack is up
-  xynaut useradd --email admin@example.com
+  xynolog useradd --email admin@example.com
 
   # See available configs
-  xynaut start --list-configs
+  xynolog start --list-configs
 `, listWrapped(roleList, 78, "                        "), listWrapped(groupList, 78, "                        "), setVarHint(systemName(), "ANTHROPIC_API_KEY", "<your-key>"))
 
-// Start implements `xynaut start`, saying what it does through u.
+// Start implements `xynolog start`, saying what it does through u.
 func Start(u *UI, args []string) int {
 	opts, usage, errMsg := parseStart(args)
 	if usage {
@@ -206,7 +206,7 @@ func Start(u *UI, args []string) int {
 		}
 	}
 	if !opts.dryRun {
-		u.Stamp("xynaut start")
+		u.Stamp("xynolog start")
 		// Materialize the Browser discovery view before anything mounts it:
 		// a --service browser on a fresh machine would otherwise mount a
 		// directory nothing has created yet.
@@ -242,13 +242,13 @@ func Start(u *UI, args []string) int {
 			if len(cs) > 1 {
 				u.RefuseChoosing(controlCodeTargetRequired, stackChoices(nil, cs), "%d codespace stacks are recorded — say which:", len(cs))
 				for _, c := range cs {
-					fmt.Fprintf(os.Stderr, "    xynaut start --runtime codespace --repo %s\n", c.Codespace.Repo)
+					fmt.Fprintf(os.Stderr, "    xynolog start --runtime codespace --repo %s\n", c.Codespace.Repo)
 				}
 				return 1
 			}
 			if !onPath("gh") {
 				u.Refuse(controlCodeDependencyUnavailable, "A codespace stack is recorded (per %s) but 'gh' is not on PATH.", statePath())
-				fmt.Fprintln(os.Stderr, "  Install the GitHub CLI, or forget the stack:  xynaut stop --delete")
+				fmt.Fprintln(os.Stderr, "  Install the GitHub CLI, or forget the stack:  xynolog stop --delete")
 				return 1
 			}
 			// Name the stack being resumed: the repo IS the identity, and the
@@ -320,7 +320,7 @@ func Start(u *UI, args []string) int {
 	if configNeeded && !opts.configSet {
 		if rec := recordedConfig(root); rec != "" {
 			opts.configName = rec
-			// Not "from last start": `xynaut init` records the config it
+			// Not "from last start": `xynolog init` records the config it
 			// wrote, so a KB's FIRST start reads this too. The banner says
 			// what is true of every case — this KB has a recorded config.
 			configFrom = "this KB's recorded config; override with --config"
@@ -418,7 +418,7 @@ func Start(u *UI, args []string) int {
 			u.Log("Using recorded stack's runtime: %s %s", u.Bold(rt), u.Dim("(per "+statePath()+")"))
 		} else if !opts.dryRun {
 			u.Fail("A recorded stack is running under %s (per %s).", recSt.Runtime, statePath())
-			fmt.Fprintln(os.Stderr, "  Stop it first (xynaut stop), or start with --runtime "+recSt.Runtime+".")
+			fmt.Fprintln(os.Stderr, "  Stop it first (xynolog stop), or start with --runtime "+recSt.Runtime+".")
 			return 1
 		}
 	}
@@ -601,7 +601,7 @@ func refuseOtherStacks(u *UI, ss *StackSet, kb kbRoot, st *stack.Stack, plan *la
 	}
 	if rec := localStack(ss, kb.key()); rec != nil && rec.KBRoot != kb.dir {
 		u.Fail("%s is running from %s (per %s), and a machine runs one copy of a knowledge base.", kb.ident.didWeb(), rec.KBRoot, statePath())
-		fmt.Fprintln(os.Stderr, "  Stop that copy first:  xynaut stop --root "+rec.KBRoot)
+		fmt.Fprintln(os.Stderr, "  Stop that copy first:  xynolog stop --root "+rec.KBRoot)
 		return true
 	}
 	for _, other := range localStacks(ss) {
@@ -615,9 +615,9 @@ func refuseOtherStacks(u *UI, ss *StackSet, kb kbRoot, st *stack.Stack, plan *la
 			u.Fail("%s's stack holds port %d, which this start claims for the %s (per %s).", other.KBRoot, c.port, c.label, statePath())
 			if plan != nil && c.port == plan.GatewayPort {
 				fmt.Fprintf(os.Stderr, "  It is this knowledge base's gateway port, committed in %s: give it a port of its own there,\n", st.Files.KnowledgeBase)
-				fmt.Fprintln(os.Stderr, "  or stop the other first:  xynaut stop --root "+other.KBRoot)
+				fmt.Fprintln(os.Stderr, "  or stop the other first:  xynolog stop --root "+other.KBRoot)
 			} else {
-				fmt.Fprintln(os.Stderr, "  Stop it first:  xynaut stop --root "+other.KBRoot)
+				fmt.Fprintln(os.Stderr, "  Stop it first:  xynolog stop --root "+other.KBRoot)
 			}
 			return true
 		}
@@ -641,7 +641,7 @@ func refuseSharedBroker(u *UI, kb kbRoot, st *stack.Stack) bool {
 	}
 	u.Fail("%v", planErr(st.Files.KnowledgeBase, "spec.messaging.external.servers",
 		"is %q, which %s names too: a broker serves one knowledge base", external.Servers, filepath.Join(other.Path, stack.Dir, stack.KnowledgeBaseFile)))
-	fmt.Fprintln(os.Stderr, "  Give one of them a broker of its own, or, if "+other.Path+" is gone for good:  xynaut forget "+other.Path)
+	fmt.Fprintln(os.Stderr, "  Give one of them a broker of its own, or, if "+other.Path+" is gone for good:  xynolog forget "+other.Path)
 	return true
 }
 
@@ -675,7 +675,7 @@ func runningFor(u *UI, kb kbRoot, rt string, plan *launchPlan) (func(role string
 // resolveUserEnv: the --env pairs of the user variables vars (the variables
 // the documents name, `fromEnv`), demanded where something reads them: a
 // service handed them, or the launcher reading them itself (secretsRead). The
-// environment always wins; a registered secret source (xynaut settings
+// environment always wins; a registered secret source (xynolog settings
 // secret) is consulted only for vars the environment doesn't provide, with the
 // reach announced BEFORE it happens. A dry run reaches for nothing. serving is
 // the worker's list a start leaves, and ownVars the variables the knowledge
@@ -698,7 +698,7 @@ func resolveUserEnv(u *UI, vars []string, dryRun bool, serving workerServing, ow
 				// discard the answer, since custody appends its own value
 				// after this one.
 				u.Fail("%s is registered as %s, but the launcher mints and keeps that value itself.", v, refDisplay(ref))
-				fmt.Fprintf(os.Stderr, "  Forget the source (xynaut settings secret rm %s), or export %s yourself.\n", v, v)
+				fmt.Fprintf(os.Stderr, "  Forget the source (xynolog settings secret rm %s), or export %s yourself.\n", v, v)
 				return nil, false
 			} else if ok {
 				if !requireProviderBin(u, ref) {
@@ -710,7 +710,7 @@ func resolveUserEnv(u *UI, vars []string, dryRun bool, serving workerServing, ow
 				var err error
 				if val, err = resolveSecret(ref); err != nil {
 					u.Fail("%s: %v.", v, err)
-					fmt.Fprintf(os.Stderr, "  Fix the source (xynaut settings secret set %s ...), or export %s yourself — the environment always wins.\n", v, v)
+					fmt.Fprintf(os.Stderr, "  Fix the source (xynolog settings secret set %s ...), or export %s yourself — the environment always wins.\n", v, v)
 					return nil, false
 				}
 			}
@@ -718,11 +718,11 @@ func resolveUserEnv(u *UI, vars []string, dryRun bool, serving workerServing, ow
 		if val == "" {
 			if kb, ok := serving.keyNamer(v); ok && !contains(ownVars, v) {
 				u.Fail("%s, which the shared worker serves, names the variable %s for an engine's key (fromEnv), and it is not set in the environment.", kb, v)
-				fmt.Fprintf(os.Stderr, "  Export it, register a secret source once (xynaut settings secret set %s), or stop serving it (xynaut worker kb remove %s).\n", v, kb)
+				fmt.Fprintf(os.Stderr, "  Export it, register a secret source once (xynolog settings secret set %s), or stop serving it (xynolog worker kb remove %s).\n", v, kb)
 				return nil, false
 			}
 			u.Fail("The knowledge base's documents name the variable %s (fromEnv), and it is not set in the environment.", v)
-			fmt.Fprintf(os.Stderr, "  Export it, or register a secret source once:  xynaut settings secret set %s\n", v)
+			fmt.Fprintf(os.Stderr, "  Export it, or register a secret source once:  xynolog settings secret set %s\n", v)
 			return nil, false
 		}
 		userEnv = append(userEnv, "--env", v+"="+val)
@@ -744,7 +744,7 @@ func startNetwork(u *UI, rt string, kb kbRoot, opts startOptions) (string, bool)
 	if rec := localStack(LoadStackSet(), kb.key()); opts.starts != nil && rec != nil && !opts.dryRun {
 		if (rec.LanAddr != "") != lan {
 			u.Fail("The network setting is %s, and the running stack was started otherwise.", networkSetting())
-			fmt.Fprintln(os.Stderr, "  Start the whole stack to change who reaches it: xynaut start")
+			fmt.Fprintln(os.Stderr, "  Start the whole stack to change who reaches it: xynolog start")
 			return "", false
 		}
 		return rec.LanAddr, true
@@ -754,7 +754,7 @@ func startNetwork(u *UI, rt string, kb kbRoot, opts startOptions) (string, bool)
 	}
 	if rt != "container" {
 		u.Fail("The network setting is lan, which is built for Apple container alone, and this start runs %s.", rt)
-		fmt.Fprintln(os.Stderr, "  Under Docker and Podman a stack answers every interface already. To start it here: xynaut settings network local")
+		fmt.Fprintln(os.Stderr, "  Under Docker and Podman a stack answers every interface already. To start it here: xynolog settings network local")
 		return "", false
 	}
 	if opts.dryRun {
@@ -773,7 +773,7 @@ func startNetwork(u *UI, rt string, kb kbRoot, opts startOptions) (string, bool)
 // it is plain HTTP — said at every such start.
 func printLANReach(u *UI, lan string, plan *launchPlan, e exposure) {
 	fmt.Println()
-	fmt.Printf("  %s\n", u.Wrap(AnsiBold+AnsiYellow, "Answering the network at "+lan+" (xynaut settings network lan):"))
+	fmt.Printf("  %s\n", u.Wrap(AnsiBold+AnsiYellow, "Answering the network at "+lan+" (xynolog settings network lan):"))
 	fmt.Printf("  Semiont KB         http://%s:%d\n", lan, plan.GatewayPort)
 	if rp := plan.Roles["identity"]; rp.Presence == presenceLauncher {
 		fmt.Printf("  Issuer             %s   %s\n", identityEndpoint(rp, e), u.Dim("(through the issuer proxy, which passes the realms of the knowledge bases running here alone)"))
@@ -924,7 +924,7 @@ const kbMountTarget = "/kb"
 //
 // jwt is the token-signing key — gateway-only, deliberately handed to no
 // other service: each presents its own account's token from the issuer and
-// never signs anything. No admin password rides in here: `xynaut useradd`
+// never signs anything. No admin password rides in here: `xynolog useradd`
 // administers the realm itself, so none sits in the container's inspectable
 // env.
 func gatewayArgs(key string, stage string, e exposure, clientSecret, jwt, img, mem string, port int, userEnv, otel []string, state ...string) []string {
@@ -1192,7 +1192,7 @@ func runStart(u *UI, rt, lan string, kb kbRoot, opts startOptions, userEnv []str
 	// and, with no --rm, stays VISIBLE: status shows it exited and its logs
 	// survive for diagnosis until the next start or stop sweeps it
 	// (fail-fast is the design; recovery is the in-container supervisor's).
-	u.Stamp("xynaut start: containers ready")
+	u.Stamp("xynolog start: containers ready")
 	fmt.Println()
 	fmt.Printf("%s  %s\n", u.Wrap(AnsiBold+AnsiGreen, "🚀 Semiont stack is up"), u.Dim("("+took(time.Since(t0))+")"))
 	fmt.Println()
@@ -1207,7 +1207,7 @@ func runStart(u *UI, rt, lan string, kb kbRoot, opts startOptions, userEnv []str
 	}
 	fmt.Printf("  Neo4j Browser      http://localhost:%d   %s\n", plan.AuxPorts("graph")[0].port, neo4jLogin)
 	if store, ok := custodyFor(u, kb.key()); ok {
-		fmt.Printf("  Secrets            %s   %s\n", store.describe(), u.Dim("(xynaut settings secret-store)"))
+		fmt.Printf("  Secrets            %s   %s\n", store.describe(), u.Dim("(xynolog settings secret-store)"))
 	}
 	// Shared, whichever start ran them: --no-observe leaves running
 	// ones alone.
@@ -1226,9 +1226,9 @@ func runStart(u *UI, rt, lan string, kb kbRoot, opts startOptions, userEnv []str
 	}
 	fmt.Println()
 	fmt.Printf("  Add a user:    %s\n", u.Bold(useraddHint("")))
-	fmt.Printf("  Check health:  %s\n", u.Bold("xynaut status"))
-	fmt.Printf("  Follow logs:   %s\n", u.Bold("xynaut logs"))
-	fmt.Printf("  Stop stack:    %s\n", u.Bold("xynaut stop"))
+	fmt.Printf("  Check health:  %s\n", u.Bold("xynolog status"))
+	fmt.Printf("  Follow logs:   %s\n", u.Bold("xynolog logs"))
+	fmt.Printf("  Stop stack:    %s\n", u.Bold("xynolog stop"))
 	fmt.Println()
 	return 0
 }
@@ -1424,7 +1424,7 @@ func describeProcs(pids []string) string {
 }
 
 // refuseDaemonCredentialNames: the daemon-credential names are the launcher's.
-// A document may not name one where it is read — `xynaut settings secret`
+// A document may not name one where it is read — `xynolog settings secret`
 // registrations are machine-wide, so a name cannot be the launcher's in one KB
 // and the user's in another — and an exported one is refused, not honoured,
 // for a daemon the launcher runs: it could only disagree with the store it was
@@ -1449,9 +1449,9 @@ func refuseDaemonCredentialNames(p placement) error {
 			where = "the machine's state dir"
 		}
 		if d.kept {
-			rotate = "run xynaut clean --store " + role
+			rotate = "run xynolog clean --store " + role
 			if plan.machineKeeps(role) {
-				rotate = "run xynaut clean --shared --store " + role
+				rotate = "run xynolog clean --shared --store " + role
 			}
 		}
 		for _, name := range names {

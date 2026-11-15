@@ -32,7 +32,7 @@ const weaverDocumentTarget = "/etc/semiont/weaver.json"
 // keeps its cursors, in its container's own temporary directory. ONE decider
 // for both documents. Never under the knowledge base's .semiont (ruled
 // 2026-10-21): a cursor is never a correctness input, so losing the file,
-// as every `xynaut start` does when it makes the container again, costs
+// as every `xynolog start` does when it makes the container again, costs
 // time and never correctness. The service mounts no state for it.
 func cursorsPath(service string) string {
 	return "/tmp/semiont/" + service + "-cursors.json"

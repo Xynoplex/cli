@@ -5,13 +5,13 @@ import (
 	"strings"
 )
 
-const aboutUsage = `Usage: xynaut about
+const aboutUsage = `Usage: xynolog about
 
-Show Xynaut's version, source links, image registry, and the container
+Show Xynolog's version, source links, image registry, and the container
 runtimes detected on this machine.
 `
 
-// About implements `xynaut about` — the identity card behind the header.
+// About implements `xynolog about` — the identity card behind the header.
 func About(args []string) int {
 	u := NewUI(false)
 	for _, a := range args {
@@ -25,7 +25,7 @@ func About(args []string) int {
 		}
 	}
 
-	fmt.Println(u.Bold("Xynoplex · xynaut"))
+	fmt.Println(u.Bold("Xynoplex · xynolog"))
 	fmt.Println()
 	fmt.Println("Xynoplex's command-line tool for running and managing local Semiont stacks.")
 	fmt.Println()
@@ -48,6 +48,6 @@ func About(args []string) int {
 	fmt.Println(u.Dim("This launcher runs the local Semiont stack — graph (Neo4j), vectors"))
 	fmt.Println(u.Dim("(Qdrant), inference (Ollama), identity-store (PostgreSQL), traces"))
 	fmt.Println(u.Dim("(Jaeger), and the Semiont gateway, worker, smelter, weaver, and Browser —"))
-	fmt.Println(u.Dim("by driving your container runtime directly. Try: xynaut start --help"))
+	fmt.Println(u.Dim("by driving your container runtime directly. Try: xynolog start --help"))
 	return 0
 }

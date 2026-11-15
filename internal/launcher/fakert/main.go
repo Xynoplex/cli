@@ -26,7 +26,7 @@
 //	FAKERT_OLLAMA_PULL_FAILS  /api/pull answers with an error
 //	FAKERT_SKIP_SERVE        host ports to leave unbound (crashed-after-start containers)
 //	FAKERT_RUN_HOLD          a container name, whose `run -d` parks, or a codespace name, whose
-//	                         `xynaut start` over ssh parks, until FAKERT_DIR/release-<name> exists,
+//	                         `xynolog start` over ssh parks, until FAKERT_DIR/release-<name> exists,
 //	                         after writing FAKERT_DIR/holding-<name> — a start held mid-flight
 //	FAKERT_REMOTE_STACK_READY_AFTER  the nth ssh stack-readiness probe is the first to answer READY,
 //	                         while the codespace's gateway already answers through its forward
@@ -159,7 +159,7 @@ func git(args []string) {
 		return
 	}
 	if len(args) >= 1 && (args[0] == "init" || args[0] == "add") {
-		// The birth flow (xynaut init): idempotent no-ops here — the argv
+		// The birth flow (xynolog init): idempotent no-ops here — the argv
 		// log is the observable.
 		return
 	}
@@ -302,7 +302,7 @@ func codespaceKeycloakPort(name string) string {
 //	FAKERT_GH_CS_SHUTTING_DOWN_LISTS  the first n `codespace list` calls report a Shutdown
 //	                        codespace as ShuttingDown — a stop GitHub has not finished
 //	FAKERT_GH_CS_KEYCLOAK_PORT  the port the codespace's Keycloak starts on (default 8080;
-//	                        an ssh `xynaut settings keycloak-port <n> && xynaut start` moves it)
+//	                        an ssh `xynolog settings keycloak-port <n> && xynolog start` moves it)
 //	FAKERT_GH_CS_ISSUER     an issuer the codespace does NOT run, advertised instead
 func ghCmd(args []string) {
 	joined := strings.Join(args, " ")
@@ -555,7 +555,7 @@ func ghCodespace(args []string, joined string) {
 		// several lines above the devcontainer's own announcement, which is
 		// why the launcher must print the run-up and not just the marker.
 		if os.Getenv("FAKERT_GH_HOOKS_FAIL") != "" {
-			fmt.Println("semiont-gateway  | JWT_SECRET is not set. `xynaut start` generates one per knowledge base and injects it; set JWT_SECRET explicitly to override.")
+			fmt.Println("semiont-gateway  | JWT_SECRET is not set. `xynolog start` generates one per knowledge base and injects it; set JWT_SECRET explicitly to override.")
 			fmt.Println("2026-01-01 00:00:02.000Z: Retry after fixing with:  bash .devcontainer/post-start.sh")
 			fmt.Println("2026-01-01 00:00:02.100Z: postStartCommand from devcontainer.json failed with exit code 1. Skipping any further user-provided commands.")
 			fmt.Println("2026-01-01 00:00:02.200Z: devcontainer process exited with exit code 1")
@@ -615,7 +615,7 @@ func ghCodespace(args []string, joined string) {
 			// only way to ask "is the stack up?" without destroying the
 			// forward while it is still coming up. Each call is tallied so a
 			// test can say "ready on the nth probe".
-			// The launcher's probe is `xynaut status … && echo READY ||
+			// The launcher's probe is `xynolog status … && echo READY ||
 			// echo WAIT`, so the sentinel — not the exit code — is the answer.
 			// A vanished sentinel is how it detects that ssh itself failed.
 			bumpRemoteProbe()
@@ -633,19 +633,19 @@ func ghCodespace(args []string, joined string) {
 		case strings.Contains(joined, ".semiont/config.yaml"):
 			fmt.Println(remoteKBConfig())
 		case strings.Contains(joined, "tar czf -"):
-			// `xynaut export --repo`: the codespace's KB, streamed as its tar
+			// `xynolog export --repo`: the codespace's KB, streamed as its tar
 			// writes it, without .git when the command excludes it.
 			if err := writeRemoteKB(os.Stdout, !strings.Contains(joined, "--exclude=./.git")); err != nil {
 				fmt.Fprintf(os.Stderr, "fakert gh ssh: %v\n", err)
 				os.Exit(1)
 			}
-		case strings.Contains(joined, "xynaut start"):
+		case strings.Contains(joined, "xynolog start"):
 			// The codespace's own launcher, rerun with the issuer on a new
 			// port: it records it, and the gateway advertises it afterwards.
 			// Held, it is the window in which the laptop's allocated port can
 			// be taken by something else.
 			holdIfNamed(codespaceArg(args))
-			if m := regexp.MustCompile(`xynaut settings keycloak-port (\d+)`).FindStringSubmatch(joined); m != nil {
+			if m := regexp.MustCompile(`xynolog settings keycloak-port (\d+)`).FindStringSubmatch(joined); m != nil {
 				if dir := os.Getenv("FAKERT_DIR"); dir != "" {
 					_ = os.WriteFile(filepath.Join(dir, "cs-keycloak-port-"+codespaceArg(args)), []byte(m[1]), 0o644)
 				}
@@ -655,7 +655,7 @@ func ghCodespace(args []string, joined string) {
 			fmt.Println("🚀 Semiont stack is up  (70s)")
 			fmt.Println("  Semiont Browser    http://localhost:3000")
 			fmt.Println("  Semiont KB         http://localhost:4000")
-		case strings.Contains(joined, "xynaut useradd"):
+		case strings.Contains(joined, "xynolog useradd"):
 			// The remote side is a SHELL, so echo back what the shell would
 			// actually receive — that is what proves quoting works.
 			fmt.Println("remote-cmd: " + args[len(args)-1])
@@ -1342,7 +1342,7 @@ func runtimeCmd(base string, args []string) {
 		//   list / ps            "which runtime is the stack on?" — answered on
 		//                        FAKERT_STACK_RUNTIME's runtime alone, by the
 		//                        containers scripted as running.
-		//   list -a / ps -a      "which xynaut containers EXIST here?" — the
+		//   list -a / ps -a      "which xynolog containers EXIST here?" — the
 		//                        teardown's question. Answered from
 		//                        stateVar's scripts, the same source `inspect`
 		//                        uses, so the fake cannot tell the launcher a
@@ -1387,7 +1387,7 @@ func runtimeCmd(base string, args []string) {
 		fmt.Println(name + " out")
 		fmt.Fprintln(os.Stderr, name+" err")
 	case "exec":
-		// The launcher's useradd bridge: exec <handle> xynaut useradd <args…>.
+		// The launcher's useradd bridge: exec <handle> xynolog useradd <args…>.
 		// Drain stdin and record it: the password crosses THERE, never in argv,
 		// so a test can only prove the secret arrived by reading what the pipe
 		// carried. Draining also keeps the writer from seeing EPIPE.
@@ -2685,7 +2685,7 @@ func serveOn(container string, routes func(string) bool, listeners []net.Listene
 					// Only a real device-authorization request is recorded. The
 					// identity preflight also probes this endpoint, sending
 					// `client_id` alone — recording that too would overwrite what
-					// `xynaut login` wrote and the login assertions would read
+					// `xynolog login` wrote and the login assertions would read
 					// the probe instead of the grant.
 					if dir := os.Getenv("FAKERT_DIR"); dir != "" && r.PostForm.Get("scope") != "" {
 						_ = os.WriteFile(filepath.Join(dir, "device-auth.txt"), []byte(r.PostForm.Encode()+"\n"), 0o644)

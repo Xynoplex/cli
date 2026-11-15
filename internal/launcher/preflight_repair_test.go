@@ -10,7 +10,7 @@ import (
 
 // The refusal must name the repair that applies to THIS issuer.
 //
-// `xynaut identity sync` reaches a realm the launcher runs and nothing else:
+// `xynolog identity sync` reaches a realm the launcher runs and nothing else:
 // it needs the admin password this root persisted, and it reconciles the
 // accounts this root's realm would import. Offering it for an issuer somebody else runs sends an
 // operator to a command that cannot help them; withholding it for a realm the
@@ -40,7 +40,7 @@ func TestPreflightIdentityNamesTheRepairForThisIssuer(t *testing.T) {
 		{
 			name:    "a realm this launcher runs",
 			managed: true,
-			want:    []string{"semiont-dispatcher", "xynaut identity sync", "xynaut start"},
+			want:    []string{"semiont-dispatcher", "xynolog identity sync", "xynolog start"},
 			// The foreign-issuer instructions are noise here: there is no
 			// client for the operator to create by hand.
 			absent: []string{"SEMIONT_OIDC_CLIENT_SECRET_"},
@@ -51,7 +51,7 @@ func TestPreflightIdentityNamesTheRepairForThisIssuer(t *testing.T) {
 			want:    []string{"semiont-dispatcher", "SEMIONT_OIDC_CLIENT_SECRET_"},
 			// Naming sync here would send them to a command that cannot
 			// reach their realm and would fail on the missing admin password.
-			absent: []string{"xynaut identity sync"},
+			absent: []string{"xynolog identity sync"},
 		},
 	} {
 		t.Run(tc.name, func(t *testing.T) {
@@ -78,7 +78,7 @@ func TestPreflightIdentityNamesTheRepairForThisIssuer(t *testing.T) {
 // A job:claim is authorized by the worker role: a worker whose token lacks it
 // authenticates perfectly and can never claim a job. The refusal must say which
 // client and what it cannot do, and — for a realm this launcher runs — that
-// `xynaut identity sync` reconciles the client's roles mapper, then `xynaut
+// `xynolog identity sync` reconciles the client's roles mapper, then `xynolog
 // start`. For an issuer somebody else runs the role is theirs to grant, and
 // sync must not be named. (The worker's client id carries the role string, so
 // the text is asserted on "claim", not on the role.)
@@ -100,13 +100,13 @@ func TestPreflightIdentityNamesTheRepairForARoleLessWorker(t *testing.T) {
 		{
 			name:    "a realm this launcher runs",
 			managed: true,
-			want:    []string{serviceClientID("worker"), "claim", "xynaut identity sync", "xynaut start"},
+			want:    []string{serviceClientID("worker"), "claim", "xynolog identity sync", "xynolog start"},
 		},
 		{
 			name:    "an issuer somebody else runs",
 			managed: false,
 			want:    []string{serviceClientID("worker"), "claim"},
-			absent:  []string{"xynaut identity sync"},
+			absent:  []string{"xynolog identity sync"},
 		},
 	} {
 		t.Run(tc.name, func(t *testing.T) {
@@ -134,7 +134,7 @@ func TestPreflightIdentityNamesTheRepairForARoleLessWorker(t *testing.T) {
 // launcher runs — it knows the key, as it never knows a secret — so the
 // paragraph sending the operator to delete a client with a different secret
 // does not apply. At an issuer somebody else runs, the operator registers the
-// key `xynaut worker key` prints; no secret is theirs to supply.
+// key `xynolog worker key` prints; no secret is theirs to supply.
 func TestPreflightIdentityNamesTheRepairForARefusedWorkerKey(t *testing.T) {
 	srv := stubIssuer(t, func(clientID string) (int, string) {
 		if clientID == serviceClientID("worker") {
@@ -152,14 +152,14 @@ func TestPreflightIdentityNamesTheRepairForARefusedWorkerKey(t *testing.T) {
 		{
 			name:    "a realm this launcher runs",
 			managed: true,
-			want:    []string{serviceClientID("worker"), "xynaut identity sync", "the worker's key", "xynaut start"},
+			want:    []string{serviceClientID("worker"), "xynolog identity sync", "the worker's key", "xynolog start"},
 			absent:  []string{"DIFFERENT secret", "SEMIONT_OIDC_CLIENT_SECRET_"},
 		},
 		{
 			name:    "an issuer somebody else runs",
 			managed: false,
-			want:    []string{serviceClientID("worker"), "signed-JWT", "xynaut worker key"},
-			absent:  []string{"xynaut identity sync", "SEMIONT_OIDC_CLIENT_SECRET_"},
+			want:    []string{serviceClientID("worker"), "signed-JWT", "xynolog worker key"},
+			absent:  []string{"xynolog identity sync", "SEMIONT_OIDC_CLIENT_SECRET_"},
 		},
 	} {
 		t.Run(tc.name, func(t *testing.T) {

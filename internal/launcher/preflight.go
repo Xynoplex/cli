@@ -264,7 +264,7 @@ func verifyBrowserOrigin(issuerBase string, port int) (publicClientFinding, bool
 	return publicClientFinding{
 		clientID: xynoplex.BrowserClientID,
 		reason:   fmt.Sprintf("the realm will not accept a token exchange from %s (no Access-Control-Allow-Origin)", origin),
-		fix:      fmt.Sprintf("its web origins do not name the Browser's origin — a realm created before this was fixed derives them from the portless loopback redirects, which drops the port. Run `xynaut identity sync`; sign-in at %s would fail after a redirect that worked", origin),
+		fix:      fmt.Sprintf("its web origins do not name the Browser's origin — a realm created before this was fixed derives them from the portless loopback redirects, which drops the port. Run `xynolog identity sync`; sign-in at %s would fail after a redirect that worked", origin),
 	}, true
 }
 
@@ -332,7 +332,7 @@ func verifyPublicClients(issuerBase string, browserPort int) []publicClientFindi
 		findings = append(findings, publicClientFinding{
 			clientID: xynoplex.ScriptClientID,
 			reason:   "the issuer publishes no device_authorization_endpoint",
-			fix:      "`xynaut login` cannot work against this issuer",
+			fix:      "`xynolog login` cannot work against this issuer",
 		})
 	} else {
 		switch code, oauthErr, err := deviceGrantProbe(eps.device, xynoplex.ScriptClientID); {
@@ -391,7 +391,7 @@ func verifyPublicClients(issuerBase string, browserPort int) []publicClientFindi
 					clientID: xynoplex.BrowserClientID,
 					warnOnly: true,
 					reason:   fmt.Sprintf("the realm pins the Browser to a port: it redirects to %s and to no other", probeRedirect),
-					fix:      "another port in the Browser's document will not work: this realm predates the portless loopback redirect (RFC 8252 §7.3). Run `xynaut identity sync`, or add `http://localhost/*` to the client",
+					fix:      "another port in the Browser's document will not work: this realm predates the portless loopback redirect (RFC 8252 §7.3). Run `xynolog identity sync`, or add `http://localhost/*` to the client",
 				})
 			}
 			// PKCE must be REQUIRED, not merely supported. A realm that
@@ -584,7 +584,7 @@ type oidcEndpoints struct {
 // it.
 //
 // Only `token_endpoint` is required. An issuer that publishes no device
-// endpoint cannot serve `xynaut login`, but that is a finding for the check
+// endpoint cannot serve `xynolog login`, but that is a finding for the check
 // that needs it to report, not a reason discovery itself fails.
 func discoverEndpoints(issuerBase string) (oidcEndpoints, error) {
 	base := strings.TrimSuffix(issuerBase, "/")

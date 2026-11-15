@@ -1,7 +1,7 @@
 package launcher
 
 // kbsessions.go — the knowledge bases a long-lived front end serves
-// (`xynaut mcp`), and one session for each, held across its calls. A verb's
+// (`xynolog mcp`), and one session for each, held across its calls. A verb's
 // Session belongs to one command: a session the SDK reports over ends the
 // command. Here it ends one call: the session is dropped, and the next call
 // for that knowledge base resumes it from the sign-in store, which the SDK
@@ -29,7 +29,7 @@ type KnowledgeBase struct {
 	Root string
 	// Repo is a codespace knowledge base's repository.
 	Repo string
-	// SignedInAs is whom `xynaut login` signed in: the address their token
+	// SignedInAs is whom `xynolog login` signed in: the address their token
 	// named, empty when it named none.
 	SignedInAs string
 	// Renews: the sign-in holds a refresh token.

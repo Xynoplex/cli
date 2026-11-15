@@ -55,7 +55,7 @@ const (
 	//
 	// Pinned rather than left to Keycloak's default so the window is a decision
 	// somebody made and can read back, not a value that moves with a Keycloak
-	// upgrade. `xynaut init` writes it into the KnowledgeBase document's
+	// upgrade. `xynolog init` writes it into the KnowledgeBase document's
 	// spec.issuer.shared.accessTokenLifespan, where a knowledge base that wants
 	// a different one changes it.
 	keycloakAccessTokenLifespan = 300
@@ -134,7 +134,7 @@ func sharedKeycloakBase(ss *StackSet) string {
 func sharedKeycloakAdmin(u *UI, ss *StackSet) (base, password, source string, ok bool) {
 	if base = sharedKeycloakBase(ss); base == "" {
 		u.Fail("The shared Keycloak is not running, so its admin API cannot be reached.")
-		fmt.Fprintln(os.Stderr, "  Start a knowledge base that names it (spec.issuer.shared):  xynaut start")
+		fmt.Fprintln(os.Stderr, "  Start a knowledge base that names it (spec.issuer.shared):  xynolog start")
 		return "", "", "", false
 	}
 	if password, source, ok = keycloakAdminPassword(u); !ok {
@@ -142,7 +142,7 @@ func sharedKeycloakAdmin(u *UI, ss *StackSet) (base, password, source string, ok
 	}
 	if password == "" {
 		u.Fail("No bootstrap admin password is kept for the shared Keycloak, so the admin API cannot be reached.")
-		fmt.Fprintln(os.Stderr, "  It is written on a successful `xynaut start`; export KC_BOOTSTRAP_ADMIN_PASSWORD if the realm was created elsewhere.")
+		fmt.Fprintln(os.Stderr, "  It is written on a successful `xynolog start`; export KC_BOOTSTRAP_ADMIN_PASSWORD if the realm was created elsewhere.")
 		return "", "", "", false
 	}
 	return base, password, source, true
@@ -206,11 +206,11 @@ func serviceRolesClaim(svc string) string {
 // serviceRoleMapperName: the roles mapper on every service client, under the
 // name the admin API lists it by — how `identity sync` finds it on a client
 // that already exists.
-const serviceRoleMapperName = "xynaut service role"
+const serviceRoleMapperName = "xynolog service role"
 
 // agentKindMapperName: the mapper stamping kindClaim on every service client,
 // under the name the admin API lists it by.
-const agentKindMapperName = "xynaut agent kind"
+const agentKindMapperName = "xynolog agent kind"
 
 // serviceAccountClient: a confidential client that can obtain a token for
 // ITSELF (the client-credentials grant) and nothing else — no browser flow, no
@@ -336,7 +336,7 @@ func natsConfString(text string) string {
 }
 
 // browserClient / cliClient: the two PUBLIC registrations, rendered once so
-// the realm's creation and `xynaut identity sync` cannot disagree about them: a
+// the realm's creation and `xynolog identity sync` cannot disagree about them: a
 // second copy for sync would be a mirror of the realm document, and the
 // loopback rule below is exactly the kind of detail a second copy loses.
 //
@@ -372,7 +372,7 @@ func browserClient(audience string, browserPort int) map[string]any {
 // issuer, so that POST is rejected and sign-in dies as `error=Verification`.
 //
 // The port is the one the Browser's document names, so editing it moves the
-// origin. A realm is created once and pins the port it was created with; `xynaut
+// origin. A realm is created once and pins the port it was created with; `xynolog
 // identity sync` adds the document's when absent, which is what makes a move
 // repairable. It removes nothing: an origin somebody added is theirs.
 func loopbackWebOrigins(browserPort int) []string {
@@ -393,7 +393,7 @@ func loopbackWebOrigins(browserPort int) []string {
 // port then produces a healthy stack nobody can sign in to.
 //
 // This rule governs the REDIRECT leg only; loopbackWebOrigins states the
-// opposite for CORS origins and says why. `xynaut identity sync` adds these
+// opposite for CORS origins and says why. `xynolog identity sync` adds these
 // when absent rather than replacing the list: removing nothing is what makes
 // sync safe to run against a realm someone has customised.
 func loopbackRedirectUris() []string {
@@ -418,7 +418,7 @@ func cliClient(audience string) map[string]any {
 //
 // A realm Keycloak holds is left as it is, so a second start changes nothing —
 // including the values here. A deployment whose realm predates a change to this
-// function keeps the settings it was created with; `xynaut identity sync`
+// function keeps the settings it was created with; `xynolog identity sync`
 // reconciles clients, roles, redirect URIs, web origins and lifetime, and the
 // rest is a console or admin-API job, not a restart.
 func keycloakRealmJSON(realm, audience string, browserPort, accessTokenLifespan int, accounts realmAccounts) []byte {

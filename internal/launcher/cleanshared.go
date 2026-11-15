@@ -1,6 +1,6 @@
 package launcher
 
-// cleanshared.go — `xynaut clean --shared`: a store the machine keeps for
+// cleanshared.go — `xynolog clean --shared`: a store the machine keeps for
 // every knowledge base here, removed with all they keep in it.
 
 import (
@@ -29,18 +29,18 @@ var sharedStores = map[string]sharedStore{
 		uses:      func(st *StackState) bool { return st.signsInAtSharedIssuer() },
 		users:     "signs in at the shared issuer",
 		mountedBy: []string{"identity", "identity-store"},
-		stop:      "xynaut stop --group issuer",
+		stop:      "xynolog stop --group issuer",
 	},
 	"vectors": {
 		keeps:     "the index of every knowledge base naming the shared Qdrant",
 		uses:      func(st *StackState) bool { return machineServes(st, "vectors") },
 		users:     "keeps its index in the shared Qdrant",
 		mountedBy: []string{"vectors"},
-		stop:      "xynaut stop --service vectors",
+		stop:      "xynolog stop --service vectors",
 	},
 }
 
-// cleanShared: `xynaut clean --shared --store <store>` — a store the
+// cleanShared: `xynolog clean --shared --store <store>` — a store the
 // machine keeps (sharedStores), and what every knowledge base keeps in it.
 // Refused while a recorded stack uses the store, or while a record says a
 // container that mounts it runs: the asymmetry a root's clean keeps (Clean).
@@ -52,7 +52,7 @@ func cleanShared(u *UI, store string, dryRun bool) int {
 	if !ok {
 		u.Fail("--shared names a store the machine keeps: %s.", strings.Join(slices.Sorted(maps.Keys(sharedStores)), " or "))
 		for _, name := range slices.Sorted(maps.Keys(sharedStores)) {
-			fmt.Fprintln(os.Stderr, "  xynaut clean --shared --store "+name)
+			fmt.Fprintln(os.Stderr, "  xynolog clean --shared --store "+name)
 		}
 		return 1
 	}
@@ -69,7 +69,7 @@ func cleanShared(u *UI, store string, dryRun bool) int {
 	for _, st := range localStacks(ss) {
 		if shared.uses(st) {
 			u.Fail("A recorded stack %s (per %s).", shared.users, statePath())
-			fmt.Fprintln(os.Stderr, "  Stop it first: xynaut stop --root "+st.KBRoot)
+			fmt.Fprintln(os.Stderr, "  Stop it first: xynolog stop --root "+st.KBRoot)
 			return 1
 		}
 	}

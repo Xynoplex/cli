@@ -1,6 +1,6 @@
 package launcher
 
-// The device grant's terminal side: what `xynaut login` shows a person, and
+// The device grant's terminal side: what `xynolog login` shows a person, and
 // what it declines to do when nobody is watching.
 
 import (
@@ -13,7 +13,7 @@ import (
 	xynoplex "github.com/Xynoplex/sdk/go"
 )
 
-// `xynaut login` shows the one-time code AND the verification URI, always,
+// `xynolog login` shows the one-time code AND the verification URI, always,
 // and only then — on a terminal — offers to open the page. The shape is
 // `gh auth login`'s; what differs is that neither piece of information is
 // gated on detecting a terminal, because a person whose browser does not open

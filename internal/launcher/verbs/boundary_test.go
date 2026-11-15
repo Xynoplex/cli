@@ -40,7 +40,7 @@ var allowedLauncherSurface = map[string]bool{
 	"CwdKBRoot": true, "StackBase": true, "StackKey": true,
 	// The Browser a verb hands off to.
 	"BrowserProbe": true, "BrowserTarget": true,
-	// `xynaut mcp`: the knowledge bases signed in to, one session for each held
+	// `xynolog mcp`: the knowledge bases signed in to, one session for each held
 	// across calls, why one cannot be reached, and the version it names itself
 	// by to its client.
 	"SignedInKnowledgeBases": true, "Sessions": true, "NewSessions": true,

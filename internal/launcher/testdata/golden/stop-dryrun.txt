@@ -1,4 +1,4 @@
-# xynaut stop --dry-run — the exact runtime commands a real run would
+# xynolog stop --dry-run — the exact runtime commands a real run would
 # execute, in order.
 # snapshot container logs into <state-root>/logs/<timestamp>/ before removal
 container stop semiont-example.github.io-test-kb-weaver

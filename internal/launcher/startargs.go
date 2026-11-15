@@ -1,6 +1,6 @@
 package launcher
 
-// startargs.go — `xynaut start`'s command line, turned into options or into
+// startargs.go — `xynolog start`'s command line, turned into options or into
 // the refusal an operator sees.
 //
 // Split from Start, where it was 190 of 543 lines. These are RULES, not

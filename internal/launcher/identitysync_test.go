@@ -15,7 +15,7 @@ import (
 	xynoplex "github.com/Xynoplex/sdk/go"
 )
 
-// `xynaut identity sync` — the repair the identity preflight's refusals name.
+// `xynolog identity sync` — the repair the identity preflight's refusals name.
 //
 // The preflight says "this realm has no semiont-weaver client"; sync is what
 // adds it. These drive a STUB admin API for the same reason the preflight
@@ -366,7 +366,7 @@ func TestAdminLoginRefusalsSayWhichRefusal(t *testing.T) {
 	if err == nil {
 		t.Fatal("want an error when the master realm demands HTTPS")
 	}
-	for _, want := range []string{"HTTPS required", "xynaut start"} {
+	for _, want := range []string{"HTTPS required", "xynolog start"} {
 		if !strings.Contains(err.Error(), want) {
 			t.Errorf("an HTTPS refusal should say %q, got: %v", want, err)
 		}
@@ -437,7 +437,7 @@ func serviceClientRep(svc, rolesValue string) map[string]any {
 		for k, v := range m {
 			rep[k] = v
 		}
-		if m["name"] == "xynaut service role" {
+		if m["name"] == "xynolog service role" {
 			cfg := map[string]string{}
 			for k, v := range m["config"].(map[string]string) {
 				cfg[k] = v
@@ -764,7 +764,7 @@ func TestIdentityVerbRejectsAnUnknownSubcommand(t *testing.T) {
 }
 
 func TestIdentityVerbWithNoArgumentsIsAnError(t *testing.T) {
-	// Printing usage and exiting 0 would make `xynaut identity` in a script
+	// Printing usage and exiting 0 would make `xynolog identity` in a script
 	// look like a successful reconciliation.
 	if code := Identity(nil); code != 1 {
 		t.Fatalf("exit %d for no subcommand, want 1", code)

@@ -7,7 +7,7 @@ import (
 	"unicode/utf8"
 )
 
-// Every preference the launcher saves is a setting `xynaut settings` lists,
+// Every preference the launcher saves is a setting `xynolog settings` lists,
 // or is named as the registry's own bookkeeping: the listing is a census. A
 // field added to the registry without either fails here, so a new preference
 // cannot be saved where no one can see it.
@@ -36,7 +36,7 @@ func TestEverySavedPreferenceIsASetting(t *testing.T) {
 }
 
 // Nothing the launcher prints names a top-level `secret` verb: it lives under
-// `settings`, with no alias, so a message that says `xynaut secret` sends a
+// `settings`, with no alias, so a message that says `xynolog secret` sends a
 // person to a command that does not exist.
 
 // A value and its explanation are never one space apart: the value either

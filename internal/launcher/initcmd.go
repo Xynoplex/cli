@@ -1,6 +1,6 @@
 package launcher
 
-// initcmd.go — `xynaut init`: birth a KB locally with correct identity AT
+// initcmd.go — `xynolog init`: birth a KB locally with correct identity AT
 // birth (the template path assigns identity by post-fork rewrite — a
 // workaround this command exists to not need). Identity + .semiont/config.yaml +
 // git + roots, the generative stack-document builder with a derivePlan vet
@@ -17,7 +17,7 @@ import (
 	"github.com/Xynoplex/cli/internal/launcher/stack"
 )
 
-const initUsage = `Usage: xynaut init [options]
+const initUsage = `Usage: xynolog init [options]
 
 Create a new Semiont KB in the current directory: its permanent identity
 (.semiont/config.yaml), a git repository (the /kb mount requires a clone), and a
@@ -56,17 +56,17 @@ With --yes and neither source, init refuses rather than guessing.
   --help, -h          Show this help
 `
 
-// defaultOllamaModel: the model a prompt-free `xynaut init` binds when the
+// defaultOllamaModel: the model a prompt-free `xynolog init` binds when the
 // caller names none. A CHOICE, not a derivation — no list-all registry API
 // exists to pick from — and deliberately the smallest thing that can serve a
 // first KB, so the pull a first start does is minutes rather than an evening.
 const defaultOllamaModel = "gemma3:270m"
 
-// defaultEmbeddingModel: the Ollama model `xynaut init` embeds with when the
+// defaultEmbeddingModel: the Ollama model `xynolog init` embeds with when the
 // caller names none.
 const defaultEmbeddingModel = "nomic-embed-text"
 
-// Init implements `xynaut init`.
+// Init implements `xynolog init`.
 func Init(args []string) int {
 	u := NewUI(false)
 	var name, domain, siteName string
@@ -236,7 +236,7 @@ func Init(args []string) int {
 	// provider that needs no credential, so it is what a bare `init --yes`
 	// gets — the alternative, writing no config at all and telling the
 	// user to add one, leaves the next line init itself prints
-	// (`xynaut start`) unable to run.
+	// (`xynolog start`) unable to run.
 	if inference == "" && yes && fromTemplate == "" {
 		inference = "ollama"
 	}
@@ -346,7 +346,7 @@ site:
 	}
 
 	if dryRun {
-		fmt.Println("# xynaut init --dry-run — what a real run would create. Nothing is written.")
+		fmt.Println("# xynolog init --dry-run — what a real run would create. Nothing is written.")
 		if reborn {
 			fmt.Println("# remove the existing .semiont/ (--force)")
 		}
@@ -450,7 +450,7 @@ site:
 	}
 
 	// Template materialization is a reach that can fail — do it before the
-	// first .xynaut write too.
+	// first .xynolog write too.
 	var tplDir string
 	if fromTemplate != "" || devcontainer {
 		src := fromTemplate
@@ -482,7 +482,7 @@ site:
 	}
 
 	if noGit {
-		u.Warn("--no-git: git init is skipped, git.sync = false, and .semiont/ is not staged — xynaut start requires a git clone, so this KB cannot run the full stack until it becomes a clone.")
+		u.Warn("--no-git: git init is skipped, git.sync = false, and .semiont/ is not staged — xynolog start requires a git clone, so this KB cannot run the full stack until it becomes a clone.")
 	}
 	startedWriting = true
 	if reborn {
@@ -539,7 +539,7 @@ site:
 	}
 
 	// The Inference document this KB was BORN with is its preference —
-	// otherwise the very next command init prints, `xynaut start`, falls
+	// otherwise the very next command init prints, `xynolog start`, falls
 	// through to the launcher's `ollama-gemma`, which a born KB has no document
 	// for (it writes inference/<provider>.yaml). A copied template carries
 	// several and names none of them, so its preference stays empty.
@@ -561,14 +561,14 @@ site:
 	// read.
 	if inference == "anthropic" && os.Getenv("ANTHROPIC_API_KEY") == "" {
 		if _, registered := loadRoots().Secrets["ANTHROPIC_API_KEY"]; !registered {
-			fmt.Printf("    %d. %s\n", step, u.Bold("xynaut settings secret set ANTHROPIC_API_KEY"))
+			fmt.Printf("    %d. %s\n", step, u.Bold("xynolog settings secret set ANTHROPIC_API_KEY"))
 			step++
 		}
 	}
-	fmt.Printf("    %d. %s\n", step, u.Bold("xynaut start"))
+	fmt.Printf("    %d. %s\n", step, u.Bold("xynolog start"))
 	fmt.Println()
 	for _, l := range showSecretStoreSetting(u, kbRoot{dir: dir, ident: born}) {
-		fmt.Printf("  Secrets: %s %s\n", l.value, u.Dim("("+l.source+"; change with xynaut settings secret-store)"))
+		fmt.Printf("  Secrets: %s %s\n", l.value, u.Dim("("+l.source+"; change with xynolog settings secret-store)"))
 	}
 	return 0
 }

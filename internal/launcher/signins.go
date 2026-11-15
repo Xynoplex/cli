@@ -1,6 +1,6 @@
 package launcher
 
-// signins.go — the sign-in store, `xynaut login`'s sessions by stack key, in
+// signins.go — the sign-in store, `xynolog login`'s sessions by stack key, in
 // the launcher's state home: the Go SDK's store (semiont.SignInStore,
 // protocol/specs/src/sign-in-store), which every program that keeps a sign-in there
 // shares, under its lock.

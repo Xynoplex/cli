@@ -2,13 +2,13 @@ package verbs
 
 // The invisible session refresh, as EVERY verb gets it.
 //
-// `xynaut login` stores a short-lived access token and the refresh token that
+// `xynolog login` stores a short-lived access token and the refresh token that
 // renews it. A verb's session is the Go SDK's, held to the session table every
 // SDK runs (protocol/specs/src/session/cases.json): it asks the gateway who its token
 // is at its start, renews a token that has expired or that the gateway
 // refuses, goes on under the renewed token and keeps the rotation, and
 // forgets a sign-in the issuer will not renew. The user is sent back to
-// `xynaut login` only when the renewal itself fails, or the gateway refuses
+// `xynolog login` only when the renewal itself fails, or the gateway refuses
 // the token it renewed to.
 //
 // In process, over the SDK's real transport and session: the gateway is a
@@ -371,7 +371,7 @@ func TestBusVerbRenewsARejectedSessionAndGoesOn(t *testing.T) {
 	}
 	// A rejection that was put right is not reported as one.
 	for _, s := range []string{stdout, stderr} {
-		if strings.Contains(s, "rejected") || strings.Contains(s, "xynaut login") {
+		if strings.Contains(s, "rejected") || strings.Contains(s, "xynolog login") {
 			t.Errorf("a renewed session was still reported as rejected:\n%s", s)
 		}
 	}
@@ -417,7 +417,7 @@ func TestBusVerbReportsAKeptSignInWhenTheIssuerDoesNotAnswer(t *testing.T) {
 		}
 	})
 	harness.MustContainAll(t, "stderr", stderr, "browse", "could not be renewed", "is kept", "did not answer")
-	if strings.Contains(stderr, "xynaut login") {
+	if strings.Contains(stderr, "xynolog login") {
 		t.Errorf("a sign-in that is kept sent the user to log in again")
 	}
 	if _, still := kept(t); !still {
@@ -438,7 +438,7 @@ func TestBusVerbReportsRejectionWhenTheRefreshFails(t *testing.T) {
 	})
 	// The refusal names the verb, the rejection, WHY the renewal failed, and
 	// the one fix that applies.
-	harness.MustContainAll(t, "stderr", stderr, "browse", "session was rejected", "could not renew", "invalid_grant", "xynaut login")
+	harness.MustContainAll(t, "stderr", stderr, "browse", "session was rejected", "could not renew", "invalid_grant", "xynolog login")
 	// A renewal that failed earns nothing more: no second grant, and nothing
 	// sent after the refusal. The stored token is shown once to be asked
 	// about, and at most once on the stream, which the client opens with the
@@ -476,7 +476,7 @@ func TestBusVerbRefusedAfterASuccessfulRefreshSaysSo(t *testing.T) {
 	})
 	// The renewal WORKED; "could not renew" would contradict the refresh line
 	// just printed. This is the gateway refusing the account.
-	harness.MustContainAll(t, "stderr", stderr, "after a successful refresh", "xynaut login")
+	harness.MustContainAll(t, "stderr", stderr, "after a successful refresh", "xynolog login")
 	if strings.Contains(stderr, "could not renew") {
 		t.Errorf("claimed the refresh failed when it succeeded:\n%s", stderr)
 	}
@@ -505,7 +505,7 @@ func TestBusVerbWithNoRefreshTokenReportsRejection(t *testing.T) {
 			t.Errorf("browse must fail when the session is rejected and there is no refresh token")
 		}
 	})
-	harness.MustContainAll(t, "stderr", stderr, "session was rejected", "xynaut login")
+	harness.MustContainAll(t, "stderr", stderr, "session was rejected", "xynolog login")
 	if got := gateway.bearers(); len(got) != 1 {
 		t.Errorf("want the stored token shown once and nothing after, got %d bearer(s)", len(got))
 	}
@@ -572,7 +572,7 @@ func TestExpiredSessionWhoseRenewalFailsIsForgottenUntried(t *testing.T) {
 			t.Errorf("browse must fail when the stored token expired and cannot be renewed")
 		}
 	})
-	harness.MustContainAll(t, "stderr", stderr, "browse", "session was rejected", "could not renew", "expired", "xynaut login")
+	harness.MustContainAll(t, "stderr", stderr, "browse", "session was rejected", "could not renew", "expired", "xynolog login")
 	if n := gateway.times("", "token-1"); n != 0 {
 		t.Errorf("an expired token that could not be renewed was sent anyway (%d time(s))", n)
 	}
@@ -600,7 +600,7 @@ func TestExpiredSessionWhoseIssuerDoesNotAnswerIsKeptUntried(t *testing.T) {
 		}
 	})
 	harness.MustContainAll(t, "stderr", stderr, "could not be renewed", "is kept", "did not answer")
-	if strings.Contains(stderr, "xynaut login") {
+	if strings.Contains(stderr, "xynolog login") {
 		t.Errorf("a sign-in that is kept sent the user to log in again")
 	}
 	if n := gateway.times("", "token-1"); n != 0 {

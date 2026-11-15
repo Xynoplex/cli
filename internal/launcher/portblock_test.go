@@ -222,7 +222,7 @@ func TestABlockLeavesAnExternalDaemonWhereItsDocumentSays(t *testing.T) {
 	}
 }
 
-// `xynaut init` writes the lowest gateway port a block would place the
+// `xynolog init` writes the lowest gateway port a block would place the
 // gateway at that no other known root commits; a root that is gone, or whose
 // KnowledgeBase document does not hold, commits none, and the root being
 // initialized is not another.

@@ -1,6 +1,6 @@
 package verbs
 
-// mcp_jobs.go — a delegated job, as `xynaut mcp` answers it. A delegating
+// mcp_jobs.go — a delegated job, as `xynolog mcp` answers it. A delegating
 // tool (mark_delegate, yield_generate) waits for its job, sending its
 // progress as notifications when the client asked for them, and cancels the
 // job when the call is cancelled. job_status reads one later; jobAnswer is
@@ -85,7 +85,7 @@ func progressNotifier(ctx context.Context, call mcpCall) func(said string) {
 		steps++
 		err := call.request.Session.NotifyProgress(ctx, &mcp.ProgressNotificationParams{ProgressToken: token, Message: said, Progress: steps})
 		if err != nil {
-			fmt.Fprintf(os.Stderr, "xynaut mcp: a progress notification was not sent: %v\n", err)
+			fmt.Fprintf(os.Stderr, "xynolog mcp: a progress notification was not sent: %v\n", err)
 		}
 	}
 }

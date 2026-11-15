@@ -13,7 +13,7 @@ import (
 	"github.com/Xynoplex/sdk/go/xynoplextest"
 )
 
-// `xynaut yield --delegate`, in process against the faulty transport: it
+// `xynolog yield --delegate`, in process against the faulty transport: it
 // gathers the context, creates a yield job from it, and follows the job to
 // its end. The upload form sends bytes over the gateway's HTTP content route,
 // which the transport seam does not carry: it stays end-to-end, in

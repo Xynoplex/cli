@@ -1,9 +1,9 @@
 package verbs
 
-// mcp.go — `xynaut mcp`: the knowledge bases this machine signed in to, as
+// mcp.go — `xynolog mcp`: the knowledge bases this machine signed in to, as
 // MCP tools and resources, served over stdio to an AI application.
 //
-// Every tool acts as whoever `xynaut login` signed in, through a session
+// Every tool acts as whoever `xynolog login` signed in, through a session
 // that renews itself (launcher.Sessions), one for each knowledge base. The
 // tools are a curated set (mcp-tools.json); their schemas are the spec's
 // (mcp_tools_gen.go). A call is held to its tool's input schema before
@@ -32,12 +32,12 @@ import (
 	xynoplex "github.com/Xynoplex/sdk/go"
 )
 
-const mcpUsage = `Usage: xynaut mcp
+const mcpUsage = `Usage: xynolog mcp
 
-Serve the knowledge bases this machine has signed in to (xynaut login) to an
+Serve the knowledge bases this machine has signed in to (xynolog login) to an
 AI application, over MCP on stdin and stdout. The application runs it:
 
-  claude mcp add xynaut -- xynaut mcp
+  claude mcp add xynolog -- xynolog mcp
 
 Every tool acts as whoever signed in to the knowledge base it is for, through
 a session that renews itself. The knowledge_bases tool lists them; every other
@@ -67,11 +67,11 @@ func MCP(args []string) int {
 	defer sessions.Close()
 	server, err := newMCPServer(sessions)
 	if err != nil {
-		u.Fail("xynaut mcp: %v", err)
+		u.Fail("xynolog mcp: %v", err)
 		return 1
 	}
 	if err := server.Run(context.Background(), &mcp.IOTransport{Reader: os.Stdin, Writer: protocol}); err != nil {
-		u.Fail("xynaut mcp: %v", err)
+		u.Fail("xynolog mcp: %v", err)
 		return 1
 	}
 	return 0
@@ -305,9 +305,9 @@ func mcpFailure(call mcpCall, err error) string {
 // signInCommand is the command that signs in to the knowledge base key names.
 func signInCommand(key string) string {
 	if repo, isCodespace := strings.CutPrefix(key, "codespace:"); isCodespace {
-		return "xynaut login --repo " + repo
+		return "xynolog login --repo " + repo
 	}
-	return "xynaut login"
+	return "xynolog login"
 }
 
 // chosenKb is the knowledge base a call is for: the one its `kb` names, or,
@@ -330,7 +330,7 @@ func chosenKb(args json.RawMessage) (string, error) {
 	}
 	switch len(known) {
 	case 0:
-		return "", &mcpRefusal{"No knowledge base is signed in on this machine. Sign in: xynaut login"}
+		return "", &mcpRefusal{"No knowledge base is signed in on this machine. Sign in: xynolog login"}
 	case 1:
 		return known[0].Key, nil
 	}
@@ -360,7 +360,7 @@ func mcpSession(sessions *launcher.Sessions, key string) (*launcher.Session, err
 		_, command := unreachable.Remedy()
 		return nil, &mcpRefusal{fmt.Sprintf("%v, so %s cannot be reached. %s", unreachable, key, command)}
 	case errors.As(err, &noGateway):
-		return nil, &mcpRefusal{fmt.Sprintf("%v, so %s cannot be reached. Start it: xynaut start", noGateway, key)}
+		return nil, &mcpRefusal{fmt.Sprintf("%v, so %s cannot be reached. Start it: xynolog start", noGateway, key)}
 	case errors.As(err, &noSignIn):
 		return nil, &mcpRefusal{fmt.Sprintf("No one is signed in to %s. Sign in: %s", key, signInCommand(key))}
 	case errors.As(err, &rejected):

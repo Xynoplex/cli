@@ -1,6 +1,6 @@
 package launcher
 
-// `xynaut export`, in process: the durable KB directory as a plain tar.gz,
+// `xynolog export`, in process: the durable KB directory as a plain tar.gz,
 // with nothing derived and, by default, no .git.
 //
 // The pins are on what the archive CONTAINS and — more importantly — what it
@@ -160,7 +160,7 @@ func TestExportHelpSucceeds(t *testing.T) {
 				t.Errorf("exit %d for %s, want 0", code, flag)
 			}
 		})
-		harness.MustContainAll(t, flag, out, "Usage: xynaut export")
+		harness.MustContainAll(t, flag, out, "Usage: xynolog export")
 	}
 }
 

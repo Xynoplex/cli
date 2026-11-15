@@ -1,6 +1,6 @@
 package launcher
 
-// initmodels.go — live model validation at birth, for `xynaut init`.
+// initmodels.go — live model validation at birth, for `xynolog init`.
 // Anthropic choices validate against /v1/models when a key is in hand — a
 // withdrawn or typo'd id becomes a refusal naming what exists, not a KB
 // whose jobs fail later. Ollama choices validate against the local daemon

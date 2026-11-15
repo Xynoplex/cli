@@ -10,7 +10,7 @@ import (
 )
 
 // A guide watching a tour needs to read the room, not decode it. These pin the
-// three gaps `xynaut listen` closes for a human reader: ids that should be
+// three gaps `xynolog listen` closes for a human reader: ids that should be
 // names, presence that is a STATE rather than a pair of events, and a stream
 // that shows only the participant's half of the conversation.
 

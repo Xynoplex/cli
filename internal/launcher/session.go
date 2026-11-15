@@ -1,14 +1,14 @@
 package launcher
 
 // session.go — one command's session with a stack's knowledge base: the Go
-// SDK's session (semiont.ResumeSession) over the sign-in `xynaut login`
+// SDK's session (semiont.ResumeSession) over the sign-in `xynolog login`
 // stored, which asks the gateway who its token is at its start, renews it at
 // the issuer when it has expired or the gateway refuses it, and forgets a
 // sign-in the issuer will not renew, as every SDK's session does
 // (protocol/specs/src/session/cases.json). What is the launcher's here is the
 // command's: a session that is over ends whatever the command is waiting on,
 // and is said in the launcher's words with the one fix that applies. Also
-// `xynaut logout`.
+// `xynolog logout`.
 
 import (
 	"context"
@@ -80,7 +80,7 @@ func LoadSession(u *UI, verb, key, base string, channels ...bus.Channel) (*Sessi
 		return s, true
 	case errors.Is(err, errNoSession):
 		u.Fail("No session for %s.", key)
-		fmt.Fprintln(os.Stderr, "  Log in first:  xynaut login")
+		fmt.Fprintln(os.Stderr, "  Log in first:  xynolog login")
 	case errors.As(err, &rejected):
 		RejectedFail(u, verb, rejected)
 	default:
@@ -357,7 +357,7 @@ func (r *SessionRejected) Unwrap() error { return r.cause }
 func RejectedFail(u *UI, verb string, rej *SessionRejected) int {
 	u.Fail("%s: %v.", verb, rej)
 	if !rej.kept {
-		fmt.Fprintln(os.Stderr, "  Log in again:  xynaut login")
+		fmt.Fprintln(os.Stderr, "  Log in again:  xynolog login")
 	}
 	return 1
 }
@@ -385,7 +385,7 @@ func StackBase(u *UI, target *StackState, verb string) (string, bool) {
 	switch {
 	case target == nil:
 		u.Refuse(controlCodeStackNotRunning, "%s needs a running stack, and none is recorded.", verb)
-		fmt.Fprintln(os.Stderr, "  Start one first:  xynaut start")
+		fmt.Fprintln(os.Stderr, "  Start one first:  xynolog start")
 		return "", false
 	case target.Codespace != nil:
 		return forwardedBase(u, target, verb)
@@ -393,7 +393,7 @@ func StackBase(u *UI, target *StackState, verb string) (string, bool) {
 	return localBase(u, target, verb)
 }
 
-const logoutUsage = `Usage: xynaut logout [--repo <owner/name> | --root <path> | --runtime <rt>]
+const logoutUsage = `Usage: xynolog logout [--repo <owner/name> | --root <path> | --runtime <rt>]
 
 End the stack's stored session: the refresh token is revoked at the issuer
 (best-effort), then the local token is forgotten either way.

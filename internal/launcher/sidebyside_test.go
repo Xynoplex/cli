@@ -81,7 +81,7 @@ func TestAVerbActsOnTheStackOfTheKnowledgeBaseItStandsIn(t *testing.T) {
 		t.Errorf("standing in neither, gather chose %+v", st)
 	}
 	for _, root := range []string{a, b} {
-		if !strings.Contains(said, "xynaut gather --root "+root) {
+		if !strings.Contains(said, "xynolog gather --root "+root) {
 			t.Errorf("the refusal names no command for %s:\n%s", root, said)
 		}
 	}
@@ -99,7 +99,7 @@ func TestRootNamesTheCloneItsStackRunsFrom(t *testing.T) {
 		t.Errorf("--root of a twin clone chose %+v (ok %v), want a refusal naming %s:\n%s", st, ok, running, said)
 	}
 	idle := kbNamed(t, "example.org:c")
-	if st, ok, said := selected(t, idle); ok || st != nil || !strings.Contains(said, "xynaut start --root "+idle) {
+	if st, ok, said := selected(t, idle); ok || st != nil || !strings.Contains(said, "xynolog start --root "+idle) {
 		t.Errorf("--root of a knowledge base nothing started chose %+v (ok %v):\n%s", st, ok, said)
 	}
 }
@@ -112,7 +112,7 @@ func TestAKnowledgeBaseNothingStartedIsHandedNoOtherStack(t *testing.T) {
 	running, idle := kbNamed(t, "example.org:a"), kbNamed(t, "example.org:c")
 	recordedAt(t, running)
 	t.Chdir(idle)
-	if st, ok, said := selected(t, ""); ok || st != nil || !strings.Contains(said, "xynaut start --root "+idle) {
+	if st, ok, said := selected(t, ""); ok || st != nil || !strings.Contains(said, "xynolog start --root "+idle) {
 		t.Errorf("standing in %s, which nothing started, gather chose %+v (ok %v):\n%s", idle, st, ok, said)
 	}
 	t.Chdir(t.TempDir())

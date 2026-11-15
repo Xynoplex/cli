@@ -1,6 +1,6 @@
 package launcher
 
-// limits.go — the inference ceilings `xynaut status` prints beside each
+// limits.go — the inference ceilings `xynolog status` prints beside each
 // model, sourced from the PLATFORM and nowhere else.
 //
 // The launcher is a bus client here like every other client. The services
@@ -31,7 +31,7 @@ import (
 // statusCeilingTimeout bounds each bus request status makes. A verb waits 30
 // seconds for its reply — right for a verb whose whole job is the exchange,
 // and far too long for a decoration on a report: a wedged key holder would
-// stall `xynaut status` for half a minute. Matched to the other status
+// stall `xynolog status` for half a minute. Matched to the other status
 // probes, which give a live fact 2–3 seconds to arrive or go unreported. The
 // requests run concurrently, so this is also the wait for all of them.
 const statusCeilingTimeout = 3 * time.Second

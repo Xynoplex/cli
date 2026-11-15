@@ -1,11 +1,11 @@
 package launcher
 
-// useraddrealm.go — `xynaut useradd` against the stack on THIS machine,
+// useraddrealm.go — `xynolog useradd` against the stack on THIS machine,
 // through the launcher's own Keycloak admin client.
 //
 // No container. The account lives at the issuer, the launcher already holds
 // the bootstrap admin credential for this root, and the realm's admin API is
-// reachable the same way `xynaut identity sync` reaches it. Nothing about the
+// reachable the same way `xynolog identity sync` reaches it. Nothing about the
 // gateway is involved — it need not even be running.
 
 import (
@@ -68,7 +68,7 @@ func resolveRealmAdmin(u *UI, root, did string) (realmAdmin, bool) {
 	configName := configForRealm(root)
 	if configName == "" {
 		u.Fail("Cannot tell which config this knowledge base runs, so there is no realm to administer.")
-		fmt.Fprintln(os.Stderr, "  Start the stack first:  xynaut start")
+		fmt.Fprintln(os.Stderr, "  Start the stack first:  xynolog start")
 		return realmAdmin{}, false
 	}
 	st, err := stack.Load(root, configName)
@@ -235,13 +235,13 @@ func accountIdentity(a realmAdmin, email, subject string) string {
 // a terminal against the stack the command selected, named the way it was
 // selected.
 func useraddNextSteps(codespace, local *StackState, browser *ServiceState) []string {
-	login := "xynaut login"
+	login := "xynolog login"
 	if codespace != nil {
 		login += " --repo " + codespace.Codespace.Repo
 	} else {
 		login += " --runtime " + local.Runtime
 	}
-	signIn := "Next: start the Browser (xynaut start --service browser), and sign in there with this email and password."
+	signIn := "Next: start the Browser (xynolog start --service browser), and sign in there with this email and password."
 	if browser != nil {
 		signIn = fmt.Sprintf("Next: sign in at %s with this email and password.", browser.Endpoint)
 	}

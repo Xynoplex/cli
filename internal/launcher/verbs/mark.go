@@ -1,6 +1,6 @@
 package verbs
 
-// mark.go — `xynaut mark`: create and delete annotations over the bus.
+// mark.go — `xynolog mark`: create and delete annotations over the bus.
 // Selectors and bodies follow the W3C Web Annotation shapes the OpenAPI
 // schemas define (CreateAnnotationRequest: target + motivation + body);
 // this file only assembles them from flags. `--delegate` is the other form:
@@ -20,10 +20,10 @@ import (
 	"github.com/Xynoplex/sdk/go/api"
 )
 
-const markIDs = "xynaut mark [options] -- <resourceId>"
+const markIDs = "xynolog mark [options] -- <resourceId>"
 
-const markUsage = `Usage: xynaut mark <resourceId> [selector] [body] [options]
-       xynaut mark --delete <annotationId> --resource <resourceId>
+const markUsage = `Usage: xynolog mark <resourceId> [selector] [body] [options]
+       xynolog mark --delete <annotationId> --resource <resourceId>
 
 Annotate a resource. A selector says WHERE, a body says WHAT.
 
@@ -54,11 +54,11 @@ Options:
 ` + idsNote + `
   ` + markIDs + `
 
-Requires a session:  xynaut login
-Annotation by the stack: xynaut mark --delegate --help
+Requires a session:  xynolog login
+Annotation by the stack: xynolog mark --delegate --help
 `
 
-const markDelegateUsage = `Usage: xynaut mark --delegate <resourceId> --motivation <m> [options]
+const markDelegateUsage = `Usage: xynolog mark --delegate <resourceId> --motivation <m> [options]
 
 Have the stack annotate a resource: its worker reads the whole resource and
 writes the annotations.
@@ -81,10 +81,10 @@ which it takes):
   --language <tag>         BCP-47 language the annotations are written in
   --source-language <tag>  BCP-47 language of the resource
   --entity-type <name>     linking: an entity type to look for (repeatable;
-                           xynaut browse --entity-types lists them)
+                           xynolog browse --entity-types lists them)
   --descriptive            linking: also mark descriptions ("the senator"), not
                            only names
-  --schema <id>            tagging: the tag schema (xynaut browse --tag-schemas
+  --schema <id>            tagging: the tag schema (xynolog browse --tag-schemas
                            lists them)
   --category <name>        tagging: a category of that schema (repeatable)
   --resource <id>          The resource to annotate (bare)
@@ -98,7 +98,7 @@ which it takes):
 ` + idsNote + `
   ` + markIDs + `
 
-Requires a session:  xynaut login
+Requires a session:  xynolog login
 `
 
 // entityTypeFlag: the one flag both forms of mark take. By hand each names a
@@ -270,12 +270,12 @@ options:
 		}
 		if resourceID == "" {
 			u.Fail("--delegate needs the resource to annotate.")
-			fmt.Fprintln(os.Stderr, "  xynaut mark --delegate --help")
+			fmt.Fprintln(os.Stderr, "  xynolog mark --delegate --help")
 			return 1
 		}
 		if motivation == "" {
 			u.Fail("--delegate needs --motivation.")
-			fmt.Fprintln(os.Stderr, "  xynaut mark --delegate --help")
+			fmt.Fprintln(os.Stderr, "  xynolog mark --delegate --help")
 			return 1
 		}
 		rid, ok := parsed(u, "resource", resourceID, api.ParseResourceId)
@@ -286,7 +286,7 @@ options:
 		params, err := markParams(chosen, given)
 		if err != nil {
 			u.Fail("%v", err)
-			fmt.Fprintln(os.Stderr, "  xynaut mark --delegate --help")
+			fmt.Fprintln(os.Stderr, "  xynolog mark --delegate --help")
 			return 1
 		}
 		sess, ok := launcher.VerbSession(u, "mark", repo, rootFlag, wantLocal, jobChannels...)
@@ -298,7 +298,7 @@ options:
 	}
 	if len(delegateOnly) > 0 {
 		u.Fail("%s belongs to --delegate, where the stack does the annotating.", delegateOnly[0])
-		fmt.Fprintln(os.Stderr, "  xynaut mark --delegate --help")
+		fmt.Fprintln(os.Stderr, "  xynolog mark --delegate --help")
 		return 1
 	}
 
@@ -496,7 +496,7 @@ var markNouns = map[api.Motivation]string{
 func runMarkDelegate(u *launcher.UI, sess *launcher.Session, resourceID api.ResourceId, params api.MarkJobParams, motivation api.Motivation, asJSON bool) int {
 	d := delegation{
 		verb: "mark --delegate", doing: "Annotating " + resourceID.String(), note: string(motivation), failed: "Annotation",
-		check: "xynaut browse " + resourceID.String() + " --annotations",
+		check: "xynolog browse " + resourceID.String() + " --annotations",
 	}
 	c := sess.Client()
 	if err := c.Reached(); err != nil {

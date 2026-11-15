@@ -60,9 +60,9 @@ RUNTIME="$(detect_container_runtime)"
         target_arch="${target#*/}"
         suffix=
         [ "$target_os" != windows ] || suffix=.exe
-        output="dist/xynaut_${target_os}_${target_arch}${suffix}"
-        echo "Building Xynaut for $target -> $output"
-        run_go_target "$target_os" "$target_arch" build -trimpath -o "$output" ./cmd/xynaut
+        output="dist/xynolog_${target_os}_${target_arch}${suffix}"
+        echo "Building Xynolog for $target -> $output"
+        run_go_target "$target_os" "$target_arch" build -trimpath -o "$output" ./cmd/xynolog
       done
     else
       run_go "$@"

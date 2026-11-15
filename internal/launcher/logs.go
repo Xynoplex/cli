@@ -13,7 +13,7 @@ import (
 	"syscall"
 )
 
-var logsUsage = fmt.Sprintf(`Usage: xynaut logs [--service <name>] [--root <path>] [--runtime container|docker|podman] [--repo <owner/name>]
+var logsUsage = fmt.Sprintf(`Usage: xynolog logs [--service <name>] [--root <path>] [--runtime container|docker|podman] [--repo <owner/name>]
 
 A bare invocation follows the stack of the knowledge base you stand in, else
 the lone forwarded codespace stack, else the knowledge base you stand in by
@@ -23,7 +23,7 @@ stack here, else the lone recorded codespace; with several, say which.
 targets a local runtime.
 
 Follow the Semiont service logs, one [svc]-prefixed stream per service.
-Ctrl+C stops *following* — it does not stop the stack (that's xynaut stop).
+Ctrl+C stops *following* — it does not stop the stack (that's xynolog stop).
 
 By default follows Semiont's own services (%s). With
 --service <name>, follow any ONE service including the infrastructure roles:
@@ -47,7 +47,7 @@ var logServices = func() []string {
 	return out
 }()
 
-// Logs implements `xynaut logs`.
+// Logs implements `xynolog logs`.
 func Logs(args []string) int {
 	u := NewUI(false)
 	runtime := ""
@@ -96,7 +96,7 @@ func Logs(args []string) int {
 	if !ok {
 		return 1
 	}
-	fmt.Printf("Following %s — Ctrl+C stops following (xynaut stop stops the stack)\n", strings.Join(src.follow, " · "))
+	fmt.Printf("Following %s — Ctrl+C stops following (xynolog stop stops the stack)\n", strings.Join(src.follow, " · "))
 
 	// Ctrl+C: stop following, never the stack.
 	ctx, stop := signal.NotifyContext(context.Background(), syscall.SIGINT, syscall.SIGTERM)
@@ -128,7 +128,7 @@ func (src logSource) command(service string) *exec.Cmd {
 
 // logSources: the containers a follow of service (every Semiont service the
 // stack runs, when "") reads, of the stack runtime, repo and root name as
-// xynaut logs takes them. ok=false: refused, and said.
+// xynolog logs takes them. ok=false: refused, and said.
 func logSources(u *UI, runtime, service, repoFlag, rootFlag string) (logSource, bool) {
 	if service != "" {
 		if !knownRole(service) {
@@ -220,7 +220,7 @@ func logSources(u *UI, runtime, service, repoFlag, rootFlag string) (logSource, 
 		}
 		u.Log("Using recorded codespace stack %s", u.Dim("("+csName+" per "+statePath()+")"))
 	} else if len(cs) > 1 {
-		u.RefuseChoosing(controlCodeTargetRequired, stackChoices(nil, cs), "Multiple codespace stacks are recorded — say which:  xynaut logs --repo <owner/name>")
+		u.RefuseChoosing(controlCodeTargetRequired, stackChoices(nil, cs), "Multiple codespace stacks are recorded — say which:  xynolog logs --repo <owner/name>")
 		for _, c := range cs {
 			fmt.Fprintf(os.Stderr, "    recorded: %s\n", c.Codespace.Repo)
 		}
@@ -228,7 +228,7 @@ func logSources(u *UI, runtime, service, repoFlag, rootFlag string) (logSource, 
 	}
 	if rt == "" && csName == "" {
 		u.RefusePlain(controlCodeStackNotRunning, "No running Semiont stack found in any runtime (container/docker/podman).")
-		fmt.Fprintln(os.Stderr, "Start one with xynaut start, or pass --runtime explicitly.")
+		fmt.Fprintln(os.Stderr, "Start one with xynolog start, or pass --runtime explicitly.")
 		return logSource{}, false
 	}
 

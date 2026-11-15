@@ -152,7 +152,7 @@ semiont_bus_correlation_size{correlation_kind="claims_max",job="semiont-gateway"
 
 // The distinction the rendering depends on: a service that has not exported
 // yet must be unreportable, not reported as idle. If this ever returns ok for
-// a readout with no dispatcher in it, `xynaut status` starts claiming an
+// a readout with no dispatcher in it, `xynolog status` starts claiming an
 // empty queue for a dispatcher that has said nothing.
 func TestAbsentSeriesIsNotZero(t *testing.T) {
 	const noDispatcher = `semiont_job_queue_size{job="semiont-worker",job_status="pending",semiont_kb="did:web:example.github.io:test-kb"} 4

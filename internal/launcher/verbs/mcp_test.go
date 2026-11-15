@@ -1,6 +1,6 @@
 package verbs
 
-// `xynaut mcp`'s tools, in process: the server `xynaut mcp` runs, reached
+// `xynolog mcp`'s tools, in process: the server `xynolog mcp` runs, reached
 // by an MCP client over the go-sdk's in-memory transports, its sessions the
 // launcher's (launcher.Sessions) over the fixture's sign-in, the bus a
 // FaultyTransport that logs what each call sent, the gateway a stub that says
@@ -27,7 +27,7 @@ import (
 	"github.com/Xynoplex/sdk/go/xynoplextest"
 )
 
-// mcpClient is an MCP client of `xynaut mcp`'s server, in process.
+// mcpClient is an MCP client of `xynolog mcp`'s server, in process.
 func mcpClient(t *testing.T) *mcp.ClientSession {
 	t.Helper()
 	return mcpClientWith(t, nil)

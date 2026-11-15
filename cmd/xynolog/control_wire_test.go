@@ -30,7 +30,7 @@ func controlAPIVersion(t *testing.T) string {
 	return schema.Const
 }
 
-// controlMessage: any line xynaut control writes.
+// controlMessage: any line xynolog control writes.
 type controlMessage struct {
 	JSONRPC string          `json:"jsonrpc"`
 	ID      json.RawMessage `json:"id"`
@@ -44,7 +44,7 @@ type controlMessage struct {
 	} `json:"error"`
 }
 
-// wireLog: what xynaut control writes on stderr, kept for a failure to show.
+// wireLog: what xynolog control writes on stderr, kept for a failure to show.
 type wireLog struct {
 	mu sync.Mutex
 	b  strings.Builder
@@ -62,7 +62,7 @@ func (l *wireLog) String() string {
 	return l.b.String()
 }
 
-// controlClient: one xynaut control process, spoken to a line at a time.
+// controlClient: one xynolog control process, spoken to a line at a time.
 type controlClient struct {
 	t          *testing.T
 	apiVersion string
@@ -73,7 +73,7 @@ type controlClient struct {
 	lastID     int
 }
 
-// fail ends the test with what xynaut control wrote on stderr.
+// fail ends the test with what xynolog control wrote on stderr.
 func (c *controlClient) fail(format string, a ...any) {
 	c.t.Helper()
 	c.t.Fatalf(format+"\nstderr:\n%s", append(a, c.stderr)...)
@@ -96,7 +96,7 @@ func startControl(t *testing.T, s *scenario) *controlClient {
 	stderr := &wireLog{}
 	cmd.Stderr = stderr
 	if err := cmd.Start(); err != nil {
-		t.Fatalf("starting xynaut control: %v", err)
+		t.Fatalf("starting xynolog control: %v", err)
 	}
 	c := &controlClient{t: t, apiVersion: controlAPIVersion(t), stdin: stdin, stderr: stderr, lines: make(chan string), exited: make(chan error, 1)}
 	go func() {
@@ -131,11 +131,11 @@ func (c *controlClient) call(method string, params map[string]any) (json.RawMess
 			c.fail("%s: no answer in five minutes; progress so far: %v", method, progress)
 		case text, open := <-c.lines:
 			if !open {
-				c.fail("%s: xynaut control ended before answering; progress: %v", method, progress)
+				c.fail("%s: xynolog control ended before answering; progress: %v", method, progress)
 			}
 			var m controlMessage
 			if err := json.Unmarshal([]byte(text), &m); err != nil || m.JSONRPC != "2.0" {
-				c.fail("%s: xynaut control wrote a line that is not a JSON-RPC message: %q", method, text)
+				c.fail("%s: xynolog control wrote a line that is not a JSON-RPC message: %q", method, text)
 			}
 			if m.Method == "notifications/progress" {
 				var p struct {
@@ -186,11 +186,11 @@ func (c *controlClient) end() error {
 				lines = nil
 				continue
 			}
-			c.t.Errorf("xynaut control wrote %q after its last request was answered", text)
+			c.t.Errorf("xynolog control wrote %q after its last request was answered", text)
 		case err := <-c.exited:
 			return err
 		case <-deadline:
-			c.fail("xynaut control did not end within a minute of its stdin closing")
+			c.fail("xynolog control did not end within a minute of its stdin closing")
 		}
 	}
 }
@@ -205,7 +205,7 @@ type wireStatus struct {
 	Shared []json.RawMessage `json:"shared"`
 }
 
-// A client drives a whole lifecycle over xynaut control's stdio: what the
+// A client drives a whole lifecycle over xynolog control's stdio: what the
 // launcher is, a start, the snapshot of the stack it started, a stop, and the
 // snapshot after. Each operation's narration arrives as its progress, and
 // nothing else reaches stdout but JSON-RPC messages; closing stdin ends the
@@ -267,6 +267,6 @@ func TestControlDrivesALifecycleOverStdio(t *testing.T) {
 	}
 
 	if err := c.end(); err != nil {
-		t.Errorf("xynaut control ended with %v when its stdin closed, want exit 0", err)
+		t.Errorf("xynolog control ended with %v when its stdin closed, want exit 0", err)
 	}
 }

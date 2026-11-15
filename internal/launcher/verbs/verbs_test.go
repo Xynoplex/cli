@@ -247,7 +247,7 @@ func TestBrowseAnnotationRefusesWhenNoOneIsWatching(t *testing.T) {
 	})
 	harness.MustContainAll(t, "refusal", out+errOut,
 		"Nobody saw annotation ann-9", "browse:click",
-		"xynaut browse --annotation ann-9 --browser --launch")
+		"xynolog browse --annotation ann-9 --browser --launch")
 	if len(signals(fake)) != 1 {
 		t.Errorf("the emit should still have gone out, got %v", signals(fake))
 	}
@@ -370,7 +370,7 @@ func TestBeckonRefusalsInProcess(t *testing.T) {
 		args []string
 		want []string
 	}{
-		{"no resource", nil, []string{"Usage: xynaut beckon"}},
+		{"no resource", nil, []string{"Usage: xynolog beckon"}},
 		{"sparkle without annotation", []string{"--resource", "res-42", "--sparkle"}, []string{"--sparkle", "--annotation"}},
 		{"a bare word too many", []string{"res-1", "ann-1", "x"}, []string{"Unexpected argument: x"}},
 		{"the resource given twice", []string{"--resource", "res-1", "--resource", "res-2"}, []string{"The resource is given twice"}},
@@ -517,13 +517,13 @@ func TestAWordThatIsNoOptionIsRefusedShowingDoubleDash(t *testing.T) {
 			args []string
 			form string
 		}{
-			{"bind", Bind, []string{"res-1", word, "res-2"}, "xynaut bind [options] -- <resourceId> <annotationId> <targetResourceId>"},
-			{"gather", Gather, []string{"res-1", word}, "xynaut gather [options] -- <resourceId> [<annotationId>]"},
-			{"match", Match, []string{"res-1", word}, "xynaut match [options] -- <resourceId> <annotationId>"},
-			{"yield --delegate", Yield, []string{"--delegate", "res-1", word}, "xynaut yield --delegate [options] -- <resourceId> [<annotationId>]"},
-			{"browse", Browse, []string{word}, "xynaut browse [options] -- <resourceId>"},
-			{"mark", Mark, []string{word}, "xynaut mark [options] -- <resourceId>"},
-			{"beckon", Beckon, []string{word}, "xynaut beckon [options] -- <resourceId> [<annotationId>]"},
+			{"bind", Bind, []string{"res-1", word, "res-2"}, "xynolog bind [options] -- <resourceId> <annotationId> <targetResourceId>"},
+			{"gather", Gather, []string{"res-1", word}, "xynolog gather [options] -- <resourceId> [<annotationId>]"},
+			{"match", Match, []string{"res-1", word}, "xynolog match [options] -- <resourceId> <annotationId>"},
+			{"yield --delegate", Yield, []string{"--delegate", "res-1", word}, "xynolog yield --delegate [options] -- <resourceId> [<annotationId>]"},
+			{"browse", Browse, []string{word}, "xynolog browse [options] -- <resourceId>"},
+			{"mark", Mark, []string{word}, "xynolog mark [options] -- <resourceId>"},
+			{"beckon", Beckon, []string{word}, "xynolog beckon [options] -- <resourceId> [<annotationId>]"},
 		} {
 			t.Run(c.name+" "+word, func(t *testing.T) {
 				fake, restore := withFake(t)
@@ -628,7 +628,7 @@ func TestAnIdGivenTwiceOrABareWordTooManyIsRefused(t *testing.T) {
 	}{
 		{"bind, the resource twice", Bind, []string{"--resource", "res-1", "--resource", "res-2", "ann-1", "res-3"}, "The resource is given twice"},
 		{"bind, --target and --unbind", Bind, []string{"--target", "res-2", "--unbind", "res-3", "res-1", "ann-1"}, "The target is given twice"},
-		{"bind, a bare word too many", Bind, []string{"res-1", "ann-1", "res-2", "x"}, "xynaut bind [options] -- <resourceId> <annotationId> <targetResourceId>"},
+		{"bind, a bare word too many", Bind, []string{"res-1", "ann-1", "res-2", "x"}, "xynolog bind [options] -- <resourceId> <annotationId> <targetResourceId>"},
 		{"gather, a bare word too many", Gather, []string{"--annotation", "ann-1", "res-1", "x"}, "Unexpected argument: x"},
 		{"match, the annotation twice", Match, []string{"--annotation", "ann-1", "--annotation", "ann-2", "res-1"}, "The annotation is given twice"},
 		{"yield --delegate, a bare word too many", Yield, []string{"--delegate", "res-1", "ann-1", "x"}, "Unexpected argument: x"},

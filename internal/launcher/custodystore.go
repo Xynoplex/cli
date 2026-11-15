@@ -41,7 +41,7 @@ type custodyBackend interface {
 var openCustody = map[string]custodyStore{}
 
 // custodyFor: the store of the root key names — the one configured for it
-// (`xynaut settings secret-store`), else the filesystem. False, reported,
+// (`xynolog settings secret-store`), else the filesystem. False, reported,
 // when the configured store cannot be reached or there is nowhere to keep
 // anything: never another store in its place, which would mint new values
 // over the ones kept there. This is the lookup of a caller that keeps values,

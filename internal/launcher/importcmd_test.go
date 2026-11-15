@@ -1,6 +1,6 @@
 package launcher
 
-// `xynaut import`, in process: an archive untarred into a new root, which is
+// `xynolog import`, in process: an archive untarred into a new root, which is
 // then registered.
 //
 // The first test is the round trip: an archive export writes restores through
@@ -59,7 +59,7 @@ func TestExportImportRoundTrips(t *testing.T) {
 	}
 }
 
-// The restored KB is registered, so `xynaut start --root` and `status` can
+// The restored KB is registered, so `xynolog start --root` and `status` can
 // see it without the operator re-registering by hand.
 func TestImportRegistersTheRestoredRoot(t *testing.T) {
 	harness.Home(t)

@@ -12,14 +12,14 @@ import (
 // fresh install's first instruction a command that fails. Built in one
 // place, a flag that does not exist cannot be spelled.
 func useraddHint(repo string) string {
-	cmd := "xynaut useradd"
+	cmd := "xynolog useradd"
 	if repo != "" {
 		cmd += " --repo " + repo
 	}
 	return cmd + " --email <email>"
 }
 
-const useraddUsage = `Usage: xynaut useradd --email <email> [--generate-password] [options]
+const useraddUsage = `Usage: xynolog useradd --email <email> [--generate-password] [options]
 
 Create or update a user in a Semiont stack, local or codespace. The ISSUER holds
 the account, the profile and the password; this decides which realm is meant and
@@ -29,8 +29,8 @@ launcher, over ssh, so that machine's admin credential never crosses the wire.
 The password is never typed as an argument. Creating a user prompts for one on
 a terminal, or reads it from stdin when piped:
 
-  xynaut useradd --email admin@example.com               # prompts
-  cat pw | xynaut useradd --email bot@example.com        # scripted
+  xynolog useradd --email admin@example.com               # prompts
+  cat pw | xynolog useradd --email bot@example.com        # scripted
 
 Options:
 
@@ -59,7 +59,7 @@ Launcher-owned (consumed here, not forwarded):
   --help, -h            Show this help
 
 Needs a started stack: the realm is reached at the issuer this KB configures,
-and xynaut start is what records which config that is. With more than one
+and xynolog start is what records which config that is. With more than one
 stack recorded, the working directory disambiguates (a clone whose stack runs
 here means that one; a clone whose origin names a codespace stack, with no
 stack here, means the codespace's) — anywhere less certain, useradd refuses
@@ -71,13 +71,13 @@ later user and password change happens.
 
 Examples:
   # First user after a fresh local start (prompts for the password)
-  xynaut useradd --email admin@example.com
+  xynolog useradd --email admin@example.com
 
   # A second user on a codespace KB
-  xynaut useradd --repo The-AI-Alliance/my-kb --email alice@example.com --generate-password
+  xynolog useradd --repo The-AI-Alliance/my-kb --email alice@example.com --generate-password
 `
 
-// Useradd implements `xynaut useradd`. The ISSUER owns the account, the
+// Useradd implements `xynolog useradd`. The ISSUER owns the account, the
 // profile and the password hashing; this decides which realm is meant and
 // speaks to it.
 //
@@ -159,9 +159,9 @@ func Useradd(args []string) int {
 			// host and in the container, kept by the runtime's container
 			// record, and written to the caller's shell history.
 			u.Fail("--password is no longer accepted: a password in argv is visible to every process on the host.")
-			fmt.Fprintln(os.Stderr, "  Let it prompt:   xynaut useradd --email <email>")
-			fmt.Fprintln(os.Stderr, "  Or pipe it:      cat pw | xynaut useradd --email <email>")
-			fmt.Fprintln(os.Stderr, "  Or generate it:  xynaut useradd --email <email> --generate-password")
+			fmt.Fprintln(os.Stderr, "  Let it prompt:   xynolog useradd --email <email>")
+			fmt.Fprintln(os.Stderr, "  Or pipe it:      cat pw | xynolog useradd --email <email>")
+			fmt.Fprintln(os.Stderr, "  Or generate it:  xynolog useradd --email <email> --generate-password")
 			return 1
 		case "--generate-password":
 			generate = true
@@ -179,7 +179,7 @@ func Useradd(args []string) int {
 			// `--admin` — which grants nothing — look like it worked.
 			if strings.HasPrefix(args[i], "--") {
 				u.Fail("Unknown flag: %s", args[i])
-				fmt.Fprintln(os.Stderr, "  See:  xynaut useradd --help")
+				fmt.Fprintln(os.Stderr, "  See:  xynolog useradd --help")
 				return 1
 			}
 		}
@@ -210,7 +210,7 @@ func Useradd(args []string) int {
 	}
 	if target == nil || target.Codespace == nil && target.KBRoot == "" {
 		u.Fail("No stack is running here, so there is no realm to administer.")
-		fmt.Fprintln(os.Stderr, "  Start it first:  xynaut start")
+		fmt.Fprintln(os.Stderr, "  Start it first:  xynolog start")
 		return 1
 	}
 
@@ -343,7 +343,7 @@ func useraddCodespace(u *UI, st *StackState, args []string, password string) int
 	u.EchoCmd("gh", "codespace", "ssh", "-c", st.Codespace.Name, "--", remote)
 	if err := runVisibleWithStdin(password, "gh", sshArgs...); err != nil {
 		u.Fail("useradd failed inside the codespace (see output above).")
-		fmt.Fprintln(os.Stderr, "  Is the stack up?  xynaut status --repo "+st.Codespace.Repo)
+		fmt.Fprintln(os.Stderr, "  Is the stack up?  xynolog status --repo "+st.Codespace.Repo)
 		return 1
 	}
 	return 0
@@ -358,7 +358,7 @@ func useraddCodespace(u *UI, st *StackState, args []string, password string) int
 // by stdin, and the realm admin's password is already in that machine's
 // environment.
 func remoteUseraddCmd(args []string, _ bool) string {
-	cmd := "cd /workspaces/* && xynaut useradd"
+	cmd := "cd /workspaces/* && xynolog useradd"
 	for _, a := range args {
 		cmd += " " + shellQuote(a)
 	}

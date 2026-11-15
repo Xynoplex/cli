@@ -1,6 +1,6 @@
 package launcher
 
-// control.go — `xynaut control`: the launcher's control API, for Desktop.
+// control.go — `xynolog control`: the launcher's control API, for Desktop.
 //
 // JSON-RPC 2.0, one message per line, requests on stdin and answers on
 // stdout (protocol/contract/LAUNCHER-CONTROL.md). Every method is one of the
@@ -32,7 +32,7 @@ import (
 	"syscall"
 )
 
-const controlUsage = `Usage: xynaut control
+const controlUsage = `Usage: xynolog control
 
 Serve the launcher's control API on stdin and stdout: JSON-RPC 2.0, one
 message per line. It is for a program, Desktop, that drives the launcher the
@@ -64,7 +64,7 @@ type controlNotification struct {
 	name, from, params string
 }
 
-// Control implements `xynaut control`.
+// Control implements `xynolog control`.
 func Control(args []string) int {
 	for _, a := range args {
 		switch a {

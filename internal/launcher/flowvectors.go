@@ -94,13 +94,13 @@ func runSharedVectors(x executor, fc flowCtx, addr string, restart bool) (health
 			err := x.qdrantTakes(base, userEnvVars(fc.userEnv)[daemonCredentials["vectors"].env])
 			if err == nil {
 				x.say(sayOK, "vectors — %s already running %s", disp,
-					x.dim("(kept: it keeps every KB's index here; xynaut stop --service vectors stops it)"))
+					x.dim("(kept: it keeps every KB's index here; xynolog stop --service vectors stops it)"))
 				return 0
 			}
 			if others := x.sharedVectorsRoots(); len(others) > 0 {
 				x.say(sayFail, "The shared Qdrant at %s did not answer the machine's API key, which this start signs its services' tokens with, and it keeps the index of %s: %v",
 					base, strings.Join(others, ", "), err)
-				x.say(sayLog, "Their services hold tokens signed with the key it runs under. Stop them first (xynaut stop --root <its path>), then start each again after this one.")
+				x.say(sayLog, "Their services hold tokens signed with the key it runs under. Stop them first (xynolog stop --root <its path>), then start each again after this one.")
 				return 1
 			}
 			x.say(sayWarn, "The shared Qdrant at %s did not answer the machine's API key (%v); it keeps no other knowledge base's index, so it runs afresh under the machine's.", base, err)

@@ -1,10 +1,10 @@
 package launcher
 
-// identitygrant.go — `xynaut identity grant` and `revoke`: admitting a worker
+// identitygrant.go — `xynolog identity grant` and `revoke`: admitting a worker
 // someone else runs to a realm the launcher runs, by the public half of its
 // key, and taking it back.
 //
-// Admitting a participant is one act, whoever it is: `xynaut useradd` admits
+// Admitting a participant is one act, whoever it is: `xynolog useradd` admits
 // a person by an account; a grant gives a principal named by its key the
 // worker's roles. The client is named at admission, by the operator's label,
 // and the key is registered on it. A new key for the same label replaces the
@@ -29,7 +29,7 @@ import (
 )
 
 // localWorkerLabel: the label of the shared worker, whose client the
-// realm's creation and `xynaut identity sync` keep at the worker key.
+// realm's creation and `xynolog identity sync` keep at the worker key.
 const localWorkerLabel = "local"
 
 // workerClientPrefix: what every worker's client id begins with; the label
@@ -48,7 +48,7 @@ var grantLabel = regexp.MustCompile(`^[a-z0-9]([a-z0-9-]{0,38}[a-z0-9])?$`)
 // undone by the next sync.
 func checkGrantLabel(label string) error {
 	if label == localWorkerLabel {
-		return fmt.Errorf("%q is the shared worker, whose key `xynaut identity sync` keeps; grant another worker under a label of its own", label)
+		return fmt.Errorf("%q is the shared worker, whose key `xynolog identity sync` keeps; grant another worker under a label of its own", label)
 	}
 	if !grantLabel.MatchString(label) {
 		return fmt.Errorf("%q is not a label: one to forty lowercase letters, digits and inner hyphens", label)
@@ -56,7 +56,7 @@ func checkGrantLabel(label string) error {
 	return nil
 }
 
-// readGrantedKey: the key a grant registers, from what `xynaut worker key`
+// readGrantedKey: the key a grant registers, from what `xynolog worker key`
 // prints on the worker's machine — its JWK Set, or with --pem its PEM. RSA
 // only, since the worker signs RS256. A private key is refused before
 // anything is sent: what is registered is public, and a private key handed
@@ -66,7 +66,7 @@ func checkGrantLabel(label string) error {
 func readGrantedKey(b []byte) (registeredKey, error) {
 	if block, _ := pem.Decode(b); block != nil {
 		if strings.Contains(block.Type, "PRIVATE") {
-			return registeredKey{}, fmt.Errorf("this is a private key; give the public half, which `xynaut worker key` prints")
+			return registeredKey{}, fmt.Errorf("this is a private key; give the public half, which `xynolog worker key` prints")
 		}
 		if block.Type != "PUBLIC KEY" {
 			return registeredKey{}, fmt.Errorf("a PEM %q, not a PUBLIC KEY", block.Type)
@@ -92,7 +92,7 @@ func readGrantedKey(b []byte) (registeredKey, error) {
 	}
 	jwk := set.Keys[0]
 	if _, private := jwk["d"]; private {
-		return registeredKey{}, fmt.Errorf("this is a private key; give the public half, which `xynaut worker key` prints")
+		return registeredKey{}, fmt.Errorf("this is a private key; give the public half, which `xynolog worker key` prints")
 	}
 	if jwk["kty"] != "RSA" {
 		return registeredKey{}, fmt.Errorf("not an RSA key: the worker signs its assertions with RS256")

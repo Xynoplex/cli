@@ -1,4 +1,4 @@
-// Package launcher implements xynaut commands for managing Semiont stacks.
+// Package launcher implements xynolog commands for managing Semiont stacks.
 package launcher
 
 // These defaults identify an unstamped build; release builds replace them

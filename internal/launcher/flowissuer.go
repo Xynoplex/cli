@@ -78,7 +78,7 @@ func runIssuerStore(x executor, fc flowCtx, addr string, restart bool) (code int
 	},
 		func() int {
 			x.say(sayOK, "identity-store — %s already running %s", disp,
-				x.dim("(kept: it keeps every KB's realm here; xynaut stop --group issuer stops it)"))
+				x.dim("(kept: it keeps every KB's realm here; xynolog stop --group issuer stops it)"))
 			return 0
 		},
 		func() int {
@@ -147,7 +147,7 @@ func flowIssuerServer(x executor, fc flowCtx, addr, password string, restart boo
 	},
 		func() int {
 			x.say(sayOK, "identity — %s already running %s", disp,
-				x.dim("(kept: it serves every KB here; xynaut stop --group issuer stops it)"))
+				x.dim("(kept: it serves every KB here; xynolog stop --group issuer stops it)"))
 			return 0
 		},
 		func() int {

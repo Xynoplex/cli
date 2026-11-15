@@ -35,10 +35,10 @@ func LogInvocation(args []string) func(int) {
 	t0 := time.Now()
 	cwd, _ := os.Getwd()
 	argv := strings.Join(redactArgvForLog(args), " ")
-	fmt.Fprintf(f, "%s invoke xynaut %s (version %s, cwd %s)\n",
+	fmt.Fprintf(f, "%s invoke xynolog %s (version %s, cwd %s)\n",
 		t0.UTC().Format(time.RFC3339), argv, BuildVersion, cwd)
 	return func(code int) {
-		fmt.Fprintf(f, "%s exit %d xynaut %s (%s)\n",
+		fmt.Fprintf(f, "%s exit %d xynolog %s (%s)\n",
 			time.Now().UTC().Format(time.RFC3339), code, argv, took(time.Since(t0)))
 		f.Close()
 	}

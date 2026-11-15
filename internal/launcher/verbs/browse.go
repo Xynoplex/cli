@@ -1,6 +1,6 @@
 package verbs
 
-// browse.go — `xynaut browse`: the front end of the SDK's browse namespace.
+// browse.go — `xynolog browse`: the front end of the SDK's browse namespace.
 // Each read is one of its queries, read once; `--browser` drives the
 // participant's viewer through beckon's. This file holds no protocol
 // knowledge of its own: what each read asks is the SDK's.
@@ -20,9 +20,9 @@ import (
 	"github.com/Xynoplex/sdk/go/bus"
 )
 
-const browseIDs = "xynaut browse [options] -- <resourceId>"
+const browseIDs = "xynolog browse [options] -- <resourceId>"
 
-const browseUsage = `Usage: xynaut browse [<resourceId>] [options]
+const browseUsage = `Usage: xynolog browse [<resourceId>] [options]
 
 Read the knowledge base. With no resourceId, lists resources; with one,
 shows that resource (add --annotations for its annotations).
@@ -30,8 +30,8 @@ shows that resource (add --annotations for its annotations).
 With --browser, the act lands on the PARTICIPANT's screen instead of printing
 here — the same act, a different audience. Two things can be opened:
 
-  xynaut browse <resourceId> --browser              a resource
-  xynaut browse --annotation <id> --browser         one annotation, opened
+  xynolog browse <resourceId> --browser              a resource
+  xynolog browse --annotation <id> --browser         one annotation, opened
 
 The annotation form takes no resourceId: an annotation id names exactly one
 annotation on exactly one resource, so the id is the whole address.
@@ -62,7 +62,7 @@ Options:
 ` + idsNote + `
   ` + browseIDs + `
 
-Requires a session:  xynaut login
+Requires a session:  xynolog login
 `
 
 func Browse(args []string) int {
@@ -174,7 +174,7 @@ options:
 		return 1
 	}
 	if annotations && resourceID == "" {
-		u.Fail("--annotations needs a resourceId: xynaut browse <resourceId> --annotations")
+		u.Fail("--annotations needs a resourceId: xynolog browse <resourceId> --annotations")
 		return 1
 	}
 	// --browser names a DESTINATION; the rendering flags each name a local
@@ -203,7 +203,7 @@ options:
 				return 1
 			}
 		} else if resourceID == "" {
-			u.Fail("--browser needs a resourceId: xynaut browse <resourceId> --browser")
+			u.Fail("--browser needs a resourceId: xynolog browse <resourceId> --browser")
 			fmt.Fprintln(os.Stderr, "  (Opening the resource LIST in the Browser is a different route and is not supported yet.)")
 			return 1
 		}
@@ -253,13 +253,13 @@ options:
 		d := drive{
 			subject: resourceID,
 			channel: bus.BrowseResourceOpen.Channel(),
-			retry:   fmt.Sprintf("xynaut browse %s --browser", resourceID),
+			retry:   fmt.Sprintf("xynolog browse %s --browser", resourceID),
 		}
 		if annotation != "" {
 			d = drive{
 				subject: "annotation " + annotation,
 				channel: bus.BrowseClick.Channel(),
-				retry:   fmt.Sprintf("xynaut browse --annotation %s --browser", annotation),
+				retry:   fmt.Sprintf("xynolog browse --annotation %s --browser", annotation),
 			}
 		}
 		var subscribers int
@@ -328,7 +328,7 @@ options:
 			return 0
 		}
 		// A schema's id and its categories' names are what a delegated
-		// tagging pass is asked by:  xynaut mark --delegate --help
+		// tagging pass is asked by:  xynolog mark --delegate --help
 		for _, schema := range schemas {
 			fmt.Printf("  %-24s %s %s\n", schema.Id, schema.Name, u.Dim("("+schema.Domain+")"))
 			for _, category := range schema.Tags {
@@ -452,12 +452,12 @@ func nobodySaw(u *launcher.UI, d drive, override string, launch bool) int {
 		fmt.Fprintf(os.Stderr, "  The Browser container is %s and is not answering on %s.\n", p.State, p.Endpoint)
 	}
 	fmt.Fprintf(os.Stderr, "  Start it:  %s --launch\n", d.retry)
-	fmt.Fprintln(os.Stderr, "  or:        xynaut start --service browser")
+	fmt.Fprintln(os.Stderr, "  or:        xynolog start --service browser")
 	return 1
 }
 
 // launchBrowser is `--launch`: it starts the Browser through the existing
-// `xynaut start --service browser` rather than re-deriving the run. That
+// `xynolog start --service browser` rather than re-deriving the run. That
 // path already pulls the image, publishes the port, records the endpoint and
 // WAITS for health (flowBrowser) — on a cold pull the container exists long
 // before it answers, and a message printed too early sends the user to an

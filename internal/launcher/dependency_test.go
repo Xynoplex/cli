@@ -93,7 +93,7 @@ func TestAStacksSweepDerivesTheTeardownOrder(t *testing.T) {
 //
 // This is what keeps startOrder from becoming one more statement of the
 // order nobody checks — the failure mode one declared order exists to end.
-// It reads the goldens the program's scenario suite (cmd/xynaut) writes
+// It reads the goldens the program's scenario suite (cmd/xynolog) writes
 // into this module's testdata deliberately: they are the only place the
 // flow's real sequence is written down. Were the flow to
 // walk the list directly, this test would become a tautology worth deleting.

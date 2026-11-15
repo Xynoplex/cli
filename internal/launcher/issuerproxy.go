@@ -9,7 +9,7 @@ package launcher
 // bridge address, for the proxy and the launcher's own administration
 // (exposure.keycloakAt).
 //
-// The proxy is the launcher run again as `xynaut issuer-proxy`, detached and
+// The proxy is the launcher run again as `xynolog issuer-proxy`, detached and
 // recorded beside the shared containers: one for the machine, as the Keycloak
 // it fronts is. A start keeps it while it passes the realms that start would
 // have it pass, and replaces it otherwise; a stop that leaves other stacks
@@ -102,7 +102,7 @@ func issuerProxyArgs(listen, upstream string, realms []string) []string {
 	return args
 }
 
-// IssuerProxy implements `xynaut issuer-proxy --listen <host:port> --upstream
+// IssuerProxy implements `xynolog issuer-proxy --listen <host:port> --upstream
 // <host:port> --realm <name>...`, serving until it is ended.
 func IssuerProxy(args []string) int {
 	flags := map[string]string{"--listen": "", "--upstream": ""}

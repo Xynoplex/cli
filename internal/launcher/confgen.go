@@ -1,6 +1,6 @@
 package launcher
 
-// confgen.go — the documents `xynaut init` writes for a knowledge base it
+// confgen.go — the documents `xynolog init` writes for a knowledge base it
 // gives birth to. NOTHING IS MASTERED — no document is embedded in this repo:
 // each is built from the launcher's own knowledge — the images and memory of
 // its catalog, the shapes derivePlan reads — plus the user's model choices.
@@ -36,10 +36,10 @@ type genParams struct {
 }
 
 // initChunking: the two numbers a text is cut by before it is embedded, in
-// tokens, as `xynaut init` writes them into the KnowledgeIndex.
+// tokens, as `xynolog init` writes them into the KnowledgeIndex.
 var initChunking = struct{ chunkSize, overlap int }{chunkSize: 512, overlap: 64}
 
-// initBounds: the two bounds the Librarian answers within, as `xynaut init`
+// initBounds: the two bounds the Librarian answers within, as `xynolog init`
 // writes them: how long a gather waits for the Smelter, in milliseconds, and
 // the least similarity a hit by meaning must have.
 var initBounds = struct {
@@ -48,7 +48,7 @@ var initBounds = struct {
 }{settleTimeoutMs: 15_000, semanticFloor: 0.6}
 
 // gigabytesForEachPdf: how much of the Smelter's memory one PDF under way is
-// given, which decides the pdfsAtOnce `xynaut init` writes. A reading, not a
+// given, which decides the pdfsAtOnce `xynolog init` writes. A reading, not a
 // measurement: a PDF holds its bytes, a page of a scan in pixels beside the
 // tesseract process reading it, and its text and vectors, and eight of them
 // at once overflowed the 2G one fits in.
@@ -60,11 +60,11 @@ func limits(mem string) stack.Resources {
 	return stack.Resources{Limits: stack.ResourcesLimits{Memory: mem}}
 }
 
-// initKnowledgeBase: the fixed name of the KnowledgeBase document `xynaut
+// initKnowledgeBase: the fixed name of the KnowledgeBase document `xynolog
 // init` writes (D17).
 const initKnowledgeBase = "knowledge-base"
 
-// generateStack: the documents `xynaut init` writes, each as YAML, by its
+// generateStack: the documents `xynolog init` writes, each as YAML, by its
 // path below .semiont/stack — the two the knowledge base shares, and the
 // Inference document named name. Its issuer and its vector store are the
 // machine's, whose documents the state home keeps (issuerdoc.go,

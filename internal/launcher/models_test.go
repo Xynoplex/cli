@@ -141,7 +141,7 @@ func TestWriteVettedStackRefusesUnstartable(t *testing.T) {
 	}
 }
 
-// `xynaut listen` warns and delivers nothing for a channel the transport does
+// `xynolog listen` warns and delivers nothing for a channel the transport does
 // not bridge, so the tour's "wait until someone is watching" step depends on
 // presence being in the generated bridged set. Pinned here rather than trusted:
 // the set is generated from registry.json, and a channel silently dropping out
@@ -150,7 +150,7 @@ func TestWriteVettedStackRefusesUnstartable(t *testing.T) {
 func TestPresenceChannelsAreSubscribable(t *testing.T) {
 	for _, ch := range []bus.Channel{bus.SessionJoined.Channel(), bus.SessionLeft.Channel()} {
 		if !bus.Bridged(ch) {
-			t.Errorf("%s is not bridged — `xynaut listen --channel %s` would warn and hang", ch, ch)
+			t.Errorf("%s is not bridged — `xynolog listen --channel %s` would warn and hang", ch, ch)
 		}
 	}
 }

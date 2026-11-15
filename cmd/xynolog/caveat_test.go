@@ -36,8 +36,8 @@ func TestNoMessageNamesATopLevelSecretVerb(t *testing.T) {
 			t.Fatal(err)
 		}
 		for i, line := range strings.Split(string(b), "\n") {
-			if strings.Contains(line, "xynaut secret") {
-				t.Errorf("%s:%d names `xynaut secret`: %s", f, i+1, strings.TrimSpace(line))
+			if strings.Contains(line, "xynolog secret") {
+				t.Errorf("%s:%d names `xynolog secret`: %s", f, i+1, strings.TrimSpace(line))
 			}
 		}
 	}

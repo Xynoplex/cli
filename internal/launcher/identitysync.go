@@ -1,6 +1,6 @@
 package launcher
 
-// identitysync.go — `xynaut identity sync`: reconcile a realm's
+// identitysync.go — `xynolog identity sync`: reconcile a realm's
 // service-account clients against `secretClients` and the shared worker.
 //
 // The repair half of the preflight. A realm is created by its FIRST start and
@@ -501,7 +501,7 @@ func adminToken(base, user, pass string) (string, error) {
 		if refusal.Error == "invalid_grant" {
 			return "", fmt.Errorf("the bootstrap admin login was refused (%s) — is KC_BOOTSTRAP_ADMIN_PASSWORD the one this realm's database was created with?", refusal.Description)
 		}
-		return "", fmt.Errorf("the bootstrap admin login was refused: HTTP %d %s (%s) — Keycloak's master realm takes plain HTTP only from an address it counts as private; `xynaut start` opens it to this machine, and warns when it cannot", resp.StatusCode, refusal.Error, refusal.Description)
+		return "", fmt.Errorf("the bootstrap admin login was refused: HTTP %d %s (%s) — Keycloak's master realm takes plain HTTP only from an address it counts as private; `xynolog start` opens it to this machine, and warns when it cannot", resp.StatusCode, refusal.Error, refusal.Description)
 	}
 	var body struct {
 		AccessToken string `json:"access_token"`

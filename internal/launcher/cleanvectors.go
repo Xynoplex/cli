@@ -1,7 +1,7 @@
 package launcher
 
 // cleanvectors.go — a knowledge base's index at the shared Qdrant, for
-// `xynaut clean`: its collections deleted through Qdrant's API, every other
+// `xynolog clean`: its collections deleted through Qdrant's API, every other
 // knowledge base's left, and the shared Qdrant run for the delete when none
 // is recorded as running.
 
@@ -99,7 +99,7 @@ func indexToDelete(u *UI, ss *StackSet, did string) (indexDelete, bool) {
 	}
 	if err != nil {
 		u.Fail("The shared Qdrant at %s: %v", base, err)
-		fmt.Fprintln(os.Stderr, "  It is recorded as running (xynaut status shows it). Once it is stopped (xynaut stop --service vectors), this clean runs it for the delete.")
+		fmt.Fprintln(os.Stderr, "  It is recorded as running (xynolog status shows it). Once it is stopped (xynolog stop --service vectors), this clean runs it for the delete.")
 		return indexDelete{}, false
 	}
 	return indexDelete{base: base, key: key, held: held}, true

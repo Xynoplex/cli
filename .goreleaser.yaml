@@ -1,16 +1,16 @@
-# GoReleaser config for Xynoplex's xynaut CLI.
+# GoReleaser config for Xynoplex's xynolog CLI.
 #
 # Channels, deliberately minimal: GitHub Release archives (darwin/linux/
 # windows × arm64/amd64, static), Linux packages, checksums, and SBOMs.
-# Windows gets a zip holding xynaut.exe; under WSL2 it runs the Linux build.
+# Windows gets a zip holding xynolog.exe; under WSL2 it runs the Linux build.
 version: 2
 
-project_name: xynaut
+project_name: xynolog
 
 builds:
-  - id: xynaut
-    binary: xynaut
-    main: ./cmd/xynaut
+  - id: xynolog
+    binary: xynolog
+    main: ./cmd/xynolog
     env:
       - CGO_ENABLED=0
     goos:
@@ -33,7 +33,7 @@ archives:
     format_overrides:
       - goos: windows
         formats: [zip]
-    name_template: "xynaut_{{ .Version }}_{{ .Os }}_{{ .Arch }}"
+    name_template: "xynolog_{{ .Version }}_{{ .Os }}_{{ .Arch }}"
 
 checksum:
   name_template: checksums.txt
@@ -43,7 +43,7 @@ sboms:
 
 nfpms:
   - id: linux-packages
-    package_name: xynaut
+    package_name: xynolog
     vendor: Xynoplex
     homepage: https://github.com/Xynoplex/cli
     maintainer: Xynoplex
@@ -51,4 +51,4 @@ nfpms:
     license: Apache-2.0
     formats: [deb, rpm]
     dependencies: [git]
-    builds: [xynaut]
+    builds: [xynolog]

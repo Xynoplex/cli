@@ -1,6 +1,6 @@
 package launcher
 
-// clean.go — `xynaut clean`: remove one root's persistent local-stack
+// clean.go — `xynolog clean`: remove one root's persistent local-stack
 // state. start persists qdrant/neo4j and the rest under
 // <dataDir>/roots/<key>; this command is the only way that data dies — stop
 // deliberately leaves it, and start's image-mismatch refusal names this
@@ -26,11 +26,11 @@ import (
 	"github.com/Xynoplex/cli/internal/launcher/stack"
 )
 
-const cleanUsage = `Usage: xynaut clean [options]
+const cleanUsage = `Usage: xynolog clean [options]
 
 Remove the persistent local-stack state (Qdrant, Neo4j data, the job
 queue, the Archivist's views and anchored text, and the supervisors' logs)
-for one local xynaut root, the knowledge base's realm at the shared
+for one local xynolog root, the knowledge base's realm at the shared
 issuer, its accounts and clients with it, and, for a knowledge base that
 keeps its index at the shared Qdrant, its collections there. The stack must
 be stopped first — state is never removed while a recorded stack may be
@@ -39,21 +39,21 @@ collections through the shared Qdrant: the one running, or, with none
 running, one this clean runs for the delete and stops again.
 
 An unscoped clean also deletes every secret the launcher keeps for this
-root, from whichever store keeps them (xynaut settings secret-store): the token-
+root, from whichever store keeps them (xynolog settings secret-store): the token-
 signing key, so every token issued against it stops verifying — which is
 consistent, since the user accounts those tokens name lived in the realm
 just deleted — and the passwords of the stores going with it. The store
 setting itself stays. A --store clean keeps the secrets.
 
-xynaut clean --shared --store identity-store removes the shared issuer's
+xynolog clean --shared --store identity-store removes the shared issuer's
 PostgreSQL store, and every knowledge base's realm with it, once no recorded
-stack signs in at the shared issuer and its server is stopped (xynaut stop
+stack signs in at the shared issuer and its server is stopped (xynolog stop
 --group issuer). The issuer's passwords stay, so its next boot reuses them,
 and each knowledge base's next start creates its realm afresh.
 
-xynaut clean --shared --store vectors removes the shared Qdrant's store,
+xynolog clean --shared --store vectors removes the shared Qdrant's store,
 and the index of every knowledge base naming it, once no recorded stack
-keeps its index there and the shared Qdrant is stopped (xynaut stop
+keeps its index there and the shared Qdrant is stopped (xynolog stop
 --service vectors). Each knowledge base's next start indexes it afresh.
 
 Options:
@@ -134,7 +134,7 @@ func Clean(args []string) int {
 
 	// Never sweep state out from under a stack that may be mounting it.
 	// stack.json is belief, but the asymmetry decides: a stale "running"
-	// costs the user one `xynaut stop`; removing mounted dirs corrupts. The
+	// costs the user one `xynolog stop`; removing mounted dirs corrupts. The
 	// same asymmetry is why an UNREADABLE record refuses outright instead of
 	// reading as "no stack is using this".
 	ss := LoadStackSet()
@@ -143,7 +143,7 @@ func Clean(args []string) int {
 	}
 	if st := localStack(ss, key); st != nil {
 		u.Fail("A recorded stack is using this state (per %s).", statePath())
-		fmt.Fprintln(os.Stderr, "  Stop it first: xynaut stop --root "+st.KBRoot)
+		fmt.Fprintln(os.Stderr, "  Stop it first: xynolog stop --root "+st.KBRoot)
 		return 1
 	}
 
@@ -355,7 +355,7 @@ func realmToDelete(u *UI, ss *StackSet, realm string) (realmDelete, bool) {
 	held, err := realmHeld(base, realm)
 	if err != nil {
 		u.Fail("The shared issuer at %s: %v", base, err)
-		fmt.Fprintln(os.Stderr, "  It is recorded as running (xynaut status shows it). Once it is stopped (xynaut stop --group issuer), this clean runs it for the delete.")
+		fmt.Fprintln(os.Stderr, "  It is recorded as running (xynolog status shows it). Once it is stopped (xynolog stop --group issuer), this clean runs it for the delete.")
 		return realmDelete{}, false
 	}
 	if !held {
@@ -456,7 +456,7 @@ func cleanTarget(u *UI, rootArg string) (key, dir, kbDir, did string, code int) 
 		if err != nil {
 			u.Fail("%v", err)
 			if !projectFileRefused(err) {
-				fmt.Fprintln(os.Stderr, "  Run inside a KB, or name one: xynaut clean --root <path|name|key>")
+				fmt.Fprintln(os.Stderr, "  Run inside a KB, or name one: xynolog clean --root <path|name|key>")
 			}
 			return "", "", "", "", 1
 		}

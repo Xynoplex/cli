@@ -1,6 +1,6 @@
 package verbs
 
-// `xynaut mcp`'s sessions: one for each knowledge base, held for hours
+// `xynolog mcp`'s sessions: one for each knowledge base, held for hours
 // (launcher.Sessions). A session is resumed on its knowledge base's first
 // call and held for the next; one the SDK reports over ends that call, and
 // the next is refused at once, without asking the issuer again; one signed in
@@ -45,8 +45,8 @@ func TestMCPASessionThatCannotBeRenewedIsRefusedAndTheNextCallAtOnce(t *testing.
 	storeSession(t, issuer, -time.Minute)
 
 	first := callTool(t, cs, "browse_resources", map[string]any{})
-	if !first.IsError || !strings.Contains(said(first), "xynaut login") {
-		t.Fatalf("a session whose renewal failed was not refused naming xynaut login:\n%s", said(first))
+	if !first.IsError || !strings.Contains(said(first), "xynolog login") {
+		t.Fatalf("a session whose renewal failed was not refused naming xynolog login:\n%s", said(first))
 	}
 	grants := len(issuer.refreshGrants())
 	if grants != 1 {
@@ -54,8 +54,8 @@ func TestMCPASessionThatCannotBeRenewedIsRefusedAndTheNextCallAtOnce(t *testing.
 	}
 
 	second := callTool(t, cs, "browse_resources", map[string]any{})
-	if !second.IsError || !strings.Contains(said(second), "xynaut login") {
-		t.Fatalf("the call after a session ended was not refused naming xynaut login:\n%s", said(second))
+	if !second.IsError || !strings.Contains(said(second), "xynolog login") {
+		t.Fatalf("the call after a session ended was not refused naming xynolog login:\n%s", said(second))
 	}
 	if again := len(issuer.refreshGrants()); again != grants {
 		t.Errorf("the call after the session ended asked the issuer again (%d grants, was %d)", again, grants)
@@ -136,8 +136,8 @@ func TestMCPACodespaceWhoseForwardIsDownIsSaidAndNothingIsStarted(t *testing.T) 
 	}
 
 	down := callTool(t, cs, "browse_resources", map[string]any{"kb": "codespace:o/n"})
-	if !down.IsError || !strings.Contains(said(down), "xynaut status --repo o/n") {
-		t.Errorf("a call to a codespace whose forward is down did not name xynaut status --repo o/n:\n%s", said(down))
+	if !down.IsError || !strings.Contains(said(down), "xynolog status --repo o/n") {
+		t.Errorf("a call to a codespace whose forward is down did not name xynolog status --repo o/n:\n%s", said(down))
 	}
 	after, err := os.ReadFile(filepath.Join(launcher.StateDir(), "stack.json"))
 	if err != nil {

@@ -1,4 +1,4 @@
-// Golden tests for the xynaut launcher — the executable spec of its flags,
+// Golden tests for the xynolog launcher — the executable spec of its flags,
 // runtime selection, required-env extraction and the rest.
 //
 // Everything external is faked: a private PATH holds one binary (fakert)
@@ -84,7 +84,7 @@ func TestMain(m *testing.M) {
 		os.Exit(1)
 	}
 	defer os.RemoveAll(binDir)
-	launcherBin = filepath.Join(binDir, harness.Exe("xynaut"))
+	launcherBin = filepath.Join(binDir, harness.Exe("xynolog"))
 	fakertBin = filepath.Join(binDir, harness.Exe("fakert"))
 	// The launcher under test is built with the scenario tag, and only that
 	// build does three things a released one does not: it verifies images
@@ -398,7 +398,7 @@ func (s *scenario) killServes(t errorReporter) {
 }
 
 // repoRoot: the monorepo root, from this package's own location. Tests run
-// with the package directory as cwd, which is cmd/xynaut.
+// with the package directory as cwd, which is cmd/xynolog.
 func repoRoot() string {
 	abs, err := filepath.Abs(filepath.Join("..", ".."))
 	if err != nil {
@@ -868,9 +868,9 @@ func TestStartDefaultBoot(t *testing.T) {
 		"http://localhost:16686",
 		// The collector's readout is the containers', at the bridge address.
 		"http://192.168.64.1:24110/metrics",
-		"xynaut status",
-		"xynaut logs",
-		"xynaut stop",
+		"xynolog status",
+		"xynolog logs",
+		"xynolog stop",
 	)
 	if strings.Contains(stdout, "Qdrant Dashboard") {
 		t.Errorf("the summary offers Qdrant's dashboard, which no person dials:\n%s", stdout)
@@ -981,7 +981,7 @@ func TestConcurrentStartsOnOneRootQueue(t *testing.T) {
 	if r1.code != 0 || r2.code != 0 {
 		t.Fatalf("both starts must succeed: first %d, second %d\nfirst:\n%s\nsecond:\n%s", r1.code, r2.code, r1.out, r2.out)
 	}
-	mustContain(t, "the second start says what it waits for", r2.out, "Another xynaut start is running for this KB")
+	mustContain(t, "the second start says what it waits for", r2.out, "Another xynolog start is running for this KB")
 	// No interleaving: the second start's first container command (the host
 	// probe) comes after the first start has run its last service.
 	lines := strings.Split(s.argv(t), "\n")
@@ -1026,7 +1026,7 @@ func TestStatusRootSaysNotReadyWhileAStartRuns(t *testing.T) {
 	if code == 0 {
 		t.Fatal("status --root reported a stack ready while its start was still running")
 	}
-	mustContain(t, "status names the start in progress", stderr, "A xynaut start is running for this KB")
+	mustContain(t, "status names the start in progress", stderr, "A xynolog start is running for this KB")
 }
 
 func TestStartRuntimeDockerBoot(t *testing.T) {
@@ -1039,7 +1039,7 @@ func TestStartRuntimeDockerBoot(t *testing.T) {
 	checkGolden(t, "start-docker-boot.argv", s.argv(t))
 }
 
-// `xynaut settings network` is local unless set to lan, refuses anything
+// `xynolog settings network` is local unless set to lan, refuses anything
 // else, and `local` returns it to the default (LOCAL-ONLY-STACK D3).
 func TestNetworkSettingIsLocalOrLAN(t *testing.T) {
 	s := newScenario(t, "container")
@@ -1113,7 +1113,7 @@ func TestStartNetworkLANRefusesDocker(t *testing.T) {
 	if code != 1 {
 		t.Fatalf("a lan start under Docker: exit %d, want 1\nstderr:\n%s", code, stderr)
 	}
-	mustContain(t, "stderr", stderr, "built for Apple container alone", "xynaut settings network local")
+	mustContain(t, "stderr", stderr, "built for Apple container alone", "xynolog settings network local")
 }
 
 // A `network lan` start, live: the issuer proxy runs (the scenario build puts
@@ -1254,7 +1254,7 @@ func recordedIssuerProxyPID(t *testing.T, s *scenario) int {
 }
 
 // The issuer's port is its document's, like the rest of the issuer: one
-// Keycloak for every knowledge base here, on 8080 unless `xynaut settings
+// Keycloak for every knowledge base here, on 8080 unless `xynolog settings
 // keycloak-port` writes another into the document. A codespace's post-start
 // runs a bare start on every resume, which is why the port a laptop moved it
 // to is written down rather than passed. The port reaches each service as
@@ -1946,7 +1946,7 @@ func TestStartMissingEnvVar(t *testing.T) {
 	}
 	mustContain(t, "stderr", stderr,
 		"The knowledge base's documents name the variable ANTHROPIC_API_KEY (fromEnv), and it is not set in the environment.",
-		"register a secret source once:  xynaut settings secret set ANTHROPIC_API_KEY")
+		"register a secret source once:  xynolog settings secret set ANTHROPIC_API_KEY")
 	checkGolden(t, "start-missing-env.argv", s.argv(t))
 }
 
@@ -1996,7 +1996,7 @@ func TestStartUnknownArg(t *testing.T) {
 }
 
 func TestStartCredentialValidation(t *testing.T) {
-	// Admin seeding is `xynaut useradd`'s; start does not know these flags
+	// Admin seeding is `xynolog useradd`'s; start does not know these flags
 	// at all.
 	s := newScenario(t, "container")
 	for _, tc := range []struct {
@@ -2643,7 +2643,7 @@ func TestAStartRefusesASharedQdrantUnderALostKeyThatAnotherKnowledgeBaseUses(t *
 	}
 	mustContain(t, "the refusal", stderr, "did not answer the machine's API key", "it keeps the index of "+first+":",
 		"listing its collections: 401 Unauthorized: Invalid API key or JWT")
-	mustContain(t, "the refusal", stdout, "Stop them first (xynaut stop --root <its path>), then start each again after this one.")
+	mustContain(t, "the refusal", stdout, "Stop them first (xynolog stop --root <its path>), then start each again after this one.")
 	if got := argvStops(strings.TrimPrefix(s.argv(t), before)); slices.Contains(got, "semiont-qdrant") {
 		t.Errorf("the refused start stopped the shared Qdrant: %q", got)
 	}
@@ -2699,8 +2699,8 @@ func qdrantRunsUnderTheMachinesKey(t *testing.T, s *scenario) string {
 	return key
 }
 
-// `xynaut stop --service vectors` stops the shared Qdrant alone, and
-// `xynaut clean --shared --store vectors` removes its store and its stamp.
+// `xynolog stop --service vectors` stops the shared Qdrant alone, and
+// `xynolog clean --shared --store vectors` removes its store and its stamp.
 // The clean is refused while a recorded stack keeps its index there, and
 // while a record says the shared Qdrant runs, removing nothing.
 func TestCleanSharedRemovesTheSharedQdrantsStore(t *testing.T) {
@@ -2742,7 +2742,7 @@ func TestCleanSharedRemovesTheSharedQdrantsStore(t *testing.T) {
 	if err := os.WriteFile(statePathFor(s.home), []byte(`{"schema":3,"stacks":{},"shared":{"semiont-qdrant":{"container":"semiont-qdrant","provided":"launcher","runtime":"container"}}}`), 0o644); err != nil {
 		t.Fatal(err)
 	}
-	refused("beside the shared Qdrant's record", "Stop it first: xynaut stop --service vectors")
+	refused("beside the shared Qdrant's record", "Stop it first: xynolog stop --service vectors")
 	if _, stderr, code := s.run(t, "stop", "--service", "vectors"); code != 0 {
 		t.Fatalf("stop --service vectors with no stack recorded: exit %d\nstderr:\n%s", code, stderr)
 	}
@@ -2884,19 +2884,19 @@ func TestTwoKnowledgeBasesRunSideBySide(t *testing.T) {
 
 	s.cwd = t.TempDir()
 	argv, _, stderr := run("a stop standing in neither", 1, "stop")
-	mustContain(t, "a stop standing in neither", stderr, "xynaut stop --root "+first, "xynaut stop --root "+other)
+	mustContain(t, "a stop standing in neither", stderr, "xynolog stop --root "+first, "xynolog stop --root "+other)
 	mustNotContain(t, "a stop standing in neither", argv, " stop ", " rm ")
 	s.cwd = ""
 
 	twin := asTheSystemNamesIt(t, mkKB(t))
 	s.kb = twin
 	argv, _, stderr = run("a second copy's start", 1, "start")
-	mustContain(t, "a second copy's start", stderr, testKBDid+" is running from "+first, "xynaut stop --root "+first)
+	mustContain(t, "a second copy's start", stderr, testKBDid+" is running from "+first, "xynolog stop --root "+first)
 	mustNotContain(t, "a second copy's start", argv, "run -d")
 	// A stop of the twin clone, standing in it or naming it, is no stop of
 	// the copy that runs: that one is stopped from its own clone.
 	argv, _, stderr = run("a stop standing in the twin", 1, "stop")
-	mustContain(t, "a stop standing in the twin", stderr, "stack runs from "+first+", not "+twin, "xynaut stop --root "+first)
+	mustContain(t, "a stop standing in the twin", stderr, "stack runs from "+first+", not "+twin, "xynolog stop --root "+first)
 	mustNotContain(t, "a stop standing in the twin", argv, " stop ", " rm ")
 	s.cwd = t.TempDir()
 	argv, _, stderr = run("a stop naming the twin", 1, "stop", "--root", twin)
@@ -2911,7 +2911,7 @@ func TestTwoKnowledgeBasesRunSideBySide(t *testing.T) {
 	withDomain(t, third, "example.github.io:third-kb")
 	s.kb = third
 	argv, _, stderr = run("a start on a held gateway port", 1, "start")
-	mustContain(t, "a start on a held gateway port", stderr, first+"'s stack holds port 4000", "knowledge-base.yaml", "xynaut stop --root "+first)
+	mustContain(t, "a start on a held gateway port", stderr, first+"'s stack holds port 4000", "knowledge-base.yaml", "xynolog stop --root "+first)
 	mustNotContain(t, "a start on a held gateway port", argv, "run -d")
 	// A stop standing in it sweeps its own names, which nothing runs, and
 	// leaves both stacks that do.
@@ -3024,8 +3024,8 @@ func TestStatusAsksARecordedStackOnlyWhereItsRecordSays(t *testing.T) {
 // block's ports. The shared issuer is on no block: its document places it,
 // for every knowledge base here. Each container listens where it always does. A dry run plans
 // on the block a start would take and keeps none; a re-run keeps its block;
-// `xynaut forget` frees one, and the next knowledge base's first start takes
-// it. `xynaut init` writes a gateway port no known knowledge base commits.
+// `xynolog forget` frees one, and the next knowledge base's first start takes
+// it. `xynolog init` writes a gateway port no known knowledge base commits.
 func TestEachKnowledgeBaseRunsOnAPortBlockOfItsOwn(t *testing.T) {
 	s := newScenario(t, "container")
 	first := s.kb
@@ -3196,7 +3196,7 @@ func TestAStartOnTheBrokerAnotherKnowledgeBaseHereNamesIsRefused(t *testing.T) {
 		}
 		mustContain(t, label, stderr,
 			`spec.messaging.external.servers is "nats://nats.example.com:4223", which `+filepath.Join(first, ".semiont", "stack", "knowledge-base.yaml")+" names too: a broker serves one knowledge base",
-			"xynaut forget "+first)
+			"xynolog forget "+first)
 		mustNotContain(t, label, strings.TrimPrefix(s.argv(t), before), "run -d")
 	}
 	externalBroker(t, s, "nats.example.com:4224")
@@ -3441,7 +3441,7 @@ func TestStateImageMismatchRefuses(t *testing.T) {
 	mustContain(t, "refusal", stdout+stderr,
 		"postgres:14.9-alpine",  // what wrote the data
 		"postgres:15.18-alpine", // what the plan wants
-		"It is every knowledge base's here; to start afresh: xynaut clean --shared --store identity-store") // the way out
+		"It is every knowledge base's here; to start afresh: xynolog clean --shared --store identity-store") // the way out
 	if _, err := os.Stat(filepath.Join(pg, "PG_VERSION")); err != nil {
 		t.Error("a refusal must not touch the data dir")
 	}
@@ -3789,7 +3789,7 @@ func TestCleanRefusesRunningStack(t *testing.T) {
 	if code == 0 {
 		t.Fatalf("clean under a recorded stack must refuse\nstdout:\n%s", stdout)
 	}
-	mustContain(t, "refusal", stdout+stderr, "xynaut stop")
+	mustContain(t, "refusal", stdout+stderr, "xynolog stop")
 	if _, err := os.Stat(stateRootFor(s.home, testKBKey)); err != nil {
 		t.Error("refusal must not remove anything")
 	}
@@ -4069,7 +4069,7 @@ func TestCleanOfARealmRefusesAnIssuerRecordedAsRunningThatDoesNotAnswer(t *testi
 		t.Fatalf("clean of a realm at an issuer that does not answer: exit %d, want 1\nstdout:\n%s", code, stdout)
 	}
 	mustContain(t, "the refusal", stderr, "The shared issuer at http://127.0.0.1:9:",
-		"Once it is stopped (xynaut stop --group issuer), this clean runs it for the delete.")
+		"Once it is stopped (xynolog stop --group issuer), this clean runs it for the delete.")
 	mustNotContain(t, "the refusal's runtime calls", strings.TrimPrefix(s.argv(t), before), "--name semiont-keycloak", "stop semiont-keycloak")
 	realmOf(t, s, testKBKey)
 }
@@ -4323,7 +4323,7 @@ func TestCleanOfAnIndexRefusesAQdrantRecordedAsRunningThatDoesNotAnswer(t *testi
 				t.Fatalf("clean of an index at %s: exit %d, want 1\nstdout:\n%s", c.why, code, stdout)
 			}
 			mustContain(t, "the refusal", stderr, "The shared Qdrant at http://127.0.0.1:9: ", c.says,
-				"Once it is stopped (xynaut stop --service vectors), this clean runs it for the delete.")
+				"Once it is stopped (xynolog stop --service vectors), this clean runs it for the delete.")
 			mustNotContain(t, "the refusal's runtime calls", strings.TrimPrefix(s.argv(t), before), "--name semiont-qdrant", "stop semiont-qdrant")
 			if !indexHeld(t, s, ours) {
 				t.Error("the refused clean deleted the index")
@@ -4358,7 +4358,7 @@ func TestCleanOfAnOwnIndexLeavesTheSharedQdrant(t *testing.T) {
 	}
 }
 
-// `xynaut clean --shared --store identity-store` removes the shared issuer's
+// `xynolog clean --shared --store identity-store` removes the shared issuer's
 // PostgreSQL store, every realm in it, and its stamp, and keeps the issuer's
 // passwords for its next boot. It is refused beside --root, for a store the
 // machine does not keep, while a recorded stack signs in at the shared
@@ -4405,7 +4405,7 @@ func TestCleanSharedRemovesTheIssuersStore(t *testing.T) {
 	if err := os.WriteFile(statePathFor(s.home), []byte(`{"schema":3,"stacks":{},"shared":{"semiont-postgres":{"container":"semiont-postgres","provided":"launcher","runtime":"container"}}}`), 0o644); err != nil {
 		t.Fatal(err)
 	}
-	refused("beside the issuer's record", "Stop it first: xynaut stop --group issuer")
+	refused("beside the issuer's record", "Stop it first: xynolog stop --group issuer")
 	if _, stderr, code := s.run(t, "stop", "--group", "issuer"); code != 0 {
 		t.Fatalf("stop --group issuer: exit %d\nstderr:\n%s", code, stderr)
 	}
@@ -4529,7 +4529,7 @@ func TestStatusVerboseDiskUsage(t *testing.T) {
 		"did:web:example.github.io:test-kb",
 		"its stores "+dir,
 		"on disk, in these directories beneath it:",
-		"and 1 kept secret (xynaut settings secret-store lists it)")
+		"and 1 kept secret (xynolog settings secret-store lists it)")
 	// Each store by its own directory, what it takes, and what it holds: the
 	// issuer's among what the machine keeps for every knowledge base, the
 	// knowledge base's own beneath its directory.
@@ -4555,7 +4555,7 @@ func TestStatusVerboseDiskUsage(t *testing.T) {
 	}
 	mustContain(t, "every knowledge base's row", stdout,
 		"all KBs    "+filepath.Dir(dir),
-		"2 knowledge bases", "1 orphaned", "xynaut clean --root gone.example.org-old-kb")
+		"2 knowledge bases", "1 orphaned", "xynolog clean --root gone.example.org-old-kb")
 }
 
 // A knowledge base's stores are keyed by its identity, so another clone of it
@@ -4667,7 +4667,7 @@ func uploadBearerTag(t *testing.T, fakertDir string) string {
 	return tagOf(captured.Authorization)
 }
 
-// `xynaut login` is the device authorization grant (RFC 8628). The launcher
+// `xynolog login` is the device authorization grant (RFC 8628). The launcher
 // learns the issuer from the knowledge base's resource metadata, asks it for
 // a code as the launcher's own public client, and stores the tokens the
 // issuer returns — no --email, no stdin, no password anywhere in this
@@ -4746,7 +4746,7 @@ func TestLoginWithoutStackRefuses(t *testing.T) {
 	if code == 0 {
 		t.Fatal("login with no running stack must refuse")
 	}
-	mustContain(t, "fix-it", stderr, "xynaut start")
+	mustContain(t, "fix-it", stderr, "xynolog start")
 }
 
 // --- yield (sdk-go glue) ---
@@ -4847,7 +4847,7 @@ func TestYieldWithoutSessionAdvisesLogin(t *testing.T) {
 	if code == 0 {
 		t.Fatalf("yield without a session must refuse\nstdout:\n%s", stdout)
 	}
-	mustContain(t, "fix-it", stdout+stderr, "xynaut login")
+	mustContain(t, "fix-it", stdout+stderr, "xynolog login")
 }
 
 func TestYieldAutoRefreshesExpiredToken(t *testing.T) {
@@ -4881,7 +4881,7 @@ func TestYieldPostRefreshRejectionSaysSo(t *testing.T) {
 	if code == 0 {
 		t.Fatalf("yield must fail when every token is rejected\nstdout:\n%s", stdout)
 	}
-	mustContain(t, "post-refresh rejection", stdout+stderr, "after a successful refresh", "xynaut login")
+	mustContain(t, "post-refresh rejection", stdout+stderr, "after a successful refresh", "xynolog login")
 	if strings.Contains(stdout+stderr, "could not renew") {
 		t.Errorf("claimed the refresh failed when it succeeded:\n%s\n%s", stdout, stderr)
 	}
@@ -4919,7 +4919,7 @@ func TestStatusVerboseShowsSessions(t *testing.T) {
 	}
 	// Before any login: the section says so, without inventing a session.
 	stdout, _, _ := s.run(t, "status", "--verbose")
-	mustContain(t, "no sessions yet", stdout, "SESSIONS", "none — xynaut login")
+	mustContain(t, "no sessions yet", stdout, "SESSIONS", "none — xynolog login")
 	if _, stderr, code := s.run(t, "login"); code != 0 {
 		t.Fatalf("login: exit %d\nstderr:\n%s", code, stderr)
 	}
@@ -5087,7 +5087,7 @@ func TestStatusMixed(t *testing.T) {
 	mustContain(t, "worker", statusLine(t, stdout, "worker"), "docker", "✗ running", "http://localhost:24100/health")
 	mustContain(t, "inference", statusLine(t, stdout, "inference"), "host", "✓ reachable")
 	mustContain(t, "collector", statusLine(t, stdout, "collector"), "✗ absent")
-	mustContain(t, "stdout", stdout, "SERVICE", "RUNTIME", "STATUS", "xynaut roots")
+	mustContain(t, "stdout", stdout, "SERVICE", "RUNTIME", "STATUS", "xynolog roots")
 	// A knowledge base's own services name no address: one is a --service
 	// away, with its runtime and the endpoint asked. A shared one's row
 	// names where it is asked; with no stack recorded, the knowledge base
@@ -5370,10 +5370,10 @@ func TestInvocationLog(t *testing.T) {
 	}
 	log := string(b)
 	mustContain(t, "invocation log", log,
-		"invoke xynaut version (version dev",
-		"exit 0 xynaut version",
-		"invoke xynaut useradd --email a@b.co --password <redacted>",
-		"exit 1 xynaut useradd",
+		"invoke xynolog version (version dev",
+		"exit 0 xynolog version",
+		"invoke xynolog useradd --email a@b.co --password <redacted>",
+		"exit 1 xynolog useradd",
 	)
 	if strings.Contains(log, "supersecretpw") {
 		t.Error("password leaked into the invocation log")
@@ -5396,7 +5396,7 @@ func TestUseradd(t *testing.T) {
 	if code != 1 {
 		t.Fatalf("no-stack useradd: want exit 1, got %d", code)
 	}
-	mustContain(t, "stderr", stderr, "xynaut start")
+	mustContain(t, "stderr", stderr, "xynolog start")
 	if strings.Contains(stderr, "gateway") {
 		t.Errorf("the refusal blames the gateway, which this path does not use:\n%s", stderr)
 	}
@@ -5502,7 +5502,7 @@ func TestUseradd(t *testing.T) {
 // --- secret sources ---
 
 func TestSecretCommand(t *testing.T) {
-	// `xynaut settings secret` stores POINTERS (provider + path) in
+	// `xynolog settings secret` stores POINTERS (provider + path) in
 	// roots.json — never a value. set verifies with one read (discarded);
 	// list shows pointers; rm forgets.
 	s := newScenario(t, "container", "op")
@@ -5568,7 +5568,7 @@ func TestSecretIsNotATopLevelCommand(t *testing.T) {
 	s := newScenario(t, "container", "op")
 	_, stderr, code := s.run(t, "secret", "set", "ANTHROPIC_API_KEY", "op://OSS/Anthropic/credential")
 	if code == 0 {
-		t.Fatal("`xynaut secret` runs as a top-level verb")
+		t.Fatal("`xynolog secret` runs as a top-level verb")
 	}
 	mustContain(t, "stderr", stderr, "Unknown command: secret")
 }
@@ -5716,7 +5716,7 @@ func TestSecretPush(t *testing.T) {
 		t.Error("push without a source should fail")
 	} else {
 		mustContain(t, "stderr", stderr, "No secret source registered for NOPE_KEY",
-			"xynaut settings secret set NOPE_KEY")
+			"xynolog settings secret set NOPE_KEY")
 	}
 	if _, stderr, code := s3.run(t, "settings", "secret", "push", "ANTHROPIC_API_KEY", "--repo", "notaslug"); code != 1 {
 		t.Error("bad slug should fail")
@@ -5757,7 +5757,7 @@ func TestCodespaceSecretMissingPointsAtPush(t *testing.T) {
 	}
 	mustContain(t, "stderr", stderr,
 		"You have a local source registered (op://OSS/Anthropic/credential)",
-		"xynaut settings secret push ANTHROPIC_API_KEY --repo "+csRepo)
+		"xynolog settings secret push ANTHROPIC_API_KEY --repo "+csRepo)
 }
 
 // A secret value never rides a container's command line, where any process on
@@ -6072,7 +6072,7 @@ func TestCodespaceStartCreates(t *testing.T) {
 		"Semiont Browser    http://localhost:3000",
 		// Nothing auto-creates an account, so the summary leads the
 		// follow-ups with the command that makes the first one.
-		"First user:", "xynaut useradd --repo "+csRepo,
+		"First user:", "xynolog useradd --repo "+csRepo,
 		"local uncommitted changes don't travel",
 		"Halt compute:")
 	b, _ := os.ReadFile(statePathFor(s.home))
@@ -6189,7 +6189,7 @@ func TestCodespaceHookFailureFailsFastWithTheCause(t *testing.T) {
 	}
 	// The advice names this repo, and works as printed: a failed setup leaves
 	// a codespace no record names, and stop finds it the way start did.
-	advice := "xynaut stop --repo " + csRepo + " --delete"
+	advice := "xynolog stop --repo " + csRepo + " --delete"
 	mustContain(t, "cleanup advice", both, advice)
 	if _, stderr, code := s.run(t, strings.Fields(advice)[1:]...); code != 0 {
 		t.Errorf("the printed cleanup advice fails: exit %d\n%s", code, stderr)
@@ -6228,14 +6228,14 @@ func TestCodespaceForwardDeathFailsFast(t *testing.T) {
 		t.Fatalf("start must fail when the forward dies\nstdout:\n%s", stdout)
 	}
 	mustContain(t, "diagnosis", stdout+stderr,
-		"port forward", "died", "xynaut start")
+		"port forward", "died", "xynolog start")
 	if strings.Contains(stdout+stderr, "did not become ready") {
 		t.Errorf("forward death misblamed the KB:\n%s\n%s", stdout, stderr)
 	}
 }
 
 func TestCodespaceBareResumeRootless(t *testing.T) {
-	// After a create, a BARE `xynaut start` from any directory resumes the
+	// After a create, a BARE `xynolog start` from any directory resumes the
 	// recorded codespace: no --repo, no clone, no root discovery, no create.
 	s := newCodespaceScenario(t)
 	if _, stderr, code := s.run(t, "start", "--runtime", "codespace"); code != 0 {
@@ -6532,7 +6532,7 @@ func TestUseraddCodespace(t *testing.T) {
 	remote = remote[:strings.IndexByte(remote, '\n')]
 	mustContain(t, "remote command", remote,
 		"cd /workspaces/* &&", // the KB clone; the remote shell expands the glob
-		"xynaut useradd",      // the codespace's OWN launcher, not a container
+		"xynolog useradd",     // the codespace's OWN launcher, not a container
 		"'alice$NAME@example.com'", "'--upsert'", "'--password-stdin'")
 	if strings.Contains(remote, "rm -rf") {
 		t.Fatalf("the password reached the remote COMMAND LINE:\n%s", remote)
@@ -6568,7 +6568,7 @@ func TestUseraddCodespace(t *testing.T) {
 	if _, stderr, code := s.run(t, "useradd", "--repo", "no/such", "--email", "b@c.co"); code != 1 {
 		t.Error("unknown --repo should fail")
 	} else {
-		mustContain(t, "stderr", stderr, "no/such has no codespace", "xynaut start --runtime codespace --repo no/such")
+		mustContain(t, "stderr", stderr, "no/such has no codespace", "xynolog start --runtime codespace --repo no/such")
 	}
 }
 
@@ -6615,7 +6615,7 @@ func TestRepoVerbsAdoptAnUnrecordedCodespace(t *testing.T) {
 		if code != 1 {
 			t.Fatalf("login with no forward: want exit 1, got %d\n%s", code, stderr)
 		}
-		mustContain(t, "stderr", stderr, "orphan-cs", "not forwarded", "xynaut start --runtime codespace --repo "+csRepo)
+		mustContain(t, "stderr", stderr, "orphan-cs", "not forwarded", "xynolog start --runtime codespace --repo "+csRepo)
 	})
 }
 
@@ -6710,7 +6710,7 @@ func TestUseraddAdministersTheStackItSelectedNotTheCwd(t *testing.T) {
 	if code != 1 {
 		t.Errorf("useradd standing in a knowledge base nothing started: exit %d, want 1", code)
 	}
-	mustContain(t, "useradd standing in a knowledge base nothing started", stderr, "xynaut start --root "+s.cwd)
+	mustContain(t, "useradd standing in a knowledge base nothing started", stderr, "xynolog start --root "+s.cwd)
 }
 
 func TestUseraddAmbiguousStacks(t *testing.T) {
@@ -6735,7 +6735,7 @@ func TestUseraddAmbiguousStacks(t *testing.T) {
 		t.Fatalf("ambiguous useradd: want exit 1, got %d", code)
 	}
 	mustContain(t, "stderr", stderr, "Multiple stacks are recorded",
-		"xynaut useradd --root "+s.kb, "xynaut useradd --repo "+csRepo)
+		"xynolog useradd --root "+s.kb, "xynolog useradd --repo "+csRepo)
 
 	// Naming the codespace resolves it; the local stack is reachable by
 	// simply omitting --repo is NOT true here, so it must still refuse —
@@ -6797,7 +6797,7 @@ func TestCodespaceWithoutGh(t *testing.T) {
 	if strings.Contains(all, "deleted?") || strings.Contains(all, "no longer exists") {
 		t.Errorf("an unqueryable codespace was reported as deleted:\n%s", all)
 	}
-	if strings.Contains(all, "xynaut stop --delete") {
+	if strings.Contains(all, "xynolog stop --delete") {
 		t.Errorf("suggested discarding the record of a possibly-live codespace:\n%s", all)
 	}
 }
@@ -6911,7 +6911,7 @@ func TestCodespaceDidRefreshConfirmsAndReportsDrift(t *testing.T) {
 }
 
 // The reaped-record advice must work where people actually run it — beside a
-// local stack. A second recorded stack turns a bare `xynaut stop --delete`
+// local stack. A second recorded stack turns a bare `xynolog stop --delete`
 // into a refusal, so status names the stack, and the refusal's menu keeps the
 // --delete it was given: without it, following the menu would run
 // `gh codespace stop` against a codespace GitHub has deleted.
@@ -6927,7 +6927,7 @@ func TestReapedCodespaceAdviceWorksBesideOtherStacks(t *testing.T) {
 	if err := os.WriteFile(statePathFor(s.home), []byte(both), 0o644); err != nil {
 		t.Fatal(err)
 	}
-	advice := "xynaut stop --repo " + csRepo + " --delete"
+	advice := "xynolog stop --repo " + csRepo + " --delete"
 
 	// A bare stop cannot choose; its menu must keep the --delete it was given.
 	_, stderr, _ := s.run(t, "stop", "--delete")
@@ -6962,7 +6962,7 @@ func TestStartFailsFastOnReapedCodespace(t *testing.T) {
 	all := stdout + stderr
 	mustContain(t, "fail-fast reason and remedy", all,
 		"no longer exists",
-		"xynaut stop --repo "+csRepo+" --delete")
+		"xynolog stop --repo "+csRepo+" --delete")
 	if strings.Contains(all, "Waiting for the codespace VM") {
 		t.Errorf("start polled a ghost instead of failing fast:\n%s", all)
 	}
@@ -7007,7 +7007,7 @@ func TestPlainStopOnReapedCodespaceNamesTheForget(t *testing.T) {
 	if code == 0 {
 		t.Fatalf("stop on a reaped codespace succeeded\nstdout:\n%s\nstderr:\n%s", stdout, stderr)
 	}
-	mustContain(t, "stop output", stdout+stderr, "no longer exists", "xynaut stop --repo "+csRepo+" --delete")
+	mustContain(t, "stop output", stdout+stderr, "no longer exists", "xynolog stop --repo "+csRepo+" --delete")
 	if strings.Contains(string(mustLogOrEmpty(s)), "gh codespace stop") {
 		t.Errorf("stop ran gh codespace stop against a codespace GitHub no longer has")
 	}
@@ -7077,7 +7077,7 @@ func TestCodespaceForwardsItsIssuer(t *testing.T) {
 		}
 		log, _ := os.ReadFile(s.log)
 		mustContain(t, "argv log", string(log),
-			"xynaut settings keycloak-port 8081 && xynaut start",
+			"xynolog settings keycloak-port 8081 && xynolog start",
 			"gh codespace ports forward 8081:8081 -c fake-cs-1")
 		mustContain(t, "stack.json", record(t, s), `"keycloakPort": 8081`)
 		// The codespace's own summary names ITS ports, which are wrong from
@@ -7255,11 +7255,11 @@ func TestCodespaceMovesOnlyAfterItsOwnStartFinishes(t *testing.T) {
 	lines := strings.Split(s.argv(t), "\n")
 	move, stackProbes, lastProbe := -1, 0, -1
 	for i, l := range lines {
-		if strings.Contains(l, "xynaut status") && strings.Contains(l, "SEMIONT_KB_READY") {
+		if strings.Contains(l, "xynolog status") && strings.Contains(l, "SEMIONT_KB_READY") {
 			stackProbes++
 			lastProbe = i
 		}
-		if move < 0 && strings.Contains(l, "xynaut settings keycloak-port 8081 && xynaut start") {
+		if move < 0 && strings.Contains(l, "xynolog settings keycloak-port 8081 && xynolog start") {
 			move = i
 		}
 	}
@@ -7313,7 +7313,7 @@ func TestCodespaceStopKeepsRecordDeleteForgets(t *testing.T) {
 		t.Fatalf("stop: exit %d\nstderr:\n%s", code, stderr)
 	}
 	mustContain(t, "stop stdout", stdout, "billing halted", "state and credentials persist",
-		"xynaut start --runtime codespace --repo "+csRepo, "xynaut stop --repo "+csRepo+" --delete")
+		"xynolog start --runtime codespace --repo "+csRepo, "xynolog stop --repo "+csRepo+" --delete")
 	log, _ := os.ReadFile(s.log)
 	mustContain(t, "argv log", string(log), "gh codespace stop -c fake-cs-1")
 	b, err := os.ReadFile(statePathFor(s.home))
@@ -7366,13 +7366,13 @@ func TestCodespaceStatus(t *testing.T) {
 	// forward, credentials read fresh.
 	s.extraEnv = append(s.extraEnv,
 		`FAKERT_GH_CS_LIST=[{"name":"fake-cs-1","state":"Available","repository":"pingel-org/foo-kb"}]`)
-	// The default report POINTS at the catalog; `xynaut roots` lists the
+	// The default report POINTS at the catalog; `xynolog roots` lists the
 	// remote repos.
 	stdout, _, code := s.run(t, "status")
 	if code != 0 {
 		t.Fatalf("status: exit %d\nstdout:\n%s", code, stdout)
 	}
-	mustContain(t, "status stdout", stdout, "KNOWLEDGE BASES", "xynaut roots")
+	mustContain(t, "status stdout", stdout, "KNOWLEDGE BASES", "xynolog roots")
 	// The forward is dead (killServes above): a record without a live
 	// tunnel is history, not activity.
 	if strings.Contains(stdout, "active: https://github.com/"+csRepo) {
@@ -7396,7 +7396,7 @@ func TestCodespaceStatus(t *testing.T) {
 		"the codespace's own launcher runs the stack inside it; only the KB is forwarded",
 		// No credentials: status reports where to connect and how to make a
 		// user, never an account it cannot vouch for.
-		"connect at Host localhost, Port 4000", "xynaut useradd --repo "+csRepo)
+		"connect at Host localhost, Port 4000", "xynolog useradd --repo "+csRepo)
 
 	// The respawned forward makes it ACTIVE — bare status says so, with the
 	// local port that answers.
@@ -7413,7 +7413,7 @@ func TestCodespaceStatus(t *testing.T) {
 		t.Fatalf("stopped status --repo: want exit 1, got %d\n%s", code, stdout)
 	}
 	mustContain(t, "stopped status stdout", stdout,
-		"state: Shutdown", "stopped — state and credentials persist", "xynaut start")
+		"state: Shutdown", "stopped — state and credentials persist", "xynolog start")
 }
 
 func TestCodespaceGuardsAndScoping(t *testing.T) {
@@ -7576,7 +7576,7 @@ func TestMultiStackCodespaces(t *testing.T) {
 	if code != 0 {
 		t.Fatalf("fleet status: exit %d\n%s", code, stdout)
 	}
-	mustContain(t, "status stdout", stdout, "KNOWLEDGE BASES", "xynaut roots",
+	mustContain(t, "status stdout", stdout, "KNOWLEDGE BASES", "xynolog roots",
 		"active: https://github.com/"+csRepo, "http://localhost:4000)",
 		"active: https://github.com/other/bar", "http://localhost:4001)")
 	stdout, _, code = s.run(t, "roots")
@@ -7618,7 +7618,7 @@ func TestMultiStackCodespaces(t *testing.T) {
 		t.Fatalf("ambiguous stop: want exit 1, got %d", code)
 	}
 	mustContain(t, "stderr", stderr, "Multiple stacks are recorded",
-		"xynaut stop --repo "+csRepo, "xynaut stop --repo other/bar")
+		"xynolog stop --repo "+csRepo, "xynolog stop --repo other/bar")
 	s.cwd = prevCwd
 
 	// stop --repo targets exactly one; the other stack keeps its forward.
@@ -7897,7 +7897,7 @@ func TestABrowserDocumentThatDoesNotHoldStopsNothing(t *testing.T) {
 	}
 }
 
-// `xynaut settings browser` shows the Browser's document: where it is, and
+// `xynolog settings browser` shows the Browser's document: where it is, and
 // what it says. It is changed by editing it; the setting that named the
 // Browser's image, and start's --port, are gone.
 func TestSettingsShowsTheBrowserDocument(t *testing.T) {
@@ -7951,7 +7951,7 @@ func TestMultiStackLocalPlusCodespace(t *testing.T) {
 		t.Fatalf("ambiguous stop: want exit 1, got %d", code)
 	}
 	mustContain(t, "stderr", stderr, "Multiple stacks are recorded",
-		"xynaut stop --root "+s.kb, "xynaut stop --repo "+csRepo)
+		"xynolog stop --root "+s.kb, "xynolog stop --repo "+csRepo)
 
 	// useradd will not GUESS between stacks; --runtime names the local one.
 	if _, stderr, code := s.run(t, "useradd", "--email", "a@b.co", "--generate-password"); code != 1 {
@@ -8927,7 +8927,7 @@ func TestStartRefusesRecordedRuntimeMismatch(t *testing.T) {
 		}
 		mustContain(t, "stderr", stderr,
 			"A recorded stack is running under docker",
-			"Stop it first (xynaut stop), or start with --runtime docker.")
+			"Stop it first (xynolog stop), or start with --runtime docker.")
 	}
 }
 
@@ -9645,9 +9645,9 @@ func TestCleanShowsEachSecretItDeletesFromTheFilesystem(t *testing.T) {
 	}
 }
 
-// --- xynaut settings ---
+// --- xynolog settings ---
 
-// settingRow: what `xynaut settings` prints for one setting, or "": its line,
+// settingRow: what `xynolog settings` prints for one setting, or "": its line,
 // and the line below when a wide value put its explanation there. A label may
 // carry its flag: "secret-store --default".
 func settingRow(out, label string) string {
@@ -9925,13 +9925,13 @@ func TestInitAndStartNameTheSecretsStore(t *testing.T) {
 	if code != 0 {
 		t.Fatalf("init: exit %d\nstdout:\n%s\nstderr:\n%s", code, stdout, stderr)
 	}
-	mustContain(t, "init's summary", stdout, "Secrets", "op://Semiont", "xynaut settings secret-store")
+	mustContain(t, "init's summary", stdout, "Secrets", "op://Semiont", "xynolog settings secret-store")
 
 	stdout, stderr, code = s.run(t, "start")
 	if code != 0 {
 		t.Fatalf("start: exit %d\nstderr:\n%s", code, stderr)
 	}
-	mustContain(t, "start's summary", stdout, "Secrets", `1Password vault "Semiont"`, "xynaut settings secret-store")
+	mustContain(t, "start's summary", stdout, "Secrets", `1Password vault "Semiont"`, "xynolog settings secret-store")
 }
 
 // A setter validates as a start would, and a refused value records nothing.
@@ -10018,7 +10018,7 @@ func TestStartServiceWorker(t *testing.T) {
 		"OTel collector detected — export enabled",
 		"--env SEMIONT_OIDC_CLIENT_KEY ",
 		"🚀 worker is up",
-		"xynaut status",
+		"xynolog status",
 	)
 	if strings.Contains(stdout, "PRIVATE KEY") {
 		t.Error("the worker's key leaked into stdout")
@@ -10050,7 +10050,7 @@ func TestStartServiceWorker(t *testing.T) {
 }
 
 // otherKBGateway: a gateway someone else runs, naming its issuer as a
-// knowledge base's gateway does, for `xynaut worker kb add` to ask.
+// knowledge base's gateway does, for `xynolog worker kb add` to ask.
 func otherKBGateway(t *testing.T) string {
 	t.Helper()
 	gateway := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -10375,7 +10375,7 @@ func TestAStartRefusesAKeyAnotherKnowledgeBaseOnTheListNames(t *testing.T) {
 	}
 	mustContain(t, "stderr", stderr,
 		"example.github.io:test-kb, which the shared worker serves, names the variable ANTHROPIC_API_KEY for an engine's key (fromEnv), and it is not set in the environment.",
-		"xynaut worker kb remove example.github.io:test-kb")
+		"xynolog worker kb remove example.github.io:test-kb")
 	if ran := strings.Join(strings.Split(s.argv(t), "\n")[before:], "\n"); strings.Contains(ran, " run ") {
 		t.Errorf("the refused start ran containers:\n%s", ran)
 	}
@@ -10413,7 +10413,7 @@ func TestAStartOfAKnowledgeBaseAddedAsAnothersIsRefused(t *testing.T) {
 	if code != 1 {
 		t.Fatalf("a start of a knowledge base added as another's: exit %d, want 1\nstdout:\n%s\nstderr:\n%s", code, stdout, stderr)
 	}
-	mustContain(t, "stderr", stderr, "xynaut worker kb remove example.github.io:test-kb")
+	mustContain(t, "stderr", stderr, "xynolog worker kb remove example.github.io:test-kb")
 	if ran := strings.Join(strings.Split(s.argv(t), "\n")[before:], "\n"); strings.Contains(ran, " run ") || strings.Contains(ran, " stop ") {
 		t.Errorf("the refused start ran or stopped containers:\n%s", ran)
 	}
@@ -10555,7 +10555,7 @@ func TestStartServiceDryRunWorker(t *testing.T) {
 		t.Fatalf("want exit 0, got %d", code)
 	}
 	mustContain(t, "stdout", s.norm(stdout),
-		"xynaut start --service worker --dry-run",
+		"xynolog start --service worker --dry-run",
 		"container stop semiont-worker",
 		"container image pull ghcr.io/the-ai-alliance/semiont-worker:latest",
 		"# write <data-home>/shared/worker-knowledge-bases.json: the worker's list, example.github.io:test-kb (local)",
@@ -10997,7 +10997,7 @@ func TestStartGroupDryRunAndRefusals(t *testing.T) {
 		t.Errorf("a dry run ran %q", got)
 	}
 	mustContain(t, "dry run", stdout,
-		"# xynaut start --group index --dry-run",
+		"# xynolog start --group index --dry-run",
 		"# gateway starts too: the weaver needs it",
 		"container run -d --name semiont-"+testKBKey+"-gateway",
 		"container run -d --name semiont-"+testKBKey+"-weaver")
@@ -11760,7 +11760,7 @@ func TestFailedGateDumpsContainerLogs(t *testing.T) {
 		"of semiont-qdrant's logs:",
 		"qdrant out", // fakert's `logs` stdout — proof the tail is the container's own
 		"qdrant err",
-		"Full logs:  xynaut logs --service vectors")
+		"Full logs:  xynolog logs --service vectors")
 }
 
 func TestCrashedContainerStaysInspectable(t *testing.T) {
@@ -12196,7 +12196,7 @@ func TestBrowserLifecycle(t *testing.T) {
 	}
 }
 
-// --- xynaut init ---
+// --- xynolog init ---
 
 func TestInitBirthsIdentity(t *testing.T) {
 	// Flag-driven birth, prompt-free: .semiont/config.yaml carries the exact
@@ -12929,7 +12929,7 @@ func TestBareFlagsHintAtStart(t *testing.T) {
 	}
 	mustContain(t, "stderr", stderr,
 		"Unknown command: --config",
-		"did you mean:  xynaut start --config anthropic --no-observe")
+		"did you mean:  xynolog start --config anthropic --no-observe")
 }
 
 // --- about ---
@@ -12940,7 +12940,7 @@ func TestAbout(t *testing.T) {
 	if code != 0 {
 		t.Fatalf("want exit 0, got %d", code)
 	}
-	if !strings.HasPrefix(stdout, "Xynoplex · xynaut\n") {
+	if !strings.HasPrefix(stdout, "Xynoplex · xynolog\n") {
 		t.Errorf("about must begin with the Semiont title line, got:\n%s", stdout)
 	}
 	mustContain(t, "stdout", stdout,
@@ -12950,7 +12950,7 @@ func TestAbout(t *testing.T) {
 		"ghcr.io/the-ai-alliance",
 		"Apache-2.0",
 		"container, docker",
-		"xynaut start --help",
+		"xynolog start --help",
 	)
 }
 
@@ -12964,7 +12964,7 @@ func TestVersion(t *testing.T) {
 			t.Fatalf("%s: want exit 0, got %d", arg, code)
 		}
 		// Exactly one machine-friendly line — no header, no decoration.
-		if stdout != "xynaut dev (commit none, built unknown)\n" {
+		if stdout != "xynolog dev (commit none, built unknown)\n" {
 			t.Errorf("stdout for %s not a bare version line:\n%s", arg, stdout)
 		}
 	}
@@ -13018,7 +13018,7 @@ func TestBrowseAutoRefreshesExpiredToken(t *testing.T) {
 		t.Fatalf("browse with refreshable token: exit %d\nstdout:\n%s\nstderr:\n%s", code, stdout, stderr)
 	}
 	mustContain(t, "stderr", stderr, "Session refreshed")
-	if strings.Contains(stdout+stderr, "xynaut login") {
+	if strings.Contains(stdout+stderr, "xynolog login") {
 		t.Errorf("a renewed session was still sent to login:\n%s\n%s", stdout, stderr)
 	}
 	if signIn, _ := storedSignIn(t, s.home, localKey); tagOf(signIn.Token) != "fake-jwt-token-2" {
@@ -13035,7 +13035,7 @@ func TestBrowseWithoutSessionAdvisesLogin(t *testing.T) {
 	if code == 0 {
 		t.Fatal("browse without a session must refuse")
 	}
-	mustContain(t, "fix-it", stdout+stderr, "xynaut login")
+	mustContain(t, "fix-it", stdout+stderr, "xynolog login")
 }
 
 // WIRE SMOKE TEST (gather). This family's logic runs in process against a
@@ -13143,7 +13143,7 @@ func TestMatchGathersThenSearches(t *testing.T) {
 	if code != 0 {
 		t.Fatalf("match: exit %d\nstdout:\n%s\nstderr:\n%s", code, stdout, stderr)
 	}
-	mustContain(t, "stdout", stdout, "res-7", "Acme MSA", "0.910", "title match", "2 candidate(s)", "xynaut bind res-1 ann-1")
+	mustContain(t, "stdout", stdout, "res-7", "Acme MSA", "0.910", "title match", "2 candidate(s)", "xynolog bind res-1 ann-1")
 	// Rendered as a table, not dumped: a raw-JSON fallback would mean the
 	// parser did not understand the reply.
 	if strings.Contains(stdout, `"@id":"res-7"`) {
@@ -13267,7 +13267,7 @@ func TestListenRefusesWithoutSession(t *testing.T) {
 	if code == 0 {
 		t.Fatal("listen without a session must refuse")
 	}
-	mustContain(t, "fix-it", stdout+stderr, "xynaut login")
+	mustContain(t, "fix-it", stdout+stderr, "xynolog login")
 }
 
 func TestListenHelpNamesTheBridgingConstraint(t *testing.T) {
@@ -13375,7 +13375,7 @@ func TestYieldDelegateRefusesACompletionOfAnotherVerb(t *testing.T) {
 	if code == 0 {
 		t.Fatalf("a yield job that completed as a mark job must fail the command\nstdout:\n%s", stdout)
 	}
-	mustContain(t, "refusal", stderr, `yield --delegate: The job:complete of job fake-job-1 is a mark job's, and the job delegated is a yield job.`, "What the job did:  xynaut browse res-src")
+	mustContain(t, "refusal", stderr, `yield --delegate: The job:complete of job fake-job-1 is a mark job's, and the job delegated is a yield job.`, "What the job did:  xynolog browse res-src")
 	if strings.Contains(stdout, "Yielded") {
 		t.Errorf("claimed a yield that never happened:\n%s", stdout)
 	}
@@ -13598,7 +13598,7 @@ func TestMarkDelegateRefusesACompletionOfAnotherVerb(t *testing.T) {
 	if code == 0 {
 		t.Fatalf("a mark job that completed as a yield job must fail the command\nstdout:\n%s", stdout)
 	}
-	mustContain(t, "refusal", stderr, `mark --delegate: The job:complete of job fake-job-1 is a yield job's, and the job delegated is a mark job.`, "What the job did:  xynaut browse res-1 --annotations")
+	mustContain(t, "refusal", stderr, `mark --delegate: The job:complete of job fake-job-1 is a yield job's, and the job delegated is a mark job.`, "What the job did:  xynolog browse res-1 --annotations")
 	if strings.Contains(stdout, "Marked") {
 		t.Errorf("claimed a mark that never happened:\n%s", stdout)
 	}
@@ -13650,7 +13650,7 @@ func TestForgetCorpseWithLiveTwinSuggestsNoClean(t *testing.T) {
 	if code != 0 {
 		t.Fatalf("forget: exit %d\nstderr:\n%s", code, stderr)
 	}
-	if strings.Contains(stdout+stderr, "xynaut clean") {
+	if strings.Contains(stdout+stderr, "xynolog clean") {
 		t.Errorf("forgetting a corpse suggested cleaning state its live twin still owns:\n%s", stdout+stderr)
 	}
 }
@@ -13680,7 +13680,7 @@ func TestForgetRefusesAmbiguityAndRunningStack(t *testing.T) {
 	if code != 1 {
 		t.Fatalf("forget of the running stack's root: want exit 1, got %d", code)
 	}
-	mustContain(t, "running-stack refusal", stderr, "running stack", "xynaut stop")
+	mustContain(t, "running-stack refusal", stderr, "running stack", "xynolog stop")
 	b, _ := os.ReadFile(rootsPathFor(s.home))
 	mustContain(t, "row kept", string(b), inJSON(s.kb))
 }
@@ -13698,7 +13698,7 @@ func seedRootsRegistry(t *testing.T, s *scenario, rows ...string) {
 	}
 }
 
-// `xynaut roots` owns the KNOWLEDGE BASES catalog, which is long enough to
+// `xynolog roots` owns the KNOWLEDGE BASES catalog, which is long enough to
 // push stack health out of view; status keeps the section header, a count +
 // pointer, and one contextual line when cwd is a DIFFERENT KB than the
 // running stack's root.
@@ -13722,7 +13722,7 @@ func TestRootsVerbOwnsTheCatalogStatusPoints(t *testing.T) {
 		"other-kb", "missing")
 
 	stdout, _, _ = s.run(t, "status")
-	mustContain(t, "status pointer", stdout, "KNOWLEDGE BASES", "2 known", "xynaut roots")
+	mustContain(t, "status pointer", stdout, "KNOWLEDGE BASES", "2 known", "xynolog roots")
 	for _, leak := range []string{"last used", "did:web:example.org:other"} {
 		if strings.Contains(stdout, leak) {
 			t.Errorf("status renders the catalog (%q):\n%s", leak, stdout)
@@ -13893,10 +13893,10 @@ func TestStoreWithoutItsPasswordRefusesNamingTheClean(t *testing.T) {
 	if code == 0 {
 		t.Fatal("started Neo4j over a store initialized with a password the launcher does not hold")
 	}
-	mustContain(t, "stderr", stderr, "xynaut clean --store graph")
+	mustContain(t, "stderr", stderr, "xynolog clean --store graph")
 }
 
-// The daemon names are the launcher's: `xynaut settings secret set` refuses
+// The daemon names are the launcher's: `xynolog settings secret set` refuses
 // them, as it refuses the other values custody owns.
 func TestSecretSetRefusesADaemonPassword(t *testing.T) {
 	s := newScenario(t, "container", "op")

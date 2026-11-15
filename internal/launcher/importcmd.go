@@ -1,6 +1,6 @@
 package launcher
 
-// importcmd.go — `xynaut import`: the other half of export.
+// importcmd.go — `xynolog import`: the other half of export.
 //
 // It untars. That is the entire mechanism.
 //
@@ -28,9 +28,9 @@ import (
 	"strings"
 )
 
-const importUsage = `Usage: xynaut import <archive.tar.gz> [options]
+const importUsage = `Usage: xynolog import <archive.tar.gz> [options]
 
-Restore a KB exported by 'xynaut export' into a new root: the content files
+Restore a KB exported by 'xynolog export' into a new root: the content files
 and the event log. Nothing needs to be running.
 
 Projections (graph, vectors, views) are NOT in the archive and are not restored
@@ -85,7 +85,7 @@ func Import(args []string) int {
 		}
 	}
 	if archive == "" {
-		u.Fail("import needs an archive: xynaut import <archive.tar.gz>")
+		u.Fail("import needs an archive: xynolog import <archive.tar.gz>")
 		return 1
 	}
 	if _, err := os.Stat(archive); err != nil {
@@ -133,7 +133,7 @@ func Import(args []string) int {
 
 	label := id.name(abs)
 	u.Ok("Imported %s into %s %s", label, abs, u.Dim(fmt.Sprintf("(%d entries)", n)))
-	fmt.Printf("  %s\n", u.Dim("Start it:  xynaut start --root "+abs))
+	fmt.Printf("  %s\n", u.Dim("Start it:  xynolog start --root "+abs))
 	fmt.Printf("  %s\n", u.Dim("Projections rebuild from the event log on that first start."))
 	return 0
 }
@@ -182,7 +182,7 @@ func extractArchive(archive, root string) (int, error) {
 			return 0, err
 		}
 		// Path traversal, checked on the RAW name. An archive is untrusted —
-		// it came from wherever the operator got it — and `xynaut export`
+		// it came from wherever the operator got it — and `xynolog export`
 		// can never produce a `..` or an absolute entry, so one means the
 		// archive is corrupt or crafted. REFUSE rather than sanitize: quietly
 		// rewriting the path would put the file somewhere the archive did not

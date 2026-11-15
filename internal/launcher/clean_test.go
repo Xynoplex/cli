@@ -29,7 +29,7 @@ func TestCleanUsageNamesEveryStore(t *testing.T) {
 func TestCleanUsageNamesTheSharedIssuersCleans(t *testing.T) {
 	for _, want := range []string{
 		"one this clean runs for the delete and stops again",
-		"xynaut clean --shared --store identity-store removes the shared issuer's",
+		"xynolog clean --shared --store identity-store removes the shared issuer's",
 		"--shared         The machine's shared state instead of a root's",
 	} {
 		if !strings.Contains(cleanUsage, want) {

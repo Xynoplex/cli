@@ -3,7 +3,7 @@
 .PHONY: help build test vet clean
 
 # `make help` prints the `##` lines below, in order (scripts/make-help.awk).
-##@ Xynoplex CLI (xynaut): make [target] [VARIABLE=value ...]
+##@ Xynoplex CLI (xynolog): make [target] [VARIABLE=value ...]
 ##@ Variables
 ## CONTAINER_RUNTIME=name: container|docker|podman; else the first to respond
 CONTAINER_RUNTIME ?=
@@ -44,14 +44,14 @@ help:
 	@awk -f scripts/make-help.awk Makefile Makefile
 
 ##@ Build
-## build: The release binaries for every BUILD_TARGETS platform into dist/, and the host's as dist/xynaut
+## build: The release binaries for every BUILD_TARGETS platform into dist/, and the host's as dist/xynolog
 build:
 	@mkdir -p dist
 	bash scripts/run-go-with-sdk.sh build-matrix $(BUILD_TARGETS)
 	@if [ -n "$(HOST_GOOS)" ] && [ -n "$(HOST_GOARCH)" ] && \
 	  printf ' %s ' "$(BUILD_TARGETS)" | grep -Fq ' $(HOST_TARGET) '; then \
-	  cp "dist/xynaut_$(HOST_GOOS)_$(HOST_GOARCH)$(HOST_EXTENSION)" "dist/xynaut$(HOST_EXTENSION)"; \
-	  printf 'Host executable: %s\n' "$(CURDIR)/dist/xynaut$(HOST_EXTENSION)"; \
+	  cp "dist/xynolog_$(HOST_GOOS)_$(HOST_GOARCH)$(HOST_EXTENSION)" "dist/xynolog$(HOST_EXTENSION)"; \
+	  printf 'Host executable: %s\n' "$(CURDIR)/dist/xynolog$(HOST_EXTENSION)"; \
 	fi
 	@printf 'Release binaries are under: %s/dist\n' "$(CURDIR)"
 

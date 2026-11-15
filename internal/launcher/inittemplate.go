@@ -1,6 +1,6 @@
 package launcher
 
-// inittemplate.go — `xynaut init`'s explicit template-copy paths.
+// inittemplate.go — `xynolog init`'s explicit template-copy paths.
 // The mechanism is a shallow `git clone` (git is already a launcher
 // requirement; there is no listing API over raw fetches, and a clone is an
 // atomic ref) — or a local directory used directly, which is also the

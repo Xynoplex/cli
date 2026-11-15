@@ -120,10 +120,10 @@ func refuseRoot(u *UI, err error) {
 // carried (stop's --delete) that the choices must repeat.
 func printStackMenu(verb, flag string, locals, cs []*StackState) {
 	for _, st := range locals {
-		fmt.Fprintf(os.Stderr, "    xynaut %s --root %s%s ...\n", verb, st.KBRoot, flag)
+		fmt.Fprintf(os.Stderr, "    xynolog %s --root %s%s ...\n", verb, st.KBRoot, flag)
 	}
 	for _, c := range cs {
-		fmt.Fprintf(os.Stderr, "    xynaut %s --repo %s%s ...\n", verb, c.Codespace.Repo, flag)
+		fmt.Fprintf(os.Stderr, "    xynolog %s --repo %s%s ...\n", verb, c.Codespace.Repo, flag)
 	}
 }
 
@@ -141,7 +141,7 @@ func rootLocalStack(u *UI, ss *StackSet, root string) (*StackState, bool) {
 	switch {
 	case st == nil:
 		u.Refuse(controlCodeStackNotRunning, "No stack of %s is recorded (per %s).", dir, statePath())
-		fmt.Fprintln(os.Stderr, "  Start it:  xynaut start --root "+dir)
+		fmt.Fprintln(os.Stderr, "  Start it:  xynolog start --root "+dir)
 		return nil, false
 	case st.KBRoot != dir:
 		u.Refuse(controlCodeStackNotRunning, "%s's stack runs from %s, not %s (per %s).", ident.didWeb(), st.KBRoot, dir, statePath())
@@ -171,7 +171,7 @@ func repoCodespaceStack(u *UI, ss *StackSet, repo string) (*StackState, bool) {
 		for _, c := range codespaceStacks(ss) {
 			fmt.Fprintf(os.Stderr, "    recorded: %s\n", c.Codespace.Repo)
 		}
-		fmt.Fprintln(os.Stderr, "  Start one:  xynaut start --runtime codespace --repo "+repo)
+		fmt.Fprintln(os.Stderr, "  Start one:  xynolog start --runtime codespace --repo "+repo)
 		return nil, false
 	}
 	return &StackState{Codespace: &codespacePlacement{Name: name, Repo: repo}, Services: map[string]ServiceState{}}, true
@@ -197,9 +197,9 @@ func (c *CodespaceUnreachable) Error() string {
 // Remedy is the command that restores the forward, and what it is said as.
 func (c *CodespaceUnreachable) Remedy() (said, command string) {
 	if c.Recorded {
-		return "Re-establish the forward", "xynaut status --repo " + c.Repo
+		return "Re-establish the forward", "xynolog status --repo " + c.Repo
 	}
-	return "Resume it and forward the KB", "xynaut start --runtime codespace --repo " + c.Repo
+	return "Resume it and forward the KB", "xynolog start --runtime codespace --repo " + c.Repo
 }
 
 // CodespaceBase: the URL that reaches a codespace stack's KB, its forward on

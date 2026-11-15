@@ -16,7 +16,7 @@ import (
 	"github.com/Xynoplex/sdk/go/xynoplextest"
 )
 
-// `xynaut listen`, in process against the faulty transport. It runs until
+// `xynolog listen`, in process against the faulty transport. It runs until
 // it is stopped, so each test drives it from another goroutine: it asks for
 // the resources' names once its stream's listener is held, so what is
 // delivered from that request on is heard; and it ends, saying so, when the

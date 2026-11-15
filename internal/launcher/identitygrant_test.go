@@ -160,7 +160,7 @@ func TestGrantAndRevokeTouchNoUsersEndpoint(t *testing.T) {
 	}
 }
 
-// A grant reads what `xynaut worker key` prints on the worker's machine, in
+// A grant reads what `xynolog worker key` prints on the worker's machine, in
 // either form, and registers the same key from both.
 func TestAGrantReadsWhatTheWorkerKeyVerbPrints(t *testing.T) {
 	k := testWorkerKey()

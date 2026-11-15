@@ -2,7 +2,7 @@ package launcher
 
 // oauth.go — what of signing in is the launcher's own: the issuer a
 // knowledge base advertises, read before anything dials it; the one-time code
-// shown to a person and the browser offered to them, during `xynaut login`'s
+// shown to a person and the browser offered to them, during `xynolog login`'s
 // device grant, which the Go SDK makes (semiont.Issuer); and a small JSON
 // read. Nothing here names a vendor, and no process ever holds a password.
 
@@ -53,7 +53,7 @@ func advertisedIssuer(base string) (string, error) {
 // opened; the SHORT uri is what gets printed, since that is the one somebody
 // retypes on a phone.
 //
-// Nothing is opened when stdin is not a terminal. `xynaut login` runs from
+// Nothing is opened when stdin is not a terminal. `xynolog login` runs from
 // scripts, and a CI box either has no browser or should not be sent to one —
 // there nothing is asked, and the poll starts immediately.
 func promptToOpen(u *UI, code xynoplex.DeviceCode) {

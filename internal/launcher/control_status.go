@@ -1,6 +1,6 @@
 package launcher
 
-// control_status.go — what xynaut status reports, as the control API states
+// control_status.go — what xynolog status reports, as the control API states
 // it: the same rows the report prints (readRow, issuerServerRow,
 // machineServedRow, browserRow), read once and stated as data.
 
@@ -92,7 +92,7 @@ func knowledgeBaseStatus(v stackView, ss *StackSet, cwd kbRoot, published []publ
 }
 
 // workloadStatus: the same knowledge-base-scoped Collector readings
-// xynaut status prints under Gateway and Dispatcher. Missing Prometheus
+// xynolog status prints under Gateway and Dispatcher. Missing Prometheus
 // series stay absent; a scrape that has not reported is not a zero.
 func workloadStatus(v stackView, did string, services []ControlServiceStatus, readout *lazyBody) *ControlWorkloadStatus {
 	hasGateway := serviceHealthy(services, "gateway")

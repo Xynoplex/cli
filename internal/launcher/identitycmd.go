@@ -1,6 +1,6 @@
 package launcher
 
-// identitycmd.go — `xynaut identity sync`, `grant` and `revoke`, the
+// identitycmd.go — `xynolog identity sync`, `grant` and `revoke`, the
 // operator-facing half of identitysync.go and identitygrant.go.
 //
 // Resolution mirrors `start`'s exactly, and deliberately: each must change the
@@ -18,9 +18,9 @@ import (
 	"github.com/Xynoplex/cli/internal/launcher/stack"
 )
 
-const identityUsage = `Usage: xynaut identity sync [--root <path>] [--config <name>]
-       xynaut identity grant <label> --key <file> [--root <path>] [--config <name>]
-       xynaut identity revoke <label> [--root <path>] [--config <name>]
+const identityUsage = `Usage: xynolog identity sync [--root <path>] [--config <name>]
+       xynolog identity grant <label> --key <file> [--root <path>] [--config <name>]
+       xynolog identity revoke <label> [--root <path>] [--config <name>]
 
 sync
   Reconcile a running realm against what this knowledge base needs: the
@@ -31,25 +31,25 @@ sync
   A realm is created by its FIRST start and never again, so a deployment that
   predates a service simply does not have that service's client — and one that
   predates a role still stamps the old roles on that client's token — and
-  ` + "`xynaut start`" + ` refuses, correctly, rather than starting processes
+  ` + "`xynolog start`" + ` refuses, correctly, rather than starting processes
   that cannot authenticate, or a worker that can never claim a job. This adds
   and updates what its creation would have rendered.
 
   It reconciles CONFIGURATION ONLY. It creates clients, updates an existing
   client's roles and kind mappers and the worker's client's key — this
-  machine's, which ` + "`xynaut worker key`" + ` prints — and changes nothing
+  machine's, which ` + "`xynolog worker key`" + ` prints — and changes nothing
   else: no secret is touched, and no accounts are read, written or deleted, so
   it is safe to run against a realm with real users. It is idempotent — run
   it again to confirm it worked.
 
 grant
   Admit a worker someone else runs, by its key: the public half that
-  ` + "`xynaut worker key`" + ` prints on the worker's machine, as a JWK Set or
+  ` + "`xynolog worker key`" + ` prints on the worker's machine, as a JWK Set or
   a PEM, in <file>. It creates one client, semiont-worker-<label>, that proves
   itself with that key and carries the worker's roles, and prints what the
   worker's owner needs: this knowledge base's domain, its client id, and where
   the gateway is, which names the issuer to sign in at, and the one
-  ` + "`xynaut worker kb add`" + ` line that adds this knowledge base to their
+  ` + "`xynolog worker kb add`" + ` line that adds this knowledge base to their
   worker, run in a knowledge base it serves. None is secret. Granting the same key again changes nothing;
   another key under the same label replaces the old on the same client, so the
   worker keeps its account.
@@ -59,7 +59,7 @@ revoke
   sign-in is refused; a token it already holds stays good until it expires,
   within the realm's access-token lifetime.
 
-Each needs Keycloak's bootstrap admin password, the same one ` + "`xynaut start`" + `
+Each needs Keycloak's bootstrap admin password, the same one ` + "`xynolog start`" + `
 reports: $KC_BOOTSTRAP_ADMIN_PASSWORD, else the value persisted for this root.
 None will generate one — a fresh password cannot open the realm an existing
 database already holds.
@@ -156,7 +156,7 @@ func openAdminRealm(u *UI, flags map[string]string, elsewhere string) (adminReal
 	// The RUNNING stack's config, else the sticky one: changing the realm of a
 	// config the operator does not actually start with would change the wrong
 	// realm — and asking only the sticky preference blocks the ordinary case,
-	// since a bare `xynaut start` records no preference at all.
+	// since a bare `xynolog start` records no preference at all.
 	configName := flags["--config"]
 	if configName == "" {
 		if rec := configForRealm(root); rec != "" {
@@ -257,14 +257,14 @@ func identitySync(u *UI, args []string) int {
 	}
 	u.Ok("identity — %d created, %d updated, %d already correct",
 		len(rep.created), len(rep.updated), len(rep.present))
-	fmt.Fprintln(os.Stderr, "  Run `xynaut start` again; the preflight will now find what it was missing.")
+	fmt.Fprintln(os.Stderr, "  Run `xynolog start` again; the preflight will now find what it was missing.")
 	return 0
 }
 
 // labelled: the one label grant and revoke name, checked.
 func labelled(u *UI, verb string, positional []string) (string, bool) {
 	if len(positional) != 1 {
-		u.Fail("%s takes one label, the worker's: xynaut identity %s <label>", verb, verb)
+		u.Fail("%s takes one label, the worker's: xynolog identity %s <label>", verb, verb)
 		return "", false
 	}
 	if err := checkGrantLabel(positional[0]); err != nil {
@@ -285,7 +285,7 @@ func identityGrant(u *UI, args []string) int {
 	}
 	keyFile := flags["--key"]
 	if keyFile == "" {
-		u.Fail("grant needs --key <file>: the public key `xynaut worker key` prints on the worker's machine.")
+		u.Fail("grant needs --key <file>: the public key `xynolog worker key` prints on the worker's machine.")
 		return 1
 	}
 	b, err := os.ReadFile(keyFile)
@@ -320,7 +320,7 @@ func identityGrant(u *UI, args []string) int {
 	fmt.Printf("  Domain:     %s\n", domain)
 	fmt.Printf("  Client id:  %s\n", clientID)
 	fmt.Printf("  Gateway:    %s\n", gateway)
-	fmt.Printf("  On the worker's machine, in a knowledge base it serves:  xynaut worker kb add %s --gateway %s --client-id %s\n", domain, gateway, clientID)
+	fmt.Printf("  On the worker's machine, in a knowledge base it serves:  xynolog worker kb add %s --gateway %s --client-id %s\n", domain, gateway, clientID)
 	// Not the issuer: the gateway names the one it trusts in its protected
 	// resource metadata, and a second statement of it here could only be wrong.
 	fmt.Fprintln(os.Stderr, "  Send these to whoever runs the worker. None is secret; the gateway names the issuer to sign in at.")

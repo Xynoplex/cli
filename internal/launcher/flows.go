@@ -190,7 +190,7 @@ func flowFullStart(x executor, fc flowCtx) int {
 	// by its own flow (flowShared, flowIssuer, flowOllama, flowBrowser).
 	prior := stackContainers(fc.kb.key())
 	x.snapshotLogs(fc.kb, prior)
-	x.say(sayLog, "Removing prior containers %s", x.dim(fmt.Sprintf("(stop+rm, %d names; exact commands: xynaut start --dry-run)", len(prior))))
+	x.say(sayLog, "Removing prior containers %s", x.dim(fmt.Sprintf("(stop+rm, %d names; exact commands: xynolog start --dry-run)", len(prior))))
 	removed := 0
 	for _, c := range prior {
 		if x.stopRm(c) {
@@ -369,13 +369,13 @@ func flowBrowser(x executor, addr string, doc browserDocument, forceRestart bool
 	}
 	x.note("browser: keep if running with image identity matching %s, recorded at %s with %s; else stop/rm + pull + run",
 		desired, doc.endpoint(), doc.spec.Resources.Limits.Memory)
-	x.note("(the Browser is not a stack member: xynaut stop --service browser stops it alone)")
+	x.note("(the Browser is not a stack member: xynolog stop --service browser stops it alone)")
 	return x.either(func() bool {
 		return !forceRestart && recordedAs(x.sharedRecord(sharedContainer("browser")), doc) && x.containerCurrent(sharedContainer("browser"), desired)
 	},
 		func() int {
 			x.say(sayOK, "Browser already running on %s %s", doc.endpoint(),
-				x.dim("(as its document says — left alone; xynaut stop --service browser stops it)"))
+				x.dim("(as its document says — left alone; xynolog stop --service browser stops it)"))
 			return 0
 		},
 		func() int {
@@ -478,7 +478,7 @@ func flowShared(x executor, fc flowCtx, m sharedRun, addr string) int {
 	},
 		func() int {
 			x.say(sayOK, "%s — %s already running %s", m.role, d.display,
-				x.dim("(kept: it serves every KB here; xynaut stop --service "+m.role+" stops it)"))
+				x.dim("(kept: it serves every KB here; xynolog stop --service "+m.role+" stops it)"))
 			served()
 			return 0
 		},
@@ -870,7 +870,7 @@ func flowOllama(x executor, fc flowCtx, role string, rp rolePlan, addr string) i
 	},
 		func() int {
 			x.say(sayOK, "%s — the shared Ollama already running on %s %s", role, base,
-				x.dim("(kept: it serves every KB here; xynaut stop --service "+role+" stops it)"))
+				x.dim("(kept: it serves every KB here; xynolog stop --service "+role+" stops it)"))
 			x.servedByShared(role, sharedContainer("inference"), health, rp.Driver)
 			x.ensureModels(base, fc.plan.OllamaModels)
 			return 0

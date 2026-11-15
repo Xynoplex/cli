@@ -9,14 +9,14 @@ import (
 	"sync"
 )
 
-// controlRootsInit: initialize a local clone through xynaut init itself, so
+// controlRootsInit: initialize a local clone through xynolog init itself, so
 // the machine API and the command share one implementation of KB birth.
 func controlRootsInit(req *controlRequest, u *UI) (any, *controlFailure) {
 	return controlRootsInitWith(req, u, os.Executable, exec.CommandContext)
 }
 
 // controlRootsInitWith keeps process discovery and invocation injectable for
-// tests without splitting the machine API's implementation from `xynaut init`.
+// tests without splitting the machine API's implementation from `xynolog init`.
 func controlRootsInitWith(
 	req *controlRequest,
 	u *UI,
@@ -77,7 +77,7 @@ func controlRootsInitWith(
 		if message == "" {
 			message = err.Error()
 		}
-		u.Fail("xynaut init failed: %s", message)
+		u.Fail("xynolog init failed: %s", message)
 		return nil, failed(u, controlCodeFailed)
 	}
 	return ControlRootsInitResult{Path: p.Path}, nil
@@ -93,7 +93,7 @@ func withoutSemiontRoot(env []string) []string {
 	return result
 }
 
-// controlInitOutput turns each line xynaut init prints into a live progress
+// controlInitOutput turns each line xynolog init prints into a live progress
 // notice, while retaining the output for a useful structured failure.
 type controlInitOutput struct {
 	mu      sync.Mutex

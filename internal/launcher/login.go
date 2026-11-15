@@ -1,6 +1,6 @@
 package launcher
 
-// login.go — `xynaut login`: sign in to a running stack's knowledge base
+// login.go — `xynolog login`: sign in to a running stack's knowledge base
 // through the issuer it trusts (the Go SDK's Issuer: resource metadata →
 // discovery → device grant) and keep the session in the sign-in store
 // (signins.go). The launcher never sees a password: the user approves the
@@ -18,7 +18,7 @@ import (
 	"golang.org/x/term"
 )
 
-const loginUsage = `Usage: xynaut login [--repo <owner/name> | --root <path> | --runtime <rt>]
+const loginUsage = `Usage: xynolog login [--repo <owner/name> | --root <path> | --runtime <rt>]
 
 Sign in to a running stack's knowledge base through the issuer it trusts,
 and store the session (launcher state home, mode 0600). The launcher asks
@@ -100,7 +100,7 @@ func signIn(ctx context.Context, u *UI, target *StackState, shown func(xynoplex.
 	endpoints, err := issuer.Discover(ctx, base)
 	if err != nil {
 		u.Refuse(controlCodeUnreachable, "%v", err)
-		fmt.Fprintln(os.Stderr, "  Is the stack up?  xynaut status")
+		fmt.Fprintln(os.Stderr, "  Is the stack up?  xynolog status")
 		return ControlAuthLoginResult{}, false
 	}
 	u.Log("Issuer: %s %s", endpoints.Issuer, u.Dim("(named by the knowledge base's resource metadata)"))
@@ -175,7 +175,7 @@ func localBase(u *UI, st *StackState, verb string) (string, bool) {
 	base, err := GatewayBase(st)
 	if err != nil {
 		u.Refuse(controlCodeStackNotRunning, "%v, so %s cannot reach its KB.", err, verb)
-		fmt.Fprintln(os.Stderr, "  Start it:  xynaut start")
+		fmt.Fprintln(os.Stderr, "  Start it:  xynolog start")
 		return "", false
 	}
 	return base, true

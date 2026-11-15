@@ -1,6 +1,6 @@
 package launcher
 
-// models.go — the model layer of `xynaut status`. The config says which
+// models.go — the model layer of `xynolog status`. The config says which
 // models a stack performs inference and embedding with; Ollama says which of
 // those are actually pulled, and which are resident right now. Configured is
 // BELIEF (recorded at start), installed/loaded is VERIFIED live — the same

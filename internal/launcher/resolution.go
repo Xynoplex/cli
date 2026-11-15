@@ -101,11 +101,11 @@ func resolveSecret(ref secretRef) (string, error) {
 }
 
 // resolvedSecretValue: a variable's value from the environment, else from the
-// source `xynaut settings secret set` registered for it, else "".
+// source `xynolog settings secret set` registered for it, else "".
 //
 // The SAME precedence start uses — the environment always wins — so a command
 // that needs a credential at any other time gets the answer start would get.
-// `xynaut init` read the environment alone, so a key the user had just
+// `xynolog init` read the environment alone, so a key the user had just
 // registered was invisible to it: it warned that the model list could not be
 // fetched, and then told them to register the source they already had.
 //
@@ -141,7 +141,7 @@ func secretUsage() string {
 		p := secretProviders[s]
 		providers += fmt.Sprintf("  %s://%s   %s (%s)\n", s, p.pathHint, p.display, p.bin)
 	}
-	return `Usage: xynaut settings secret [set|push|rm] ...
+	return `Usage: xynolog settings secret [set|push|rm] ...
 
 Register where config secrets come from. The launcher stores only a POINTER
 (provider + path) in roots.json — never a value — and reads it fresh on
@@ -161,20 +161,20 @@ Commands:
   rm <VAR>                        Forget a source
 
 Where the values the launcher generates are kept is another setting:
-xynaut settings secret-store --help
+xynolog settings secret-store --help
 
 Providers (the URI scheme picks one):
 ` + providers + `
 Examples:
-  xynaut settings secret set ANTHROPIC_API_KEY
-  xynaut settings secret set ANTHROPIC_API_KEY op://OSS/Anthropic/credential
-  xynaut settings secret push ANTHROPIC_API_KEY --repo The-AI-Alliance/my-kb
-  xynaut settings secret rm ANTHROPIC_API_KEY
+  xynolog settings secret set ANTHROPIC_API_KEY
+  xynolog settings secret set ANTHROPIC_API_KEY op://OSS/Anthropic/credential
+  xynolog settings secret push ANTHROPIC_API_KEY --repo The-AI-Alliance/my-kb
+  xynolog settings secret rm ANTHROPIC_API_KEY
 `
 }
 
-// secretSourcesCmd implements `xynaut settings secret set|push|rm` over the
-// registered sources; `xynaut settings secret` alone shows them.
+// secretSourcesCmd implements `xynolog settings secret set|push|rm` over the
+// registered sources; `xynolog settings secret` alone shows them.
 func secretSourcesCmd(u *UI, args []string) int {
 	if args[0] == "--help" || args[0] == "-h" {
 		fmt.Print(secretUsage())
@@ -188,18 +188,18 @@ func secretSourcesCmd(u *UI, args []string) int {
 		case 3:
 			return secretSet(u, args[1], args[2])
 		default:
-			u.Fail("Usage: xynaut settings secret set <VAR> [<scheme>://<path>]")
+			u.Fail("Usage: xynolog settings secret set <VAR> [<scheme>://<path>]")
 			return 1
 		}
 	case "push":
 		if len(args) != 4 || args[2] != "--repo" {
-			u.Fail("Usage: xynaut settings secret push <VAR> --repo <owner/name>")
+			u.Fail("Usage: xynolog settings secret push <VAR> --repo <owner/name>")
 			return 1
 		}
 		return secretPush(u, args[1], args[3])
 	case "rm":
 		if len(args) != 2 {
-			u.Fail("Usage: xynaut settings secret rm <VAR>")
+			u.Fail("Usage: xynolog settings secret rm <VAR>")
 			return 1
 		}
 		registered := true
@@ -243,7 +243,7 @@ func secretPush(u *UI, name, repo string) int {
 	ref, ok := loadRoots().Secrets[name]
 	if !ok {
 		u.Fail("No secret source registered for %s — nothing to push.", name)
-		fmt.Fprintf(os.Stderr, "  Register one first:  xynaut settings secret set %s\n", name)
+		fmt.Fprintf(os.Stderr, "  Register one first:  xynolog settings secret set %s\n", name)
 		return 1
 	}
 	if !requireProviderBin(u, ref) {
@@ -314,9 +314,9 @@ func currentSecretRepos(name string) []string {
 func secretSet(u *UI, name, uri string) int {
 	if custodyOwned(name) {
 		u.Fail("%s is minted and kept by the launcher, not read from a provider.", name)
-		fmt.Fprintf(os.Stderr, "  Its value is kept for this knowledge base, where xynaut settings secret-store says, and must outlive the stack; a resolved one would be discarded at start.\n")
+		fmt.Fprintf(os.Stderr, "  Its value is kept for this knowledge base, where xynolog settings secret-store says, and must outlive the stack; a resolved one would be discarded at start.\n")
 		if daemonCredentialVar(name) {
-			fmt.Fprintf(os.Stderr, "  It belongs to a daemon the launcher runs, so an exported one is refused too. To rotate it, delete its file there and run xynaut clean --store for that daemon.\n")
+			fmt.Fprintf(os.Stderr, "  It belongs to a daemon the launcher runs, so an exported one is refused too. To rotate it, delete its file there and run xynolog clean --store for that daemon.\n")
 		} else {
 			fmt.Fprintf(os.Stderr, "  To supply your own, export %s — the launcher's own process reads the environment first.\n", name)
 		}
@@ -334,7 +334,7 @@ func secretSet(u *UI, name, uri string) int {
 	return storeSecret(u, name, secretRef{Provider: scheme, Path: path})
 }
 
-// secretSetInteractive: `xynaut settings secret set <VAR>` with no source — walk the
+// secretSetInteractive: `xynolog settings secret set <VAR>` with no source — walk the
 // provider registry, never assuming one. A lone installed provider is the
 // prompt's default; the path prompt carries the provider's own shape.
 func secretSetInteractive(u *UI, name string) int {

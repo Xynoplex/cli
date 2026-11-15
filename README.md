@@ -1,4 +1,4 @@
-# Xynaut
+# Xynolog
 
 A host-installed CLI that runs a local Xynoplex stack by driving your container
 runtime (Apple `container`, Docker, or Podman) directly: the platform's seven
@@ -25,7 +25,7 @@ you: per-root state directories with ownership stamps and mismatch rules,
 configuration staging and secret delivery, the per-service issuer credentials, the discovery
 document, explicit memory ceilings, start ordering, and readiness gates.
 
-What it deliberately is **not** is a scheduler. `xynaut start` brings the
+What it deliberately is **not** is a scheduler. `xynolog start` brings the
 stack up and exits; nothing stays resident to reconcile desired state. That one
 fact explains a good deal of what follows, including how services stay alive.
 
@@ -34,29 +34,29 @@ fact explains a good deal of what follows, including how services stay alive.
 On macOS or Linux with Homebrew:
 
 ```sh
-brew install xynoplex/xynaut/xynaut
+brew install xynolog/xynolog/xynolog
 ```
 
-Homebrew builds Xynaut from a pinned source snapshot and installs Go as a build
+Homebrew builds Xynolog from a pinned source snapshot and installs Go as a build
 dependency.
 
 Install the latest tagged CLI with Go:
 
 ```sh
-go install github.com/Xynoplex/cli/cmd/xynaut@latest
+go install github.com/Xynoplex/cli/cmd/xynolog@latest
 ```
 
 Or download and unpack the archive for your OS and CPU architecture from
 the [GitHub Releases](https://github.com/Xynoplex/cli/releases).
 Releases cover macOS, Linux and Windows, arm64 and amd64, with Linux `.deb`
 and `.rpm` packages.
-Windows archives hold `xynaut.exe`. The binary is static: no language
+Windows archives hold `xynolog.exe`. The binary is static: no language
 runtime bleeds onto your host. Besides the launcher you need only `git` and
 one container runtime (`container`, `docker`, or `podman`) on PATH.
 
 ## Use
 
-Run from inside a KB clone — or birth one first with **`xynaut init`**
+Run from inside a KB clone — or birth one first with **`xynolog init`**
 Interactive with full flag
 parity; `--yes` refuses rather than guessing where no safe default exists.
 What init does:
@@ -91,24 +91,24 @@ What init does:
   `knowledge-base.yaml` names. A copied template keeps the template's.
 
 ```sh
-xynaut init --yes --inference anthropic --embedding ollama:nomic-embed-text
+xynolog init --yes --inference anthropic --embedding ollama:nomic-embed-text
 ```
 
 births a startable KB in one command (identity from your git origin). Then:
 
 ```sh
-xynaut start
-xynaut useradd --email admin@example.com   # prompts for the password
-xynaut status
-xynaut logs
-xynaut stop
+xynolog start
+xynolog useradd --email admin@example.com   # prompts for the password
+xynolog status
+xynolog logs
+xynolog stop
 ```
 
-- `xynaut start --help` lists all flags (`--config`, `--runtime`,
+- `xynolog start --help` lists all flags (`--config`, `--runtime`,
   `--no-observe`, `--ollama-cache`, …).
 - **Each KB's stack is published on a port block of its own**, kept on its
   row of `roots.json` (`portBlock`): its first successful start takes the
-  lowest block no other row keeps, and `xynaut forget` frees it. Block k
+  lowest block no other row keeps, and `xynolog forget` frees it. Block k
   publishes every port the launcher chooses for the stack at its block-0
   port + 10k (NATS 4222, a Qdrant of the KB's own 6333, Neo4j 7474/7687,
   the Smelter, Weaver, Archivist, Librarian and Dispatcher 24101–24105);
@@ -116,7 +116,7 @@ xynaut stop
   stages names the published ports. The gateway's port is its document's,
   and the shared services keep theirs: the issuer's Keycloak (8080) and
   PostgreSQL (5432) are on the ports the issuer's document in the state home
-  gives them (`xynaut settings keycloak-port` writes Keycloak's), and the
+  gives them (`xynolog settings keycloak-port` writes Keycloak's), and the
   shared Qdrant (6330), which a KnowledgeIndex naming `spec.vectors.shared`
   keeps its collections in, on the port the vector store's document gives
   it. A dry run plans
@@ -147,17 +147,17 @@ xynaut stop
   runtime exists — and none churns it: a running Browser is KEPT when it runs
   the image the start would (image identity, not tag order) and its record
   says it was started with its document's port and memory; it is restarted
-  otherwise, and when no record names it. `xynaut stop` stops it with the stack, from its own
-  record and under its own runtime; `xynaut stop --service browser` stops it
-  alone, and `xynaut stop --repo` leaves it. Its record
+  otherwise, and when no record names it. `xynolog stop` stops it with the stack, from its own
+  record and under its own runtime; `xynolog stop --service browser` stops it
+  alone, and `xynolog stop --repo` leaves it. Its record
   lives beside the stacks (shared, with its runtime and image), its
   port is never among a stack's claims, and `status` reports it under
   KNOWLEDGE WORKERS, beside the worker, showing its image tag so
   browser-vs-stack version skew is visible.
-- `xynaut start --service browser` is the explicit refresh: it always
+- `xynolog start --service browser` is the explicit refresh: it always
   restarts the Browser, bypassing keep-if-current. Its port moves with an
   edit of its document; the realm's origin for the new port is added by
-  `xynaut identity sync`, which the preflight names when it is missing.
+  `xynolog identity sync`, which the preflight names when it is missing.
 - **The shared Ollama is not a stack member either**: one Ollama serves
   every KB here whose documents name `ollama` with no address.
   When the launcher runs it as a container (`semiont-ollama`, when none is
@@ -171,24 +171,24 @@ xynaut stop
   this start would publish it on, and on the model cache `--ollama-cache`
   asks for, when it asks for one; it is restarted otherwise, and when no
   record names it. Kept or not, the start pulls the models its documents
-  name that Ollama lacks. `xynaut start --service inference` always
-  restarts it. `xynaut stop` stops it with the stack; `xynaut stop
+  name that Ollama lacks. `xynolog start --service inference` always
+  restarts it. `xynolog stop` stops it with the stack; `xynolog stop
   --service inference` stops it alone (`--service embedding`, where the
   stack runs it for the embeddings alone), and a stop of any other one
   service leaves it.
 - **The shared Qdrant serves every KB whose KnowledgeIndex names
-  `spec.vectors.shared`**, as `xynaut init` writes, each KB's index in
+  `spec.vectors.shared`**, as `xynolog init` writes, each KB's index in
   collections of its own. It runs as `semiont-qdrant` from the vector
-  store's document in the state home (`stack/vectors.yaml`, which `xynaut
+  store's document in the state home (`stack/vectors.yaml`, which `xynolog
   settings vectors` shows), published on that document's port (6330) and on
   no KB's block, with its store in `shared/qdrant` in the data home. Its
   record lives beside the stacks, its port is never among a stack's claims,
   and the stack records `vectors` as `provided: shared`. A start KEEPS a
   running one when it runs the document's image and memory under this
   start's runtime, at the address this start would probe it; it is restarted
-  otherwise. `xynaut start --service vectors` always restarts it, and
-  `start --group index` keeps it. `xynaut stop` stops it with the last
-  stack, as `stop --group index` does; `xynaut stop --service vectors`
+  otherwise. `xynolog start --service vectors` always restarts it, and
+  `start --group index` keeps it. `xynolog stop` stops it with the last
+  stack, as `stop --group index` does; `xynolog stop --service vectors`
   stops it alone. A KnowledgeIndex naming `image` and `resources` runs a
   Qdrant of the KB's own instead, `semiont-<kb>-qdrant` on its block.
   Either runs with an API key the launcher generates and keeps
@@ -209,8 +209,8 @@ xynaut stop
   The collector sends traces to Jaeger whenever Jaeger answers, so a start
   that brings Jaeger back restarts the collector into sending to it.
   `--no-observe` starts neither Jaeger nor Prometheus, and leaves running
-  ones alone. `xynaut start --service collector|traces|metrics` always
-  restarts that one; `xynaut stop` stops them with the stack, and `xynaut
+  ones alone. `xynolog start --service collector|traces|metrics` always
+  restarts that one; `xynolog stop` stops them with the stack, and `xynolog
   stop --service collector|traces|metrics` stops that one alone.
 - **The worker's settings belong to no KB either**: `stack/workers.yaml` in
   the state home, kind `WorkerPool` (`protocol/specs/src/stack/WorkerPool.json`),
@@ -220,7 +220,7 @@ xynaut stop
   `spec.engines.jobs` says which jobs a worker does, and with which engines.
 - **One worker serves a list of KBs** (`semiont-worker`). A
   KB's start puts it on the list when one of its jobs has an engine, as that
-  start places it, and takes it off when none does; `xynaut worker kb add`,
+  start places it, and takes it off when none does; `xynolog worker kb add`,
   run inside a KB on the list, adds a KB someone else runs, offered that
   one's engines. The list is kept in `shared/worker-knowledge-bases.json`
   in the data home, beside the worker's key, and the worker's document,
@@ -234,26 +234,26 @@ xynaut stop
   claims. A start KEEPS a running worker when it runs the image and memory
   the start would, its record says this start's runtime and address, and
   its document is what this start would write; it is restarted otherwise,
-  and stopped when its list is empty. `xynaut start --service worker`
-  always restarts it; `xynaut stop` stops it with the stack, and `xynaut
+  and stopped when its list is empty. `xynolog start --service worker`
+  always restarts it; `xynolog stop` stops it with the stack, and `xynolog
   stop --service worker` stops it alone.
-- **`xynaut settings` lists every setting the launcher keeps**, with its
+- **`xynolog settings` lists every setting the launcher keeps**, with its
   value and where the value came from: the container `runtime`, where your
   own secrets come from (`secret`), the Browser's document (`browser`: its
-  path, image, memory and port, changed by editing it; `xynaut settings
+  path, image, memory and port, changed by editing it; `xynolog settings
   browser --path` prints the path alone, for a script), the worker's
   (`worker`: its path, image, memory and log level, and `--path` likewise), who reaches a KB running here (`network`: `local`, or `lan`, where the network
   reaches the gateway and the issuer's realm through the launcher's own
-  filtering proxy, `xynaut issuer-proxy`, a recorded detached process), and
+  filtering proxy, `xynolog issuer-proxy`, a recorded detached process), and
   the default store for new KBs (`secret-store --default`) on this machine;
   and for the KB you are in (or `--root`), its `config` (the Inference
   document a start runs), `keycloak-port` and `secret-store`.
-  `xynaut settings <name> <value>` sets one, checked as a start would check
+  `xynolog settings <name> <value>` sets one, checked as a start would check
   it, and `--unset` returns it to its default. Showing reads no secret and
   contacts no store. The Homebrew formula's caveat points a new install here;
   every command it names is checked to exist (`caveat_test.go`).
-- **`xynaut settings secret` registers where the secrets a document names come from** — pointers,
-  never values. `xynaut settings secret set ANTHROPIC_API_KEY` walks an interactive
+- **`xynolog settings secret` registers where the secrets a document names come from** — pointers,
+  never values. `xynolog settings secret set ANTHROPIC_API_KEY` walks an interactive
   provider-then-path flow (or pass the source directly:
   `… set ANTHROPIC_API_KEY op://OSS/Anthropic/credential`); either form
   stores `{provider, path}` in `roots.json`
@@ -266,9 +266,9 @@ xynaut stop
   from the stored path — no stored shell text is ever executed. `op` missing
   from PATH fails early and clearly. And the standing escape hatch needs no
   1Password at all: **exporting the variable always wins** — a plain
-  `ANTHROPIC_API_KEY=… xynaut start` uses that value.
+  `ANTHROPIC_API_KEY=… xynolog start` uses that value.
   `--dry-run` reaches for nothing (plan shows `<env:VAR>` placeholders).
-  `xynaut settings secret push <VAR> --repo <owner/name>` is the one place a value
+  `xynolog settings secret push <VAR> --repo <owner/name>` is the one place a value
   *moves*: a codespace runs on GitHub's machine and can't reach your local
   provider, so this copies the current value into your GitHub Codespaces user
   secrets. Same discipline — resolved fresh and announced, handed to `gh` on
@@ -276,7 +276,7 @@ xynaut stop
   by `gh` before it leaves the machine, never written to disk or logs by us.
   The repo selection is a **union**, never a replacement, so pushing for one
   repo can't silently revoke the secret from others already using it.
-- **`xynaut settings secret-store` says where a KB keeps the values the launcher
+- **`xynolog settings secret-store` says where a KB keeps the values the launcher
   generates for it** — the token-signing key, the service accounts' secrets,
   the passwords of its own daemons. What the launcher keeps for the machine
   (the worker's key, the shared issuer's admin and PostgreSQL passwords) is
@@ -297,13 +297,13 @@ xynaut stop
   **Every store read, write and delete prints a line on stderr** — the
   operation and the secret's name, never its value — `--quiet` included. An
   unscoped `clean` deletes a KB's values through its store.
-- **`xynaut start --runtime codespace` runs the same stack on a
+- **`xynolog start --runtime codespace` runs the same stack on a
   GitHub-hosted machine** (inside, the codespace's own launcher runs the
-  stack — `xynaut start --runtime docker`, from the KB's post-start hook;
+  stack — `xynolog start --runtime docker`, from the KB's post-start hook;
   this one orchestrates the outside via `gh`, which is required on PATH for
   this placement only). The REPO is the identity — derived from the KB
   clone's origin, or `--repo owner/name` from anywhere, needed only at
-  creation: the stack record carries it afterwards, so a bare `xynaut
+  creation: the stack record carries it afterwards, so a bare `xynolog
   start` resumes the recorded codespace from any directory, and `status` /
   `logs` / `stop` dispatch off the records as always. The launcher keeps at
   most one codespace per repo (it adopts and resumes what exists — the
@@ -312,9 +312,9 @@ xynaut stop
   the record, else what GitHub lists for the repo — so a codespace whose
   setup failed before anything was recorded can still be stopped, deleted,
   inspected, or given users; verbs that dial the KB (`login`, `yield`) need
-  its forward on this machine, and say to `start` it first. `xynaut stop` maps
+  its forward on this machine, and say to `start` it first. `xynolog stop` maps
   to `gh codespace stop` —
-  billing halts, state and credentials persist, the record is kept; `xynaut
+  billing halts, state and credentials persist, the record is kept; `xynolog
   stop --delete` destroys and forgets. The two long waits narrate
   themselves: the VM wait redraws the polled state with elapsed time, and a
   fresh create's health wait tails the devcontainer creation log (`gh
@@ -331,7 +331,7 @@ xynaut stop
   number on both ends because a token's `iss` must match the one URL the
   Browser signs in at: 8080 when free, else the lowest free above it. When
   the codespace's Keycloak is on another port, its own launcher restarts the
-  stack there after `xynaut settings keycloak-port <N>`, which writes it into
+  stack there after `xynolog settings keycloak-port <N>`, which writes it into
   the codespace's issuer document for every later resume. A single browser's Knowledge Bases panel therefore works, and
   signs in to, N codespace KBs at once (Host localhost, Port 400x each;
   sidecars and infra stay inside the codespace). An issuer the codespace
@@ -359,7 +359,7 @@ xynaut stop
   announced with the reason; an explicit `--machine` that isn't available is
   a hard error listing what is (never a silent substitution), and on a
   resume the flag is called out as inert rather than looking effective.
-  `xynaut status --billing` (opt-in, needs gh's
+  `xynolog status --billing` (opt-in, needs gh's
   `user` scope — it prints the one-line grant command if missing) shows
   GitHub's own monthly usage report: compute/storage quantities, gross,
   plan-quota discounts, and the NET actually paid — their numbers verbatim,
@@ -375,12 +375,12 @@ xynaut stop
   720h` (30 days — GitHub's maximum — after which a STOPPED codespace is
   auto-deleted, state and all; explicit so a tighter account default cannot
   silently shorten a KB codespace's life). Both are overridable flags on
-  `xynaut start`, create-time only: on a resume they are called out as
+  `xynolog start`, create-time only: on a resume they are called out as
   inert, and outside codespace placement they are refused. The create
   announces both, because a default that deletes user state is never silent.
   Codespace placement is never sticky — every codespace start says
   `--runtime codespace` (or rides an existing record).
-- `xynaut useradd` creates or updates users at the stack's issuer: a local
+- `xynolog useradd` creates or updates users at the stack's issuer: a local
   realm is administered by this launcher directly, a codespace's by the
   launcher over there, reached by ssh. Flags are `--generate-password`,
   `--update`, `--upsert`, …; there are no role flags, because no route grants
@@ -400,7 +400,7 @@ xynaut stop
   would ride into a container as an env var, readable via `inspect` for
   the stack's whole lifetime. Here it is piped to `--password-stdin` and is
   never on a command line.
-- `xynaut start --dry-run` prints the exact runtime commands a real run would
+- `xynolog start --dry-run` prints the exact runtime commands a real run would
   execute — the legibility answer to "what does this binary actually do".
 - **No secret value is ever on a container's command line**, where `ps` shows
   it to every user on the machine. A container gets `--env NAME`, and the
@@ -409,13 +409,13 @@ xynaut stop
   `ANTHROPIC_API_KEY`, and the databases' passwords alike. Hosts, ports, client
   ids and paths stay visible. `inspect` still shows a running container's
   environment; that is what delivering secrets as environment means.
-- **`xynaut status` reports by what each service is part of.** KNOWLEDGE
+- **`xynolog status` reports by what each service is part of.** KNOWLEDGE
   BASES has an entry for each knowledge base's stack — the one of the KB you
   stand in, else each one running — headed by its name and did:web: its
   clone, where it runs, where its secrets are kept, and a line each for its
   record, index and issuer, a mark per service and the state of any that is
   not healthy. Then how many KBs are known, local file:// clones and
-  codespace-hosted https:// repos alike (`xynaut roots` lists them). The
+  codespace-hosted https:// repos alike (`xynolog roots` lists them). The
   services every knowledge base shares follow, a table for each group:
   KNOWLEDGE WORKERS (the Browser and the worker), PROVIDERS (inference and
   embedding, with the models each KB was started with) and TELEMETRY (the
@@ -427,7 +427,7 @@ xynaut stop
   (`its stores`), with each store's own directory, what it takes on disk and
   what it holds, largest first; and an `all KBs` row totaling every
   knowledge base's directory, with orphaned ones (the KB root no longer
-  exists) called out alongside the `xynaut clean --root <key>` that
+  exists) called out alongside the `xynolog clean --root <key>` that
   removes each. Sizes are what the files take on disk, not their lengths: a
   vector store's sparse files are long and take little. Roots and KBs are the durable
   things; a stack is status layered on one of them. A service's row — each
@@ -451,13 +451,13 @@ xynaut stop
   codespace** (an ssh would, resuming compute billing), so `--refresh` on a
   stopped one says so and skips.
 - **A failed health gate shows the crash where it is**: the launcher prints
-  the last ~20 lines of that container's own logs plus the `xynaut logs
+  the last ~20 lines of that container's own logs plus the `xynolog logs
   --service <name>` pointer — the cause of a startup crash is usually
   sitting right there. Service containers run **without `--rm`** for the
   same reason: with it, a container that CRASHES during the gate removes
   itself, destroying the very logs that explain it ("No such container").
   Without it the container remains,
-  Exited and inspectable — status shows it, `xynaut logs` reads it — until
+  Exited and inspectable — status shows it, `xynolog logs` reads it — until
   the next start's preflight or a stop sweeps it. Cleanup is the
   launcher's explicit job at both ends; `--rm` would only subtract the
   evidence. (One-shot busybox probes keep `--rm` — nothing to keep.) And on macOS, a KB root under `~/Desktop`, `~/Documents` (only when
@@ -479,7 +479,7 @@ xynaut stop
   Browser container mounts the directory read-only at `/discovery`, where the
   Browser image's server serves it; an empty stack set writes an empty list,
   because an absent file is ambiguous.
-- `xynaut stop` sweeps **every** installed runtime by default, so a stack
+- `xynolog stop` sweeps **every** installed runtime by default, so a stack
   started under `--runtime docker` can't survive a plain stop. Stop's job
   isn't done until the ports are actually free: `start` records the host
   ports the stack claimed (`ports` in `stack.json`), and `stop` polls them
@@ -494,7 +494,7 @@ xynaut stop
   deliberately no `--force-kill-ports`-style option: the launcher owns
   everything named `semiont-*` across every runtime it can see, and never
   signals anything else.)
-- **`xynaut stop --group <name>` stops one group of services**, named as
+- **`xynolog stop --group <name>` stops one group of services**, named as
   `status` reads them. A knowledge base's group (`record`, `index`) takes
   along each of that knowledge base's services that needs one of its own,
   last-started first, and says which and why ("smelter stops too: it needs
@@ -506,19 +506,19 @@ xynaut stop
   here, so it stops alone, and each knowledge base goes on without it:
   `--group issuer` stops the Keycloak and the PostgreSQL every knowledge
   base's realm is in, and their gateways stay up.
-- **`xynaut start --group <name>` starts one group of services**, as
+- **`xynolog start --group <name>` starts one group of services**, as
   `--service` starts one: each of the group's own (re)starts, in start
   order. Each service one of them needs that is not up starts first, and
   the start says which and why ("gateway starts too: the weaver needs it").
-  So after `xynaut stop --group record`, `xynaut start --group index`
+  So after `xynolog stop --group record`, `xynolog start --group index`
   starts the messaging, the gateway and the archivist again before the
   index; with the stack up, it restarts the index alone. A group that reads no config
   (`telemetry`) starts from anywhere.
-- `xynaut about` shows project information and links, the image registry,
+- `xynolog about` shows project information and links, the image registry,
   and which runtimes were detected on PATH.
 - Every invocation is logged (invoke + exit lines, with `--password` values
   redacted) to `launcher.log`, in the launcher's log directory
-  ([where](#where-the-launcher-keeps-its-files)). `xynaut status --verbose`
+  ([where](#where-the-launcher-keeps-its-files)). `xynolog status --verbose`
   lists it under LAUNCHER PATHS. Logging is best-effort — it never blocks a
   command.
 - **The launcher derives its work from the KB's documents in
@@ -548,10 +548,10 @@ xynaut stop
   the dispatcher's, the Smelter's, the Weaver's and the Librarian's also name
   the knowledge base the service serves (`kb`); the Archivist reads it from the
   tree it keeps. Every service but the worker names it by its DID in its
-  telemetry (`semiont.kb`), by which `xynaut status` reads that knowledge
+  telemetry (`semiont.kb`), by which `xynolog status` reads that knowledge
   base's numbers and no other's. One address reaches a container through its
   environment instead: the telemetry collector's
-  (`OTEL_EXPORTER_OTLP_ENDPOINT`). `xynaut start --dry-run` lists
+  (`OTEL_EXPORTER_OTLP_ENDPOINT`). `xynolog start --dry-run` lists
   what it would place.
   **The inference driver is who performs inference per the
   engines, not which process the launcher runs**: any engine on `ollama` →
@@ -568,7 +568,7 @@ xynaut stop
   provides it.
 - **The KnowledgeIndex requires a vector store and an embedding model**, so a
   document without either is refused before anything launches: semantic
-  search is always available. `xynaut start`, `--dry-run` and the `xynaut
+  search is always available. `xynolog start`, `--dry-run` and the `xynolog
   init` self-vet read the documents alike, so each enforces it. A `memory`
   vector store is refused with its own explanation: a launcher-managed stack
   runs the Smelter and the Librarian as separate containers, and an
@@ -579,7 +579,7 @@ xynaut stop
   is verified live against Ollama's `/api/tags` and `/api/ps`, with size,
   parameter count and quantization. A model that was never pulled is
   otherwise invisible until a worker reaches
-  for it mid-job and fails, so **`xynaut start` pulls them**: after Ollama is
+  for it mid-job and fails, so **`xynolog start` pulls them**: after Ollama is
   up it lists what is installed and pulls each configured model that is
   absent, over Ollama's HTTP API (one path for both a host process and the
   launcher's container — no `ollama` CLI needed on PATH). Only models Ollama
@@ -631,18 +631,18 @@ xynaut stop
   by walking up from cwd for `.semiont/`. git is not
   part of discovery — the must-be-a-git-clone invariant applies to a full
   start and `--service archivist` (the one service that mounts `/kb`);
-  every other service needs at most the `.semiont/` tree. `xynaut status`
+  every other service needs at most the `.semiont/` tree. `xynolog status`
   reports the root(s) in its KNOWLEDGE BASES section.
 - The launcher remembers every root a real start used in `roots.json` (beside
   `stack.json`; entries survive stops, vanished paths are flagged not
-  dropped). `xynaut start --root <path|name>` selects a root explicitly — a
+  dropped). `xynolog start --root <path|name>` selects a root explicitly — a
   directory, or the basename of a registered root — winning over
   `SEMIONT_ROOT` and cwd discovery; the KNOWLEDGE BASES status section
   lists the registry with last-used annotations.
 - **`--config` is sticky per KB**: it names the Inference document a start
-  runs, `.semiont/stack/inference/<name>.yaml`. `xynaut init` records the
+  runs, `.semiont/stack/inference/<name>.yaml`. `xynolog init` records the
   one it wrote on the root's `roots.json` entry, a successful start with an
-  explicit `--config` records the name it ran, and `xynaut settings config
+  explicit `--config` records the name it ran, and `xynolog settings config
   <name>` sets it; later starts without the flag use it (banner says
   `Config: anthropic (this KB's recorded config; override with --config)`;
   status shows it under SEMIONT ROOTS). An explicit flag always wins and
@@ -680,7 +680,7 @@ xynaut stop
   place (the rest of the stack still mounts them); a `--service` status exits
   0/1 on that service alone.
 - **The images are the documents'**: each service runs the `image` its
-  document names, and `xynaut init` names `:latest`. An image tagged
+  document names, and `xynolog init` names `:latest`. An image tagged
   `:local`, built on this machine by the images repository's `make build`, is never
   pulled; a KB runs one by naming it. The Browser, which no KB owns, runs
   the image its own document names, `ghcr.io/the-ai-alliance/semiont-browser:latest`
@@ -688,13 +688,13 @@ xynaut stop
 
 ### Login and upload
 
-`xynaut login` signs in to a running stack's knowledge base through the
+`xynolog login` signs in to a running stack's knowledge base through the
 issuer it trusts: the launcher reads the KB's OAuth resource metadata, runs
 the device authorization grant against that issuer (a URL and a code you
 approve in a browser), and stores the tokens per stack in the launcher
 state home, mode 0600. No password ever reaches the launcher; a script's
 session is the stored refresh token from one interactive sign-in.
-`xynaut yield --upload <file>` then registers files as KB resources.
+`xynolog yield --upload <file>` then registers files as KB resources.
 Files must live under the KB root (storage URIs are repo-relative; the
 content belongs in the repo) — and commit the `.semiont/events/` files an
 upload creates: they ARE the documents. Both verbs speak to the gateway
@@ -709,22 +709,22 @@ session is the Go SDK's, which every SDK's session agrees with
 token is; it renews the token invisibly at the issuer from the stored refresh
 token when the token has expired or the gateway refuses it (announced on
 stderr, kept, retried once); and it forgets a sign-in it cannot renew, so
-`xynaut login` is the fix only when the renewal itself fails — login is a
-rare event, not a routine chore. `xynaut logout` ends a session (the refresh
+`xynolog login` is the fix only when the renewal itself fails — login is a
+rare event, not a routine chore. `xynolog logout` ends a session (the refresh
 token revoked at the issuer, best-effort; the sign-in forgotten either way,
-said plainly when the issuer half didn't complete), and `xynaut status
+said plainly when the issuer half didn't complete), and `xynolog status
 --verbose` lists every stored session under SESSIONS, live-verified against
 the stack when reachable — valid / expired / unverified, never a guess.
 
 The stored sessions are the sign-in store, a contract in
 `protocol/specs/src/sign-in-store`: `<state home>/tokens.json`, which an application
-on any SDK reads and renews too, so one `xynaut login` serves both. The
+on any SDK reads and renews too, so one `xynolog login` serves both. The
 launcher keeps it through the Go SDK's store: every change is made under an
 exclusive lock on `tokens.lock`, a member it does not understand is written
 back as it was, and a file it cannot read is never written over. A renewal
 reads the store again before it writes: tokens another program renewed
 meanwhile stand, a refresh token another program replaced is not spent, and a
-stack signed out meanwhile stays signed out. `xynaut login` keeps the state
+stack signed out meanwhile stays signed out. `xynolog login` keeps the state
 home to its owner, with everything created in it. The entry's shape, the two
 OAuth client ids and the sign-in scope are generated from the spec (`npm run
 generate:go`), the state home runs the spec's cases, and CI fails when any of
@@ -732,20 +732,20 @@ them drifts.
 
 ### Delegating to the stack
 
-Yield and mark each have a hand form and a delegated one. By hand, `xynaut
-yield --upload` registers a file and `xynaut mark <resourceId>` writes one
+Yield and mark each have a hand form and a delegated one. By hand, `xynolog
+yield --upload` registers a file and `xynolog mark <resourceId>` writes one
 annotation from a selector and a body. Delegated, the stack's worker does the
 work as a job the launcher creates and follows to its end, narrating its
 progress:
 
-- `xynaut yield --delegate <resourceId> [<annotationId>] --storage-uri
+- `xynolog yield --delegate <resourceId> [<annotationId>] --storage-uri
   <uri> --title <text>` gathers context around the resource (or one of its
   annotations) and generates a new resource from it.
-- `xynaut mark --delegate <resourceId> --motivation <m>` has the worker read
+- `xynolog mark --delegate <resourceId> --motivation <m>` has the worker read
   the whole resource and annotate it: `highlighting`, `commenting`,
   `assessing`, `linking` (references to the entity types `--entity-type`
   names) or `tagging` (a tag schema's categories, `--schema` and
-  `--category`). `xynaut browse --entity-types` and `xynaut browse
+  `--category`). `xynolog browse --entity-types` and `xynolog browse
   --tag-schemas` list what a KB offers for those. Each motivation's job takes
   its own options: one it does not take is refused before anything is asked,
   with the options it does take.
@@ -766,11 +766,11 @@ runs.
 
 ### Searching a KB
 
-`xynaut browse` lists and shows what a KB holds; `xynaut match` searches
-it, in two forms. `xynaut match --search <text>` finds resources by text
+`xynolog browse` lists and shows what a KB holds; `xynolog match` searches
+it, in two forms. `xynolog match --search <text>` finds resources by text
 (`match:resources-requested`; `--entity-type` and `--limit` narrow it, and
 `--json` carries the reply's `matchKind`: `lexical` when the text matched,
-`semantic` when nothing did and the resources discuss it instead). `xynaut
+`semantic` when nothing did and the resources discuss it instead). `xynolog
 match <resourceId> <annotationId>` finds the resources that annotation could
 bind to: it gathers the annotation's context, then runs the scored search
 (`match:search-requested`). The two forms exclude each other, and `match`
@@ -795,11 +795,11 @@ The bare ids fill, in order, the places no option filled, so these are one
 command:
 
 ```bash
-xynaut bind <resourceId> <annotationId> <targetResourceId>
+xynolog bind <resourceId> <annotationId> <targetResourceId>
 ```
 
 ```bash
-xynaut bind --annotation <annotationId> <resourceId> <targetResourceId>
+xynolog bind --annotation <annotationId> <resourceId> <targetResourceId>
 ```
 
 An id given twice, by any two of its options, is refused, and so is a bare word
@@ -812,7 +812,7 @@ after `--`, which ends the options: every word after it is an id, a flag's name
 included.
 
 ```bash
-xynaut bind --json -- <resourceId> -BA3nvXTk3ybl1Qmp_3zZ <targetResourceId>
+xynolog bind --json -- <resourceId> -BA3nvXTk3ybl1Qmp_3zZ <targetResourceId>
 ```
 
 Before `--`, a word that begins with `-` and is none of the verb's options is
@@ -820,7 +820,7 @@ refused, and the refusal shows the verb's form with `--`.
 
 ### Driving a participant's Browser
 
-`xynaut browse <resourceId> --browser` opens that resource on the
+`xynolog browse <resourceId> --browser` opens that resource on the
 PARTICIPANT's screen instead of printing it here — the same act as a plain
 `browse`, with a different audience, which is why it is a flag and not a
 second verb. It emits `browse:resource-open`, a domain signal the viewer
@@ -829,7 +829,7 @@ refuses to combine with `--json`, `--annotations` or `--entity-types`, since
 each of those names a local rendering and the pair would state two
 destinations at once.
 
-`xynaut browse --annotation <id> --browser` opens **one annotation** the same
+`xynolog browse --annotation <id> --browser` opens **one annotation** the same
 way (`browse:click`): the viewer selects that entry in its annotations panel
 and scrolls to it. Where a `beckon` only *points*, this *opens* — the two are
 distinct moves, not synonyms.
@@ -877,8 +877,8 @@ says which of three things is true:
 ```
 ✗ Nobody saw res-42 — nothing is subscribed to browse:resource-open.
   No Browser is running on this machine.
-  Start it:  xynaut browse res-42 --browser --launch
-  or:        xynaut start --service browser
+  Start it:  xynolog browse res-42 --browser --launch
+  or:        xynolog start --service browser
 ```
 
 The two failures are independent — the Browser is the Browser *container*,
@@ -888,7 +888,7 @@ its own third sentence rather than being flattened into either.
 
 The annotation form reports the same three ways, naming what it sent and the
 command that retries *it*: `Nobody saw annotation ann-9 — nothing is subscribed
-to browse:click`, with `xynaut browse --annotation ann-9 --browser --launch`.
+to browse:click`, with `xynolog browse --annotation ann-9 --browser --launch`.
 A retry line that named the wrong form would be worse than none.
 
 `--launch` starts the Browser when none is running, through the same
@@ -906,7 +906,7 @@ neither, nothing is probed).
 
 ### Watching a KB
 
-`xynaut listen` streams the KB's live events. `--json` is line-delimited
+`xynolog listen` streams the KB's live events. `--json` is line-delimited
 — scripts parse it — while the default rendering is meant to be READ:
 
 ```
@@ -930,12 +930,12 @@ broadcast while it was down is not sent again.
 
 ### Serving AI applications over MCP
 
-`xynaut mcp` is an MCP server over stdio: an AI application runs it and
-reaches every KB this machine has signed in to, as the person `xynaut login`
+`xynolog mcp` is an MCP server over stdio: an AI application runs it and
+reaches every KB this machine has signed in to, as the person `xynolog login`
 signed in, through the Go SDK. Setting it up is one line,
 
 ```bash
-claude mcp add xynaut -- xynaut mcp
+claude mcp add xynolog -- xynolog mcp
 ```
 
 and [Xynoplex Go SDK guide](https://github.com/Xynoplex/sdk/blob/main/go/sdk/README.md) has
@@ -946,7 +946,7 @@ the other clients' form. What the server does that a verb does not:
   argument names one by its key, `local:<did-key>` or `codespace:<owner>/<name>`, and
   `kb` goes no further than choosing the client: no request to a gateway
   carries it. A session the SDK reports over ends that call, and the next one
-  is refused at once, naming `xynaut login`, without asking the issuer again.
+  is refused at once, naming `xynolog login`, without asking the issuer again.
 - **The tools are a curated set**, named by the verbs, in
   `internal/launcher/verbs/mcp-tools.json`, which names the SDK methods each tool calls
   and gives a reason for every method of the client surface no tool calls.
@@ -965,8 +965,8 @@ the other clients' form. What the server does that a verb does not:
   cancels the job. `job_status` answers a job as an MCP task would, and a job
   that is another person's, or that the queue no longer keeps, is unknown.
 - **A codespace whose forward is down is said, and nothing is started**: the
-  tool answers with `xynaut status --repo <owner/name>`, which re-establishes
-  a running codespace's forward. The test is the one `xynaut status` lists
+  tool answers with `xynolog status --repo <owner/name>`, which re-establishes
+  a running codespace's forward. The test is the one `xynolog status` lists
   active stacks by: the forward's process is the launcher's, and its port
   answers.
 - **stdout is the protocol's alone.** Whatever else the process prints goes
@@ -976,7 +976,7 @@ the other clients' form. What the server does that a verb does not:
 
 ### Serving Desktop over the control API
 
-`xynaut control` serves the launcher's control API on stdio: JSON-RPC 2.0,
+`xynolog control` serves the launcher's control API on stdio: JSON-RPC 2.0,
 one message per line. A program, Desktop, drives the launcher with it the way
 a person drives the commands. Each method is a command, run by the code the
 command runs:
@@ -987,7 +987,7 @@ command runs:
   `control` group of `protocol/specs/src/errors/codes.json`.
 
 `roots.init` creates and registers a local knowledge base by running
-`xynaut init` with explicit parameters. Desktop supplies the destination and
+`xynolog init` with explicit parameters. Desktop supplies the destination and
 permanent identity; it does not request template copying or overwrite an
 existing knowledge base.
 
@@ -1022,7 +1022,7 @@ Every container the launcher runs carries an explicit `--memory` ceiling (no
 silent runtime defaults — Apple container would quietly size each
 per-container VM at 1G, where a JVM graph or a loaded model dies; docker would
 leave it unlimited inside its shared VM). A container a document describes
-runs at the `resources.limits.memory` that document states, which `xynaut
+runs at the `resources.limits.memory` that document states, which `xynolog
 init` writes from one table in the launcher; Ollama, the telemetry containers
 and the Browser run at that table's own
 ([stack schemas](https://github.com/Xynoplex/protocol/tree/main/specs/src/stack)).
@@ -1041,7 +1041,7 @@ the real budget.
 
 ### Keeping services alive
 
-`xynaut start` exits once the stack is up, so nothing outside a container is
+`xynolog start` exits once the stack is up, so nothing outside a container is
 left watching it. On a laptop that would mean a service that crashes at 2am
 stays dead until you notice.
 
@@ -1067,7 +1067,7 @@ crash-looping process would read as perfectly healthy from outside.
 
 **The limit worth knowing:** the supervisor restarts a dead *process*, never a
 dead *container*. If the runtime or the host VM kills the container itself,
-nothing notices until the next `xynaut status`. Closing that gap would need
+nothing notices until the next `xynolog status`. Closing that gap would need
 something resident on the host, which the launcher deliberately is not.
 
 ### The messaging daemon
@@ -1090,14 +1090,14 @@ daemon. It serves that knowledge base alone: a start, a dry run too, refuses
 a knowledge base whose `servers` names the broker another registered root's
 KnowledgeBase document names (the same host and port), unless that root is a
 clone of the same knowledge base. The daemon runs one way — `-js -sd /data` with the state mount —
-because both drivers use the store. `xynaut status` lists it as
+because both drivers use the store. `xynolog status` lists it as
 `messaging (NATS)`.
 
 Unlike the Xynoplex service processes, this is a stock third-party image, so it
 is **outside the supervision census above**: nothing restarts it if it stops.
 On a broker outage the gateway keeps reading healthy and its emits fail until
 the broker returns; the recovery mechanism is to start the container again
-(`xynaut start --service messaging`, or the runtime directly), after which the
+(`xynolog start --service messaging`, or the runtime directly), after which the
 gateway reconnects on its own — no gateway restart. The gateway logs
 `[signal BROKER-DOWN]` when the connection drops and `[signal BROKER-RECONNECTED]`
 when it returns.
@@ -1119,19 +1119,19 @@ queue and signals), `state/`
 (views and projections), `anchored-text/`, `gateway/` and `librarian/` (each
 service's supervisor's events log) — and `logs/`, the container logs a start
 keeps before it removes the containers. Its kept secrets are files beside
-them, unless `xynaut settings secret-store` names another store. `shared/`
+them, unless `xynolog settings secret-store` names another store. `shared/`
 holds `postgres/`, the database of the issuer every knowledge base here signs
 in at, each in its own realm; `qdrant/`, the shared Qdrant's, each knowledge
 base naming it in collections of its own; and the values the launcher keeps
 for the machine: the worker's key and the issuer's passwords, always files.
 
 This is none of the knowledge base itself, which is its root: the working tree
-you start from. `xynaut status --verbose`, run from a root, prints that root,
+you start from. `xynolog status --verbose`, run from a root, prints that root,
 the directory its stores are in, and what each store takes on disk.
 
 ### Where state lives
 
-Local-stack databases persist across restarts. Each local xynaut root gets
+Local-stack databases persist across restarts. Each local xynolog root gets
 its own directory, `roots/<key>` under the launcher's data home, keyed by the
 KB's did:web when `.semiont/config.yaml` declares one (identity travels with the KB, so a moved
 clone keeps its state), else by a hash of the root path. `start`
@@ -1151,7 +1151,7 @@ different image announces it is clearing the stale store and lets the normal
 rebuild repopulate it — freshness by rebuild, never a refusal. The shared
 Qdrant's (`shared/qdrant`) is every knowledge base's index naming it, so a
 start whose vector store document names another image refuses, as the
-issuer's PostgreSQL does, and `xynaut clean --shared --store vectors`
+issuer's PostgreSQL does, and `xynolog clean --shared --store vectors`
 clears it. (The Neo4j subdirs are host-side mode 777: its
 entrypoint refuses to boot unless its `test -w` gate passes, and Apple
 container's virtiofs won't let it chown a mount root.)
@@ -1160,7 +1160,7 @@ The anchored-text store (`anchored-text/`) is a projection with no image stamp,
 mounted into the Archivist alone. Each entry carries the stamp of the PDF reader and
 the OCR engine that derived it, and is served only under the stamp the Smelter
 states, so no image change clears it: an older stamp's entries stay on disk, served
-to no one, until `xynaut clean --store anchored-text`.
+to no one, until `xynolog clean --store anchored-text`.
 
 No store is mounted by two containers: under Apple container each container is
 its own VM, and a second mounter of a host directory can read a file cut short.
@@ -1168,7 +1168,7 @@ The state tree (`state/`) is the Archivist's alone, and the gateway and the
 Librarian each mount a store of their own (`gateway/`, `librarian/`) for their
 supervisor's events log, which no image stamps.
 
-`xynaut clean` is the one way this state dies: it removes the current
+`xynolog clean` is the one way this state dies: it removes the current
 root's state directory (`--store identity-store|vectors|graph|anchored-text|messaging|state|gateway|librarian`
 scopes to one
 store; `--dry-run` shows what would go, with sizes; `--root <path|name|key>`
@@ -1185,13 +1185,13 @@ named by its DID, through Qdrant's API with the machine's key, and leaves
 every other knowledge base's; with the shared Qdrant not running, the clean runs it for the delete
 and stops it again. A shared Keycloak or Qdrant recorded as running that does
 not answer is refused rather than run in its place.
-`xynaut clean --shared --store identity-store` removes that PostgreSQL's
+`xynolog clean --shared --store identity-store` removes that PostgreSQL's
 store, and every realm in it, once no recorded stack signs in at the issuer
-and its server is stopped (`xynaut stop --group issuer`); the issuer's
+and its server is stopped (`xynolog stop --group issuer`); the issuer's
 passwords stay, so its next boot reuses them, and each knowledge base's next
-start creates its realm afresh. `xynaut clean --shared --store vectors`
+start creates its realm afresh. `xynolog clean --shared --store vectors`
 removes the shared Qdrant's store, and every index in it, once no recorded
-stack keeps its index there and the shared Qdrant is stopped (`xynaut stop
+stack keeps its index there and the shared Qdrant is stopped (`xynolog stop
 --service vectors`); each knowledge base's next start indexes it afresh.
 `--shared` and `--root` are refused together.
 `stop` itself never touches state; stopping and restarting is exactly the
@@ -1201,13 +1201,13 @@ round trip persistence exists for.
 The view every KB shares — the discovery document the Browser mounts — lives
 under its *state* home instead. On macOS and Windows the two are one directory,
 so `roots/` and `discovery/` sit side by side and the distinction is invisible.
-On Linux they are deliberately different trees. `xynaut clean` scopes to a
+On Linux they are deliberately different trees. `xynolog clean` scopes to a
 root's data and never touches discovery, which the next stack mutation
 regenerates regardless.
 
 ## Development
 
-The CLI entry point is [`cmd/xynaut`](cmd/xynaut). Its implementation is in
+The CLI entry point is [`cmd/xynolog`](cmd/xynolog). Its implementation is in
 [`internal/launcher`](internal/launcher/README.md), and the Xynoplex Go SDK is an
 external module dependency.
 
@@ -1221,9 +1221,9 @@ make vet    # run go vet
 make clean  # remove generated build and staged SDK artifacts
 ```
 
-Release binaries are written to `dist/xynaut_<os>_<arch>` (Windows binaries
+Release binaries are written to `dist/xynolog_<os>_<arch>` (Windows binaries
 have a `.exe` suffix). When the host matches one of those targets, `make` also
-copies that executable to `dist/xynaut` for convenient local use. Override the
+copies that executable to `dist/xynolog` for convenient local use. Override the
 matrix with `BUILD_TARGETS="linux/arm64 windows/amd64"` when needed.
 
 The tests in `launcher_test.go` are the executable spec: golden files under
@@ -1232,12 +1232,12 @@ fake-runtime binary (`internal/launcher/fakert`) impersonates
 container/docker/podman/git, and lsof/ps (netstat/tasklist on Windows), on a
 private PATH — tests never touch a real runtime. If a behavior change is
 intended, adjudicate deliberately (the goldens are the spec), then refresh
-them with `go test -run <Test> ./cmd/xynaut -update-goldens`. The goldens are written on
+them with `go test -run <Test> ./cmd/xynolog -update-goldens`. The goldens are written on
 Linux, with placeholders for every host path; a run on macOS or Windows
 compares against them as that system runs.
 
 What of the libraries the scenarios reach is measured by the launcher they
-run, not by the test binary: `go test ./cmd/xynaut -launcher-coverdir=<dir>` builds that
+run, not by the test binary: `go test ./cmd/xynolog -launcher-coverdir=<dir>` builds that
 launcher with coverage of itself and `internal/launcher`, and every run
 of it writes there. `go tool covdata percent -i <dir>` reads it, and `go tool covdata
 textfmt -i <dir> -o <file>` writes it as a profile. `go test -coverprofile`

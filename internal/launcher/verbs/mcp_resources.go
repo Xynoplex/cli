@@ -116,13 +116,13 @@ func listMCPResources(ctx context.Context, sessions *launcher.Sessions) (*mcp.Li
 	for _, kb := range known {
 		session, err := mcpSession(sessions, kb.Key)
 		if err != nil {
-			fmt.Fprintf(os.Stderr, "xynaut mcp: %s's resources are not listed: %v\n", kb.Key, err)
+			fmt.Fprintf(os.Stderr, "xynolog mcp: %s's resources are not listed: %v\n", kb.Key, err)
 			continue
 		}
 		c := session.Client()
 		page, err := c.Browse.Resources(xynoplex.ResourceFilters{}).Fresh(ctx)
 		if err != nil {
-			fmt.Fprintf(os.Stderr, "xynaut mcp: %s's resources are not listed: %v\n", kb.Key, c.Refusal(err))
+			fmt.Fprintf(os.Stderr, "xynolog mcp: %s's resources are not listed: %v\n", kb.Key, c.Refusal(err))
 			continue
 		}
 		for _, descriptor := range page.Resources {

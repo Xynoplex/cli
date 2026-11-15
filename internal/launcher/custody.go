@@ -61,7 +61,7 @@ func custodyOwned(name string) bool {
 // every token minted from Qdrant's key fails under another: once per root, or,
 // for a daemon the machine runs (the issuer's PostgreSQL, a shared Qdrant),
 // once for the machine (daemonCustody). The variable names are the
-// launcher's, machine-wide — `xynaut settings secret` registrations are
+// launcher's, machine-wide — `xynolog settings secret` registrations are
 // machine-wide while a daemon's presence is per-KB config, so no config may
 // borrow one. The custody names are also the files under roots/<key>/, or
 // shared/, where KB skills that connect to a daemon directly are told to read
@@ -128,11 +128,11 @@ func loadOrCreateDaemonCredential(u *UI, key, role string, machine bool) (string
 		u.Fail("%s's store at %s holds data, but the launcher keeps no password for it.", d.display, spec.storeDir(key))
 		fmt.Fprintln(os.Stderr, "  It was initialized with a password the launcher does not have (a config's literal, or one whose file was lost),")
 		if machine {
-			fmt.Fprintf(os.Stderr, "  and the daemon would reject every login. It is every knowledge base's here; to start afresh: xynaut clean --shared --store %s\n", role)
+			fmt.Fprintf(os.Stderr, "  and the daemon would reject every login. It is every knowledge base's here; to start afresh: xynolog clean --shared --store %s\n", role)
 			return "", false
 		}
 		fmt.Fprintln(os.Stderr, "  and the daemon would reject every login. Clear it — the launcher then generates and keeps a new one:")
-		fmt.Fprintf(os.Stderr, "    xynaut clean --store %s\n", role)
+		fmt.Fprintf(os.Stderr, "    xynolog clean --store %s\n", role)
 		return "", false
 	}
 	secret, ok := generateHexSecret(u, 16, d.display+"'s "+d.credential)
@@ -207,7 +207,7 @@ const (
 // tokens, and nothing else: people's and agents' tokens are the issuer's. A
 // media token names its knowledge base, so a root's tokens open nothing of
 // another's even under an exported $JWT_SECRET they share. Persisted so a
-// restart leaves the media links in hand working; a full `xynaut clean`
+// restart leaves the media links in hand working; a full `xynolog clean`
 // removes the state dir and takes it with it.
 func loadOrCreateJWTSecret(u *UI, key string) (string, bool) {
 	if s := os.Getenv("JWT_SECRET"); s != "" {
@@ -276,7 +276,7 @@ func loadOrCreateJWTSecret(u *UI, key string) (string, bool) {
 // caller that logs it. False when the store could not answer (reported),
 // which is not "none kept".
 //
-// The read-only half exists for `xynaut useradd`, which administers the realm
+// The read-only half exists for `xynolog useradd`, which administers the realm
 // Keycloak already created: generating a password there would hand the gateway
 // a credential the realm has never seen, and the admin API would refuse it with
 // nothing to explain why.

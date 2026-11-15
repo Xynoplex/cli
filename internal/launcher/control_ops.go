@@ -220,7 +220,7 @@ func refuseCodespaceRuntime(u *UI, target *ControlTarget, runtime *string) bool 
 }
 
 // refuseUnknownSelection refuses a service or a group the launcher has none
-// of, which xynaut start refuses in the same words.
+// of, which xynolog start refuses in the same words.
 func refuseUnknownSelection(u *UI, service, group *string) bool {
 	if service != nil && !knownRole(*service) {
 		u.Refuse(controlCodeInvalidService, "Unknown --service '%s' (expected: %s)", *service, roleList)
@@ -235,7 +235,7 @@ func refuseUnknownSelection(u *UI, service, group *string) bool {
 	return false
 }
 
-// targetArgs: the flags that name target, as xynaut start and xynaut stop
+// targetArgs: the flags that name target, as xynolog start and xynolog stop
 // take them. A codespace target is --repo; start names its platform too.
 func targetArgs(target *ControlTarget, platform bool) []string {
 	switch {
@@ -268,7 +268,7 @@ func valueArgs(flags ...valueFlag) []string {
 	return args
 }
 
-// startArgs: the command line of the start p asks for, as xynaut start reads
+// startArgs: the command line of the start p asks for, as xynolog start reads
 // a person's (protocol/specs/src/control/cli.json maps each flag).
 func startArgs(p ControlStackStartParams) []string {
 	args := targetArgs(p.Target, true)
@@ -292,7 +292,7 @@ func startArgs(p ControlStackStartParams) []string {
 	return args
 }
 
-// stopArgs: the command line of the stop p asks for, as xynaut stop reads a
+// stopArgs: the command line of the stop p asks for, as xynolog stop reads a
 // person's.
 func stopArgs(p ControlStackStopParams) []string {
 	args := targetArgs(p.Target, false)

@@ -1,10 +1,10 @@
 package verbs
 
-// frame.go — `xynaut frame`: writes to the KB's SCHEMA layer. Where every
+// frame.go — `xynolog frame`: writes to the KB's SCHEMA layer. Where every
 // other verb acts on content (resources, annotations, references, attention),
 // Frame acts on what kinds of things exist. See protocol/contract/flows/FRAME.md.
 //
-// Reads deliberately live on Browse — `xynaut browse --entity-types` is the
+// Reads deliberately live on Browse — `xynolog browse --entity-types` is the
 // live read of the vocabulary this verb writes to. The asymmetry is the
 // protocol's, not this file's.
 
@@ -16,11 +16,11 @@ import (
 	launcher "github.com/Xynoplex/cli/internal/launcher"
 )
 
-const frameUsage = `Usage: xynaut frame --entity-type <name> [--entity-type <name> ...]
+const frameUsage = `Usage: xynolog frame --entity-type <name> [--entity-type <name> ...]
 
 Grow the knowledge base's schema vocabulary — the entity types every other
 flow is expressed in (Person, Organization, Concept, ...). Read the current
-vocabulary back with:  xynaut browse --entity-types
+vocabulary back with:  xynolog browse --entity-types
 
 The vocabulary is grow-only, and adding a type that already exists is a
 no-op — so re-running this is always safe.
@@ -32,7 +32,7 @@ Options:
   --runtime <rt>        Target a stack here
   --help                Show this help
 
-Requires a session:  xynaut login
+Requires a session:  xynolog login
 `
 
 func Frame(args []string) int {
@@ -132,6 +132,6 @@ func Frame(args []string) int {
 	// "Accepted", not "created": the ack carries no payload, so the gateway
 	// never says whether a type was new or already there.
 	u.Ok("Entity types accepted: %s %s", strings.Join(added, ", "),
-		u.Dim("(xynaut browse --entity-types shows the vocabulary)"))
+		u.Dim("(xynolog browse --entity-types shows the vocabulary)"))
 	return 0
 }

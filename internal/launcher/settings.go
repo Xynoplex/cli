@@ -1,6 +1,6 @@
 package launcher
 
-// settings.go — `xynaut settings`: every setting the launcher keeps, in one
+// settings.go — `xynolog settings`: every setting the launcher keeps, in one
 // place. Each row reads its value through the function the start itself uses,
 // so the listing cannot disagree with what a start does, and none reaches for
 // a secret.
@@ -17,7 +17,7 @@ import (
 	"github.com/Xynoplex/cli/internal/launcher/stack"
 )
 
-// setting: one setting `xynaut settings` lists.
+// setting: one setting `xynolog settings` lists.
 type setting struct {
 	name string
 	// flag distinguishes a machine-wide form of a knowledge-base setting:
@@ -75,7 +75,7 @@ var settingsTable = []setting{
 	{name: "network", appliesTo: appliesToMachine, show: showNetwork, saves: []string{"rootsRegistry.Network"},
 		set: setNetwork, unset: unsetNetwork},
 	{name: "secret", appliesTo: appliesToMachine, show: showSecretSources, saves: []string{"rootsRegistry.Secrets"},
-		changedBy: func() string { return "its own commands: xynaut settings secret --help" }},
+		changedBy: func() string { return "its own commands: xynolog settings secret --help" }},
 	{name: "secret-store", flag: "--default", appliesTo: appliesToMachine, show: showDefaultSecretStore,
 		saves: []string{"storeSettingsFile.Default"}, set: setDefaultSecretStore, unset: unsetDefaultSecretStore},
 	{name: "config", appliesTo: appliesToKB, show: showConfig, saves: []string{"rootEntry.Config"},
@@ -93,31 +93,31 @@ var registryBookkeeping = map[string]bool{
 	"rootEntry.LastUsed": true, "rootEntry.LastStarted": true, "rootEntry.PortBlock": true,
 }
 
-const settingsUsage = `Usage: xynaut settings [<name> [<value> | --unset]] [--root <path|name>]
-       xynaut settings browser|worker|issuer|vectors --path
+const settingsUsage = `Usage: xynolog settings [<name> [<value> | --unset]] [--root <path|name>]
+       xynolog settings browser|worker|issuer|vectors --path
 
 Every setting the launcher keeps: its value, and where the value came from.
 Machine settings apply to every knowledge base on this machine; knowledge-base
 settings to the one you are in, or the one --root names.
 
-  xynaut settings                   list every setting
-  xynaut settings <name>            show one
-  xynaut settings <name> <value>    set it (checked as a start would check it)
-  xynaut settings <name> --unset    return it to its default
-  xynaut settings browser --path    print where the Browser's document is,
+  xynolog settings                   list every setting
+  xynolog settings <name>            show one
+  xynolog settings <name> <value>    set it (checked as a start would check it)
+  xynolog settings <name> --unset    return it to its default
+  xynolog settings browser --path    print where the Browser's document is,
                                      and nothing else
-  xynaut settings worker --path     print where the worker's document is,
+  xynolog settings worker --path     print where the worker's document is,
                                      and nothing else
-  xynaut settings issuer --path     print where the issuer's document is,
+  xynolog settings issuer --path     print where the issuer's document is,
                                      and nothing else
-  xynaut settings vectors --path    print where the vector store's document
+  xynolog settings vectors --path    print where the vector store's document
                                      is, and nothing else
 
 Settings:
   runtime         machine          The container runtime a start uses:
                                    container, docker or podman
   secret          machine          Where your own secrets come from (pointers,
-                                   never values): xynaut settings secret --help
+                                   never values): xynolog settings secret --help
   browser         machine          The Browser's document: the image, memory
                                    and port of the Browser this machine runs.
                                    Edit it; the next start runs what it says.
@@ -170,7 +170,7 @@ Showing a setting reads no secret and contacts no store. Changing the
 secret-store contacts both stores, and shows every read, write and delete.
 `
 
-// Settings implements `xynaut settings`.
+// Settings implements `xynolog settings`.
 func Settings(args []string) int {
 	u := NewUI(false)
 	if len(args) > 1 && args[0] == "secret" {
@@ -207,12 +207,12 @@ func Settings(args []string) int {
 	}
 	if pathOnly {
 		if flag != "" || value != "" || unset {
-			u.Fail("--path takes nothing else: xynaut settings browser|worker|issuer|vectors --path")
+			u.Fail("--path takes nothing else: xynolog settings browser|worker|issuer|vectors --path")
 			return 1
 		}
 		read, known := machineDocuments[name]
 		if !known {
-			u.Fail("--path is for the Browser's, the worker's, the issuer's and the vector store's documents: xynaut settings browser|worker|issuer|vectors --path")
+			u.Fail("--path is for the Browser's, the worker's, the issuer's and the vector store's documents: xynolog settings browser|worker|issuer|vectors --path")
 			return 1
 		}
 		path, ok := read(u.quieted(true))
@@ -321,7 +321,7 @@ func refuseUnrooted(u *UI, s setting, rootErr error) bool {
 	return false
 }
 
-// machineDocuments: where each machine document `xynaut settings <name>
+// machineDocuments: where each machine document `xynolog settings <name>
 // --path` names is, written from the launcher's catalog first when there is
 // none, as a start writes it. ok=false: the document does not hold, which was
 // said.
@@ -349,7 +349,7 @@ func showRuntime(u *UI, kb kbRoot) []settingLine {
 		if !onPath(rec) {
 			return []settingLine{{rec, "recorded, but not on PATH: a start auto-detects"}}
 		}
-		return []settingLine{{rec, "recorded by a start with --runtime, or xynaut settings"}}
+		return []settingLine{{rec, "recorded by a start with --runtime, or xynolog settings"}}
 	}
 	if found := installedRuntimes(); len(found) > 0 {
 		return []settingLine{{"auto-detect (" + found[0] + ")", "the default: the first of container, docker, podman on PATH"}}
@@ -360,7 +360,7 @@ func showRuntime(u *UI, kb kbRoot) []settingLine {
 func showSecretSources(u *UI, kb kbRoot) []settingLine {
 	sources := loadRoots().Secrets
 	if len(sources) == 0 {
-		return []settingLine{{"none registered", "xynaut settings secret set <VAR>"}}
+		return []settingLine{{"none registered", "xynolog settings secret set <VAR>"}}
 	}
 	vars := make([]string, 0, len(sources))
 	for v := range sources {
@@ -376,7 +376,7 @@ func showSecretSources(u *UI, kb kbRoot) []settingLine {
 
 func showConfig(u *UI, kb kbRoot) []settingLine {
 	if rec := recordedConfig(kb.dir); rec != "" {
-		return []settingLine{{rec, "recorded by init, a start with --config, or xynaut settings"}}
+		return []settingLine{{rec, "recorded by init, a start with --config, or xynolog settings"}}
 	}
 	return []settingLine{{defaultConfigName, "the default"}}
 }
@@ -400,7 +400,7 @@ func showSecretStoreSetting(u *UI, kb kbRoot) []settingLine {
 	case err != nil:
 		return []settingLine{{"unknown", err.Error()}}
 	case configured:
-		return []settingLine{{custodyStoreNamed(key, ref, true).describe(), "set with xynaut settings, or adopted from the default"}}
+		return []settingLine{{custodyStoreNamed(key, ref, true).describe(), "set with xynolog settings, or adopted from the default"}}
 	}
 	source := "the default"
 	if def, set, _ := defaultStoreSetting(); set {

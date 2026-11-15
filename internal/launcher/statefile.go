@@ -238,7 +238,7 @@ func (ss *StackSet) refuseUnreadable(u *UI) bool {
 	fmt.Fprintln(os.Stderr, "  nothing to stop while the real stack keeps running.")
 	fmt.Fprintln(os.Stderr, "  Set the record aside, then stop what is running by name:")
 	fmt.Fprintf(os.Stderr, "    %s\n", setAsideHint(systemName(), p, p+".unreadable"))
-	fmt.Fprintln(os.Stderr, "    xynaut stop          (sweeps every Semiont container here by name)")
+	fmt.Fprintln(os.Stderr, "    xynolog stop          (sweeps every Semiont container here by name)")
 	fmt.Fprintln(os.Stderr, "    gh codespace list     (a codespace stack stops there)")
 	return true
 }

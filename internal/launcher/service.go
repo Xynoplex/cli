@@ -74,7 +74,7 @@ func runStartService(u *UI, rt, lan string, kb kbRoot, opts startOptions, userEn
 	}
 	fmt.Println()
 	fmt.Printf("%s  %s\n", u.Wrap(AnsiBold+AnsiGreen, "🚀 "+name+" is up"), u.Dim("("+detail+")"))
-	fmt.Printf("  Check health:  %s\n", u.Bold("xynaut status"))
+	fmt.Printf("  Check health:  %s\n", u.Bold("xynolog status"))
 	return 0
 }
 
@@ -84,7 +84,7 @@ func runStartService(u *UI, rt, lan string, kb kbRoot, opts startOptions, userEn
 // plan-time truth; the kb mount keeps its placeholder via val().
 func renderServicePlan(rt, lan string, kb kbRoot, opts startOptions, userEnv []string, st *stack.Stack, plan *launchPlan, browser browserDocument) {
 	x := &planExec{rt: rt, lan: lan, kb: kb}
-	x.c("xynaut start %s --dry-run — the exact runtime commands a real", opts.asked())
+	x.c("xynolog start %s --dry-run — the exact runtime commands a real", opts.asked())
 	x.c("run would execute, in order. Values known only at runtime appear as <placeholders>.")
 	x.stateHomeDocumentWrites(browser, plan)
 	flowServices(x, flowCtx{plan: plan, stack: st, opts: opts, kb: kb, userEnv: userEnv, restart: true, browser: browser})

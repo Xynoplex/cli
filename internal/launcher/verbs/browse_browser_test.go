@@ -1,6 +1,6 @@
 package verbs
 
-// browse_browser_test.go — `xynaut browse --browser`: the tests that drive
+// browse_browser_test.go — `xynolog browse --browser`: the tests that drive
 // the Browse verb. BrowserTarget and roleHealthy are the launcher's, and are
 // tested in its browser_target_test.go.
 
@@ -60,7 +60,7 @@ func TestBrowseBrowserRefusesWhenNoOneIsWatching(t *testing.T) {
 			// user to a refused connection. Name the commands instead.
 			name:    "no Browser at all",
 			origin:  harness.DeadOrigin,
-			want:    []string{"Nobody saw res-42", "No Browser is running", "--launch", "xynaut start --service browser"},
+			want:    []string{"Nobody saw res-42", "No Browser is running", "--launch", "xynolog start --service browser"},
 			notWant: []string{"log in"},
 		},
 	} {
@@ -109,7 +109,7 @@ func TestBrowseBrowserNamesAContainerThatIsNotAnswering(t *testing.T) {
 		}
 	})
 	harness.MustContainAll(t, "stale container", out+errOut,
-		"container is exited", "xynaut start --service browser")
+		"container is exited", "xynolog start --service browser")
 }
 
 // An uncounted emit means the server did not tell us. That is not an empty

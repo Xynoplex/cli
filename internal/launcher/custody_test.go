@@ -283,8 +283,8 @@ func TestSecretSetRefusesACustodyOwnedName(t *testing.T) {
 }
 
 // A command that needs a credential outside `start` must resolve it the way
-// start does: environment first, then the source `xynaut secret set`
-// registered. `xynaut init` read the environment alone, so a key registered
+// start does: environment first, then the source `xynolog secret set`
+// registered. `xynolog init` read the environment alone, so a key registered
 // moments earlier was invisible — it warned that the model list could not be
 // fetched, then told the user to register the source they already had.
 func TestResolvedSecretValueReadsTheRegisteredSource(t *testing.T) {

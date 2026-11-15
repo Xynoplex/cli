@@ -1,6 +1,6 @@
 package launcher
 
-// billing.go — `xynaut status --billing`: ACTUAL money, where the plain
+// billing.go — `xynolog status --billing`: ACTUAL money, where the plain
 // status prints only cost-relevant facts. It comes from GitHub's own usage
 // report, opt-in behind the `user` scope. Everything shown is GitHub's number
 // — quantities, rates, discounts, net — never a launcher estimate; the

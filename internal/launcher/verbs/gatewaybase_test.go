@@ -33,7 +33,7 @@ func TestAVerbAgainstARecordThatNamesNoGatewayIsRefused(t *testing.T) {
 			t.Error("browse: exit 0 against a record that names no gateway")
 		}
 	})
-	for _, want := range []string{"names no gateway", "xynaut start"} {
+	for _, want := range []string{"names no gateway", "xynolog start"} {
 		if !strings.Contains(stderr, want) {
 			t.Errorf("the refusal does not say %q:\n%s", want, stderr)
 		}
@@ -46,8 +46,8 @@ func TestAVerbAgainstARecordThatNamesNoGatewayIsRefused(t *testing.T) {
 func TestMCPAgainstARecordThatNamesNoGatewayIsRefused(t *testing.T) {
 	built := noGatewayFixture(t)
 	result := callTool(t, mcpClient(t), "browse_resources", map[string]any{})
-	if !result.IsError || !strings.Contains(said(result), "names no gateway") || !strings.Contains(said(result), "xynaut start") {
-		t.Errorf("a call to a stack with no recorded gateway was not refused naming xynaut start:\n%s", said(result))
+	if !result.IsError || !strings.Contains(said(result), "names no gateway") || !strings.Contains(said(result), "xynolog start") {
+		t.Errorf("a call to a stack with no recorded gateway was not refused naming xynolog start:\n%s", said(result))
 	}
 	if *built != 0 {
 		t.Errorf("%d transports were built for a stack with no recorded gateway", *built)

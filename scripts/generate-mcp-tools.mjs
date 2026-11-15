@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// generate-mcp-tools.mjs — the tools `xynaut mcp` serves, from the table that
+// generate-mcp-tools.mjs — the tools `xynolog mcp` serves, from the table that
 // curates them (internal/launcher/verbs/mcp-tools.json) and the pinned
 // protocol's components it names.
 //
@@ -182,7 +182,7 @@ const leftOut = Object.fromEntries(Object.entries(table.leftOut).sort(([a], [b])
 const text = `${goHeader(`${TABLE} and ${COMPONENTS}`, 'generate-mcp-tools.mjs')}
 package verbs
 
-// mcpToolsDocument: every tool xynaut mcp serves, in the order tools/list
+// mcpToolsDocument: every tool xynolog mcp serves, in the order tools/list
 // gives them, each with its input and output schema, and every method of the
 // SDK's surface no tool calls, with its reason.
 const mcpToolsDocument = ${goJSON({ tools, leftOut })}

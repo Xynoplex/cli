@@ -308,7 +308,7 @@ func TestUserCallsReportARefusedPut(t *testing.T) {
 	_ = fmt.Sprint(s.requests)
 }
 
-// The flag decision tree `xynaut useradd` applies through the admin client,
+// The flag decision tree `xynolog useradd` applies through the admin client,
 // against a stub realm. What an operator gets wrong is which flag they needed,
 // so each refusal is pinned by the message it gives rather than by its exit
 // code alone.
@@ -345,17 +345,17 @@ func TestUseraddNamesTheIdentityItCreated(t *testing.T) {
 func TestUseraddNextStepsNameTheSelectedStack(t *testing.T) {
 	browser := &ServiceState{Endpoint: "http://localhost:3001"}
 	local := strings.Join(useraddNextSteps(nil, &StackState{Runtime: "docker"}, browser), "\n")
-	for _, want := range []string{"Next: sign in at http://localhost:3001 with this email and password.", "first and last name", "xynaut login --runtime docker"} {
+	for _, want := range []string{"Next: sign in at http://localhost:3001 with this email and password.", "first and last name", "xynolog login --runtime docker"} {
 		if !strings.Contains(local, want) {
 			t.Errorf("local next steps missing %q:\n%s", want, local)
 		}
 	}
-	if none := strings.Join(useraddNextSteps(nil, &StackState{Runtime: "docker"}, nil), "\n"); !strings.Contains(none, "xynaut start --service browser") || strings.Contains(none, "localhost") {
+	if none := strings.Join(useraddNextSteps(nil, &StackState{Runtime: "docker"}, nil), "\n"); !strings.Contains(none, "xynolog start --service browser") || strings.Contains(none, "localhost") {
 		t.Errorf("with no Browser recorded, the next steps must start one rather than name an address:\n%s", none)
 	}
 	cs := &StackState{Codespace: &codespacePlacement{Repo: "owner/kb"}}
 	remote := strings.Join(useraddNextSteps(cs, nil, browser), "\n")
-	if !strings.Contains(remote, "xynaut login --repo owner/kb") || strings.Contains(remote, "--runtime") {
+	if !strings.Contains(remote, "xynolog login --repo owner/kb") || strings.Contains(remote, "--runtime") {
 		t.Errorf("codespace next steps must name --repo owner/kb:\n%s", remote)
 	}
 }

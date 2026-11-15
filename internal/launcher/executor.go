@@ -96,7 +96,7 @@ type keeper interface {
 // admitter: proves the issuer will admit the services, and the people, BEFORE anything holds a
 // credential or a person is sent to sign in.
 type admitter interface {
-	preflightIdentity(issuerBase, audience string, accounts realmAccounts, wantLifespan, browserPort int, managed bool) bool // the realm honours every service credential AND the clients people sign in through — the Browser's at its document's port — before anything holds one. `managed` = this launcher runs the realm, so `xynaut identity sync` is the repair
+	preflightIdentity(issuerBase, audience string, accounts realmAccounts, wantLifespan, browserPort int, managed bool) bool // the realm honours every service credential AND the clients people sign in through — the Browser's at its document's port — before anything holds one. `managed` = this launcher runs the realm, so `xynolog identity sync` is the repair
 	openAdminToThisMachine(password string)                                                                                  // Keycloak's own admin answers this machine over plain HTTP, whatever address the runtime delivers its connections from
 	createRealm(base, realm, password string, doc []byte) bool                                                               // the knowledge base's realm at the Keycloak the launcher runs, created from doc unless Keycloak holds it
 }
@@ -861,7 +861,7 @@ func (x *liveExec) openAdminToThisMachine(password string) {
 	x.u.EchoCmd(x.rt, args...)
 	out, err := runCapturedWithEnv([]string{"KC_CLI_PASSWORD=" + password}, x.rt, args...)
 	if err != nil {
-		x.say(sayWarn, "Keycloak's admin is not reachable from this machine, so a realm this start must create, `xynaut useradd` and `xynaut identity sync` will be refused: %v", err)
+		x.say(sayWarn, "Keycloak's admin is not reachable from this machine, so a realm this start must create, `xynolog useradd` and `xynolog identity sync` will be refused: %v", err)
 		if s := strings.TrimSpace(out); s != "" {
 			fmt.Fprintln(os.Stderr, indentLines(s, "    "))
 		}
@@ -912,10 +912,10 @@ func (x *liveExec) preflightIdentity(issuerBase, audience string, accounts realm
 		secretFinding := slices.IndexFunc(findings, func(f serviceAccountFinding) bool { return f.svc != "worker" })
 		workerFinding := slices.ContainsFunc(findings, func(f serviceAccountFinding) bool { return f.svc == "worker" })
 		if managed {
-			fmt.Fprintf(os.Stderr, "  Fix it:  %s\n", x.u.Bold("xynaut identity sync"))
+			fmt.Fprintf(os.Stderr, "  Fix it:  %s\n", x.u.Bold("xynolog identity sync"))
 			fmt.Fprintf(os.Stderr, "           %s\n", x.u.Dim("Adds the missing clients, and reconciles an existing one's roles and kind mappers and the worker's key. Touches no accounts."))
 			fmt.Fprintln(os.Stderr, "")
-			fmt.Fprintf(os.Stderr, "  Then:    %s\n", x.u.Bold("xynaut start"))
+			fmt.Fprintf(os.Stderr, "  Then:    %s\n", x.u.Bold("xynolog start"))
 			fmt.Fprintf(os.Stderr, "           %s\n", x.u.Dim("This start again, which will then get past this gate."))
 			if secretFinding >= 0 {
 				// The case sync cannot repair, said plainly rather than left for
@@ -931,7 +931,7 @@ func (x *liveExec) preflightIdentity(issuerBase, audience string, accounts realm
 			}
 			return false
 		}
-		// Deliberately does NOT mention `xynaut identity sync`, even to rule
+		// Deliberately does NOT mention `xynolog identity sync`, even to rule
 		// it out: it needs an admin password this root never persisted for an
 		// issuer it did not start, and a named command gets skimmed into an
 		// instruction to run it.
@@ -945,7 +945,7 @@ func (x *liveExec) preflightIdentity(issuerBase, audience string, accounts realm
 		}
 		if workerFinding {
 			fmt.Fprintf(os.Stderr, "  For %s: create it with the signed-JWT client authenticator, enable the\n", serviceClientID("worker"))
-			fmt.Fprintf(os.Stderr, "  client-credentials grant, and register on it the key %s prints.\n", x.u.Bold("xynaut worker key"))
+			fmt.Fprintf(os.Stderr, "  client-credentials grant, and register on it the key %s prints.\n", x.u.Bold("xynolog worker key"))
 		}
 		return false
 	}
@@ -960,7 +960,7 @@ func (x *liveExec) preflightIdentity(issuerBase, audience string, accounts realm
 		x.u.Warn("This realm mints access tokens that live %ds, but the config asks for %ds.", observedLifespan, wantLifespan)
 		fmt.Fprintln(os.Stderr, "    A realm is created once, by its first start — a lifespan changed afterwards does")
 		fmt.Fprintln(os.Stderr, "    not reach it. The revocation window in force is the realm's, not the config's.")
-		fmt.Fprintln(os.Stderr, "    Change it in the Keycloak console, or `xynaut clean --store identity-store` and start again.")
+		fmt.Fprintln(os.Stderr, "    Change it in the Keycloak console, or `xynolog clean --store identity-store` and start again.")
 	}
 
 	// The six machine identities being sound says nothing about whether a
@@ -1008,7 +1008,7 @@ func (x *liveExec) dumpLogs(container, svc string) {
 	for _, l := range lines {
 		fmt.Fprintln(os.Stderr, "    "+l)
 	}
-	fmt.Fprintf(os.Stderr, "  Full logs:  xynaut logs --service %s\n", svc)
+	fmt.Fprintf(os.Stderr, "  Full logs:  xynolog logs --service %s\n", svc)
 }
 
 // containerCurrent: is the container `name` RUNNING under this start's
@@ -1017,7 +1017,7 @@ func (x *liveExec) dumpLogs(container, svc string) {
 // desired ref, and when both sides expose an image ID those must match too (a
 // moved :latest). Reference match without obtainable IDs KEEPS it
 // (restart-on-doubt would negate keeping on runtimes that expose no ID
-// through inspect) — the explicit refresh is `xynaut start --service`.
+// through inspect) — the explicit refresh is `xynolog start --service`.
 func (x *liveExec) containerCurrent(name, desired string) bool {
 	out, err := capture(x.rt, "inspect", name)
 	if err != nil || out == "" {
@@ -1096,10 +1096,10 @@ func (x *liveExec) resolveStoreStamp(role string, spec stateStoreSpec, image, ke
 		if !spec.projection || spec.machine {
 			x.u.Fail("%s state at %s was written by %s; this start launches %s.", role, sd, prev, stamp)
 			if spec.machine {
-				fmt.Fprintf(os.Stderr, "  That data is not auto-deleted. It is every knowledge base's here; to start afresh: xynaut clean --shared --store %s\n", role)
+				fmt.Fprintf(os.Stderr, "  That data is not auto-deleted. It is every knowledge base's here; to start afresh: xynolog clean --shared --store %s\n", role)
 				return false
 			}
-			fmt.Fprintln(os.Stderr, "  That data is not auto-deleted. Remove it first: xynaut clean --store "+role)
+			fmt.Fprintln(os.Stderr, "  That data is not auto-deleted. Remove it first: xynolog clean --store "+role)
 			return false
 		}
 		x.u.Log("%s state at %s was written by %s; this config launches %s — projections rebuild, so clearing it.",
@@ -1478,7 +1478,7 @@ func (x *planExec) recorded(string) ServiceState { return ServiceState{} }
 func (x *planExec) dumpLogs(string, string) {}
 
 func (x *planExec) issuerProxy(listen, upstream string, realms []string) bool {
-	x.c("keep the issuer proxy if it runs as asked, else run detached: xynaut %s — the issuer at the network address, passing the paths of this realm and of every other a recorded stack is served (recorded; the last stack's stop ends it)",
+	x.c("keep the issuer proxy if it runs as asked, else run detached: xynolog %s — the issuer at the network address, passing the paths of this realm and of every other a recorded stack is served (recorded; the last stack's stop ends it)",
 		strings.Join(issuerProxyArgs(listen, upstream, realms), " "))
 	return true
 }

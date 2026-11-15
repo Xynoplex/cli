@@ -83,7 +83,7 @@ type rootEntry struct {
 	SiteName string `json:"siteName,omitempty"` // human label — kept here so even a missing root stays identifiable
 	Config   string `json:"config,omitempty"`   // sticky --config: the config `init` wrote, then whatever a successful start last used explicitly
 	// PortBlock: the block of ports this KB's stack is published on
-	// (portBlockOf), kept from its first start until `xynaut forget` drops
+	// (portBlockOf), kept from its first start until `xynolog forget` drops
 	// the row. Absent until then, and block 0 is a block.
 	PortBlock   *int      `json:"portBlock,omitempty"`
 	LastUsed    time.Time `json:"lastUsed"`
@@ -164,7 +164,7 @@ func registerRootUse(kb kbRoot, fullStart bool, config string) {
 }
 
 // updateRootEntry changes one root's row, creating it if absent. Unlike
-// registerRootUse it is not best-effort: `xynaut settings` records what a
+// registerRootUse it is not best-effort: `xynolog settings` records what a
 // person asked for, and a setting that did not save must say so.
 func updateRootEntry(kb kbRoot, change func(*rootEntry)) error {
 	return changeRoots(func(reg *rootsRegistry) error {
@@ -332,7 +332,7 @@ func keepPortBlock(kb kbRoot, block int) error {
 	})
 }
 
-// freeGatewayPort: the gateway port `xynaut init` writes for the knowledge
+// freeGatewayPort: the gateway port `xynolog init` writes for the knowledge
 // base at root — the lowest a port block would place the gateway's catalog
 // port at that no other root this machine knows commits, so a new knowledge
 // base never shares a known one's. A root whose KnowledgeBase document is
@@ -397,7 +397,7 @@ func otherKnowledgeBases(root string) iter.Seq2[rootEntry, stack.KnowledgeBase] 
 // The running stack is the authority, and the preference alone cannot stand
 // in for it: `start` records the RESOLVED config in stack.json on every
 // start, while roots.json holds only the sticky preference, which a bare
-// `xynaut start` deliberately never writes (an unlaunchable --config must not
+// `xynolog start` deliberately never writes (an unlaunchable --config must not
 // become the default). Asked alone, it would make the documented first run —
 // start, then useradd — refuse on a healthy stack and advise a start that
 // would change nothing.
@@ -552,9 +552,9 @@ func warnICloudRoot(u *UI, root string) {
 	}
 }
 
-const forgetUsage = `Usage: xynaut forget <path|name>
+const forgetUsage = `Usage: xynolog forget <path|name>
 
-Drop one root from the launcher's registry — the "xynaut roots" listing and
+Drop one root from the launcher's registry — the "xynolog roots" listing and
 --root resolution. The registry only remembers: forgetting deletes no KB
 files and no stack state. The running stack's root is refused; stop first.
 
@@ -593,7 +593,7 @@ func Forget(args []string) int {
 	}
 	u.Ok("Forgot %s — registry entry removed. No files were deleted.", f.path)
 	if f.persistentState != "" {
-		fmt.Println("  Persistent stack state remains. Remove it: xynaut clean --root " + f.persistentState)
+		fmt.Println("  Persistent stack state remains. Remove it: xynolog clean --root " + f.persistentState)
 	}
 	return 0
 }
@@ -630,7 +630,7 @@ func forgetRoot(u *UI, arg string) (forgotten, bool) {
 	switch {
 	case len(matches) == 0:
 		u.Refuse(controlCodeRootNotRegistered, "%q is not in the registry.", arg)
-		fmt.Fprintln(os.Stderr, "  Registered roots: xynaut roots")
+		fmt.Fprintln(os.Stderr, "  Registered roots: xynolog roots")
 		return forgotten{}, false
 	case len(matches) > 1:
 		var choices []ControlTarget
@@ -651,7 +651,7 @@ func forgetRoot(u *UI, arg string) (forgotten, bool) {
 	}
 	if st := localStack(ss, rootKey(e.Did, e.Path)); st != nil && st.KBRoot == e.Path {
 		u.Refuse(controlCodeStackRunning, "%s is a running stack's root (per %s).", e.Path, statePath())
-		fmt.Fprintln(os.Stderr, "  Stop it first: xynaut stop --root "+e.Path)
+		fmt.Fprintln(os.Stderr, "  Stop it first: xynolog stop --root "+e.Path)
 		return forgotten{}, false
 	}
 	_, statErr := os.Stat(e.Path)
