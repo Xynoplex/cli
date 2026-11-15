@@ -7,6 +7,7 @@ version: 2
 
 updates:
   - package-ecosystem: gomod
+    labels: ["dependencies"]
     directory: /
     schedule:
       interval: cron
@@ -22,6 +23,7 @@ updates:
       prefix: deps
 
   - package-ecosystem: github-actions
+    labels: ["dependencies"]
     directories:
       - /.github/workflows
       - /.github/actions/sdk-go-proxy
