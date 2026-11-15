@@ -1211,12 +1211,20 @@ The CLI entry point is [`cmd/xynaut`](cmd/xynaut). Its implementation is in
 [`internal/launcher`](internal/launcher/README.md), and the Xynoplex Go SDK is an
 external module dependency.
 
-With Go 1.27.4 installed, build or run the suite from the repository root:
+With a supported container runtime configured, build or run the suite from the repository root:
 
 ```sh
-make       # build dist/xynaut
-make test  # run all package tests
+make        # build darwin, linux, and windows binaries for amd64 and arm64
+make help   # list build, verification, and cleanup targets
+make test   # run all package tests
+make vet    # run go vet
+make clean  # remove generated build and staged SDK artifacts
 ```
+
+Release binaries are written to `dist/xynaut_<os>_<arch>` (Windows binaries
+have a `.exe` suffix). When the host matches one of those targets, `make` also
+copies that executable to `dist/xynaut` for convenient local use. Override the
+matrix with `BUILD_TARGETS="linux/arm64 windows/amd64"` when needed.
 
 The tests in `launcher_test.go` are the executable spec: golden files under
 `internal/launcher/testdata/golden/` pin the exact runtime argv sequences per scenario, and a
