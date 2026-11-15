@@ -1,7 +1,7 @@
 // Code generated from protocol/specs/src/sign-in-store/owner-only.json — DO NOT EDIT.
 //
-// Regenerate: node packages/codegen/schemas/generate-sign-in-go.mjs
-// The Go SDK (packages/go/sdk/owneronly_gen.go) generates its own from the same file.
+// Regenerate: node scripts/generate-owner-only.mjs
+// The Go SDK generates its own from the same file.
 
 package launcher
 

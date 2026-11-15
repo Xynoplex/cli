@@ -22,68 +22,16 @@
 //
 // --check compares without writing, and fails when a committed file differs.
 
-import { existsSync, readFileSync, writeFileSync } from 'node:fs';
-import { dirname, relative, resolve } from 'node:path';
-import { fileURLToPath } from 'node:url';
+import { describe, goComment, goHeader, goJSON, pascal, reach, refuse, schemaAt, target, writeOrCheck } from './lib/generate.mjs';
 
-const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const TABLE = 'protocol/specs/src/control/methods.json';
 const CODES = 'protocol/specs/src/errors/codes.json';
 const DISCOVERY = 'protocol/specs/src/discovery/DiscoveredKB.json';
-const GO_OUT = resolve(ROOT, 'internal/launcher');
-const CHECK = process.argv.includes('--check');
+const GO_OUT = 'internal/launcher';
 
 /** The keywords a type is made from, and those that are rules the validator enforces. */
 const SHAPE = new Set(['title', 'type', 'description', 'properties', 'required', 'additionalProperties', 'items', '$ref']);
 const RULES = new Set(['oneOf', 'not', 'const', 'enum', 'pattern', 'minLength', 'minimum']);
-
-function refuse(where, message) {
-  console.error(`✗ ${where}: ${message}`);
-  process.exit(1);
-}
-
-const parsed = new Map();
-function schemaAt(path) {
-  if (!parsed.has(path)) parsed.set(path, JSON.parse(readFileSync(resolve(ROOT, path), 'utf8')));
-  return parsed.get(path);
-}
-
-const pascal = (name) => `${name[0].toUpperCase()}${name.slice(1)}`;
-
-/** `text` as `//` comment lines, wrapped at `width` columns behind `indent`, as gofmt leaves them. */
-function goComment(text, indent = '', width = 78) {
-  const lines = [];
-  let line = '';
-  for (const word of text.split(/\s+/).filter(Boolean)) {
-    if (line !== '' && `${indent}// ${line} ${word}`.length > width) {
-      lines.push(line);
-      line = word;
-    } else {
-      line = line === '' ? word : `${line} ${word}`;
-    }
-  }
-  if (line !== '') lines.push(line);
-  return lines.map((l) => `${indent}// ${l}`).join('\n');
-}
-
-/** Write `text` to `path`, or with --check only compare, failing when they differ. */
-function writeOrCheck(path, text) {
-  const name = relative(ROOT, path);
-  const current = existsSync(path) ? readFileSync(path, 'utf8') : '';
-  if (current === text) {
-    console.log(`ok    ${name}`);
-    return;
-  }
-  console.log(`${current ? 'DRIFT' : 'new  '} ${name}`);
-  if (CHECK) process.exit(1);
-  writeFileSync(path, text);
-}
-
-/** The repository path a `$ref` written in the file at `from` names, and its fragment. */
-function target(from, ref) {
-  const [file, fragment = ''] = ref.split('#');
-  return { path: file ? relative(ROOT, resolve(dirname(resolve(ROOT, from)), file)) : from, fragment };
-}
 
 /** The property a reference into the discovery contract names, or '' for the whole of it. */
 function discoveryProperty(from, path, fragment, name) {
@@ -91,15 +39,6 @@ function discoveryProperty(from, path, fragment, name) {
   const property = fragment.match(/^\/properties\/([A-Za-z]+)$/);
   if (!property || !schemaAt(path).properties?.[property[1]]) refuse(from, `${name} refers to ${path}#${fragment}, which this generator does not render`);
   return property[1];
-}
-
-function describe(schema, from) {
-  if (schema.description) return schema.description;
-  if (!schema.$ref) return undefined;
-  const { path, fragment } = target(from, schema.$ref);
-  let referred = schemaAt(path);
-  for (const step of fragment.split('/').filter(Boolean)) referred = referred?.[step];
-  return referred?.description;
 }
 
 const table = schemaAt(TABLE);
@@ -221,22 +160,7 @@ if (typeof apiVersion !== 'string') refuse(apiVersionPath, 'states no version as
 
 // ── the schemas they reach ────────────────────────────────────────────────
 
-const reached = new Set();
-function reach(path) {
-  if (reached.has(path)) return;
-  reached.add(path);
-  (function walk(node) {
-    if (Array.isArray(node)) node.forEach(walk);
-    else if (node && typeof node === 'object') {
-      for (const [key, value] of Object.entries(node)) {
-        if (key === '$ref' && typeof value === 'string' && !value.startsWith('#')) reach(target(path, value).path);
-        else walk(value);
-      }
-    }
-  })(schemaAt(path));
-}
-[apiVersionPath, errorDataPath, ...methods.flatMap((m) => [m.paramsPath, m.resultPath]), ...notifications.map((n) => n.paramsPath)].forEach(reach);
-const schemaPaths = [...reached].sort();
+const schemaPaths = reach([apiVersionPath, errorDataPath, ...methods.flatMap((m) => [m.paramsPath, m.resultPath]), ...notifications.map((n) => n.paramsPath)]);
 
 // ── the control error codes ───────────────────────────────────────────────
 
@@ -252,10 +176,7 @@ const codes = control.codes.map((entry) => {
 /** A control code's Go constant: control.target-required is controlCodeTargetRequired. */
 const goCodeName = (code) => `controlCode${code.slice('control.'.length).split('-').map(pascal).join('')}`;
 
-const header = `// Code generated from ${TABLE} and the schemas it names — DO NOT EDIT.
-//
-// Regenerate: node scripts/generate-control.mjs
-`;
+const header = goHeader(`${TABLE} and the schemas it names`, 'generate-control.mjs');
 const goTypes = [...types.values()];
 const goTypesText = `${header}
 package launcher
@@ -276,7 +197,7 @@ const controlErrorDataSchema = ${JSON.stringify(errorDataPath)}
 // controlSchemaFiles: the text of every schema a control message is read
 // against, and of every schema those refer to, by its path in the repository.
 var controlSchemaFiles = map[string]string{
-${schemaPaths.map((p) => `\t${JSON.stringify(p)}: ${JSON.stringify(JSON.stringify(schemaAt(p)))},`).join('\n\n')}
+${schemaPaths.map((p) => `\t${JSON.stringify(p)}: ${goJSON(schemaAt(p))},`).join('\n\n')}
 }
 
 // controlMethods: each method, the schemas of its params and its result,
@@ -303,7 +224,7 @@ ${codes.map((c) => `\t${goCodeName(c.code)},`).join('\n')}
 }
 `;
 
-writeOrCheck(resolve(GO_OUT, 'control_types_gen.go'), goTypesText);
-writeOrCheck(resolve(GO_OUT, 'control_schemas_gen.go'), goSchemasText);
+writeOrCheck(`${GO_OUT}/control_types_gen.go`, goTypesText);
+writeOrCheck(`${GO_OUT}/control_schemas_gen.go`, goSchemasText);
 
 console.log(`methods: ${methods.length}, notifications: ${notifications.length}, types: ${types.size}, schemas: ${schemaPaths.length}, codes: ${codes.length}`);

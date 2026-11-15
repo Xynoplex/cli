@@ -951,7 +951,7 @@ the other clients' form. What the server does that a verb does not:
   `internal/launcher/verbs/mcp-tools.json`, which names the SDK methods each tool calls
   and gives a reason for every method of the client surface no tool calls.
   Each tool's input and output schema is the spec's, made self-contained by
-  `packages/codegen/schemas/generate-mcp-tools-go.mjs` into `mcp_tools_gen.go`, and CI
+  `scripts/generate-mcp-tools.mjs` into `mcp_tools_gen.go`, and CI
   fails when either drifts. `TestMCPToolsCensus` holds the table to
   `protocol/specs/src/client/surface.json` both ways.
 - **A call is checked before anything is sent**, and a refusal names every

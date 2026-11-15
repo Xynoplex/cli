@@ -1,16 +1,17 @@
 // Code generated from protocol/specs/src/stack and protocol/specs/src/kb-identity/ProjectConfig.json — DO NOT EDIT.
 //
-// Regenerate: node packages/codegen/schemas/generate-stack-go.mjs
+// Regenerate: node scripts/generate-stack.mjs
 
 package stack
 
 import "github.com/Xynoplex/sdk/go/api"
 
-// KnowledgeBase: A knowledge base's record and the services that keep it: the
-// Gateway, the Dispatcher, the Archivist, and the broker between them. They
-// live and die with the knowledge base.
-type KnowledgeBase struct {
-	// The group and version of Semiont's kinds. The group names who defines a
+// Browser: The shared Browser: one viewer for every knowledge base the
+// machine reaches. It belongs to no knowledge base, so its document is kept
+// in the launcher's state home, in `stack/browser.yaml`, not in a knowledge
+// base's repository.
+type Browser struct {
+	// The group and version of Xynoplex's kinds. The group names who defines a
 	// kind, under the domain the knowledge bases' DIDs use; which knowledge base
 	// a document is about is said inside it.
 	ApiVersion string `json:"apiVersion"`
@@ -21,8 +22,8 @@ type KnowledgeBase struct {
 	// one another by `name`.
 	Metadata Metadata `json:"metadata"`
 
-	// The knowledge base's services, and how each runs.
-	Spec KnowledgeBaseSpec `json:"spec"`
+	// How the Browser runs.
+	Spec BrowserSpec `json:"spec"`
 }
 
 // Metadata: What names a document, as Kubernetes names an object. Documents
@@ -41,6 +42,190 @@ type Metadata struct {
 
 	// Kubernetes annotations. The launcher reads none.
 	Annotations map[string]string `json:"annotations,omitempty"`
+}
+
+// BrowserSpec: How the Browser runs.
+type BrowserSpec struct {
+	// The container image a service runs, as a registry names it:
+	// `ghcr.io/the-ai-alliance/semiont-gateway:latest`.
+	Image string `json:"image"`
+
+	// What a container is given, in Kubernetes' spelling.
+	Resources Resources `json:"resources"`
+
+	// The port the Browser is published on, on this machine's loopback: where a
+	// person opens it, and the origin the issuer's realm allows its sign-in
+	// from.
+	Port int `json:"port"`
+}
+
+// Resources: What a container is given, in Kubernetes' spelling.
+type Resources struct {
+	// The most a container may use.
+	Limits ResourcesLimits `json:"limits"`
+}
+
+// ResourcesLimits: The most a container may use.
+type ResourcesLimits struct {
+	// The memory ceiling: a whole number of gigabytes or megabytes, `8G` or
+	// `512M`.
+	Memory string `json:"memory"`
+}
+
+// Inference: The engines a machine uses for a knowledge base: the providers
+// it reaches, and the provider and model each job and each Librarian actor is
+// done with. A knowledge base's repository may carry several, one for each
+// provider, and a machine chooses one.
+type Inference struct {
+	// The group and version of Xynoplex's kinds. The group names who defines a
+	// kind, under the domain the knowledge bases' DIDs use; which knowledge base
+	// a document is about is said inside it.
+	ApiVersion string `json:"apiVersion"`
+
+	Kind string `json:"kind"`
+
+	// What names a document, as Kubernetes names an object. Documents refer to
+	// one another by `name`.
+	Metadata Metadata `json:"metadata"`
+
+	// The providers, and the engine for each job and each Librarian actor.
+	Spec InferenceSpec `json:"spec"`
+}
+
+// InferenceSpec: The providers, and the engine for each job and each
+// Librarian actor.
+type InferenceSpec struct {
+	// Each provider an engine names, and how it is reached.
+	Providers map[api.EngineProvider]Provider `json:"providers"`
+
+	// The engine each job is done with when software does it, and the engine
+	// each Librarian actor asks.
+	Engines api.ArchivistEngines `json:"engines"`
+}
+
+// Provider: How an inference provider is reached.
+type Provider struct {
+	// Where the provider's API is reached. Anthropic's own API, and the shared
+	// Ollama, are stated by no baseURL.
+	BaseURL *string `json:"baseURL,omitempty"`
+
+	// A secret the document names and does not hold. The launcher hands it to
+	// the service that needs it, from where the reference says it is.
+	ApiKey *SecretRef `json:"apiKey,omitempty"`
+}
+
+// SecretRef: A secret the document names and does not hold. The launcher
+// hands it to the service that needs it, from where the reference says it is.
+type SecretRef struct {
+	// The environment variable that holds the secret where the launcher runs.
+	// Unset, the start that needs it is refused.
+	FromEnv string `json:"fromEnv"`
+}
+
+// Issuer: The issuer the launcher runs for the knowledge bases on a machine,
+// with a realm for each, and the database it keeps their realms in. It
+// belongs to no knowledge base, so its document is kept in the launcher's
+// state home, in `stack/issuer.yaml`, not in a knowledge base's repository. A
+// knowledge base trusts it by naming `shared`; one trusting somebody else's
+// issuer names it at `external`.
+type Issuer struct {
+	// The group and version of Xynoplex's kinds. The group names who defines a
+	// kind, under the domain the knowledge bases' DIDs use; which knowledge base
+	// a document is about is said inside it.
+	ApiVersion string `json:"apiVersion"`
+
+	Kind string `json:"kind"`
+
+	// What names a document, as Kubernetes names an object. Documents refer to
+	// one another by `name`.
+	Metadata Metadata `json:"metadata"`
+
+	// The issuer, where it is published, and the database it keeps its realms
+	// in.
+	Spec IssuerSpec `json:"spec"`
+}
+
+// IssuerSpec: The issuer, where it is published, and the database it keeps
+// its realms in.
+type IssuerSpec struct {
+	// The issuer's driver: `keycloak`.
+	Type string `json:"type"`
+
+	// The container image a service runs, as a registry names it:
+	// `ghcr.io/the-ai-alliance/semiont-gateway:latest`.
+	Image string `json:"image"`
+
+	// What a container is given, in Kubernetes' spelling.
+	Resources Resources `json:"resources"`
+
+	// The port the issuer is published on, on this machine: the origin of every
+	// realm's `iss`, so the one number wherever the issuer is reached.
+	Port int `json:"port"`
+
+	// The database the issuer keeps its realms in.
+	Database IssuerDatabase `json:"database"`
+}
+
+// IssuerDatabase: The database the issuer keeps its realms in.
+type IssuerDatabase struct {
+	// The database's driver: `postgres`.
+	Type string `json:"type"`
+
+	// The database the issuer keeps its realms in: a lowercase PostgreSQL
+	// identifier, as PostgreSQL itself names an unquoted one. On a PostgreSQL
+	// the launcher runs, the launcher creates it; on one somebody else runs
+	// (`external`), it must already exist there.
+	Name string `json:"name"`
+
+	// The user the issuer signs in as.
+	User string `json:"user"`
+
+	// The container image a service runs, as a registry names it:
+	// `ghcr.io/the-ai-alliance/semiont-gateway:latest`.
+	Image *string `json:"image,omitempty"`
+
+	// What a container is given, in Kubernetes' spelling.
+	Resources *Resources `json:"resources,omitempty"`
+
+	// The port a PostgreSQL the launcher runs is published on, on this machine,
+	// where the issuer reaches it. One somebody else runs is reached at
+	// `external`.
+	Port *int `json:"port,omitempty"`
+
+	// A database somebody else runs.
+	External *IssuerDatabaseExternal `json:"external,omitempty"`
+}
+
+// IssuerDatabaseExternal: A database somebody else runs.
+type IssuerDatabaseExternal struct {
+	// A host name or address the issuer can reach.
+	Host string `json:"host"`
+
+	// The port it listens on.
+	Port int `json:"port"`
+
+	// A secret the document names and does not hold. The launcher hands it to
+	// the service that needs it, from where the reference says it is.
+	Password SecretRef `json:"password"`
+}
+
+// KnowledgeBase: A knowledge base's record and the services that keep it: the
+// Gateway, the Dispatcher, the Archivist, and the broker between them. They
+// live and die with the knowledge base.
+type KnowledgeBase struct {
+	// The group and version of Xynoplex's kinds. The group names who defines a
+	// kind, under the domain the knowledge bases' DIDs use; which knowledge base
+	// a document is about is said inside it.
+	ApiVersion string `json:"apiVersion"`
+
+	Kind string `json:"kind"`
+
+	// What names a document, as Kubernetes names an object. Documents refer to
+	// one another by `name`.
+	Metadata Metadata `json:"metadata"`
+
+	// The knowledge base's services, and how each runs.
+	Spec KnowledgeBaseSpec `json:"spec"`
 }
 
 // KnowledgeBaseSpec: The knowledge base's services, and how each runs.
@@ -85,19 +270,6 @@ type KnowledgeBaseGateway struct {
 	// Where clients reach the Gateway: the server its API document names. A
 	// service of the stack reaches it where the launcher places it, on `port`.
 	PublicURL string `json:"publicURL"`
-}
-
-// Resources: What a container is given, in Kubernetes' spelling.
-type Resources struct {
-	// The most a container may use.
-	Limits ResourcesLimits `json:"limits"`
-}
-
-// ResourcesLimits: The most a container may use.
-type ResourcesLimits struct {
-	// The memory ceiling: a whole number of gigabytes or megabytes, `8G` or
-	// `512M`.
-	Memory string `json:"memory"`
 }
 
 // KnowledgeBaseDispatcher: The Dispatcher: it hands queued jobs to workers.
@@ -188,14 +360,6 @@ type KnowledgeBaseMessagingExternal struct {
 	Password SecretRef `json:"password"`
 }
 
-// SecretRef: A secret the document names and does not hold. The launcher
-// hands it to the service that needs it, from where the reference says it is.
-type SecretRef struct {
-	// The environment variable that holds the secret where the launcher runs.
-	// Unset, the start that needs it is refused.
-	FromEnv string `json:"fromEnv"`
-}
-
 // KnowledgeBaseIssuer: The issuer the knowledge base trusts: the one the
 // launcher runs for the knowledge bases on a machine, at `shared`, with the
 // knowledge base's own realm in it, or somebody else's, at `external`.
@@ -236,7 +400,7 @@ type KnowledgeBaseIssuerExternal struct {
 // vectors and anchored text, and the Librarian that answers from them. Each
 // can be rebuilt from the record.
 type KnowledgeIndex struct {
-	// The group and version of Semiont's kinds. The group names who defines a
+	// The group and version of Xynoplex's kinds. The group names who defines a
 	// kind, under the domain the knowledge bases' DIDs use; which knowledge base
 	// a document is about is said inside it.
 	ApiVersion string `json:"apiVersion"`
@@ -264,9 +428,8 @@ type KnowledgeIndexSpec struct {
 
 	// The graph store the Weaver writes and the Librarian reads. The knowledge
 	// base's graph is in the database its DID names
-	// (protocol/specs/src/graph/database-cases.json): a Neo4j the launcher runs
-	// makes it when it first starts, and one somebody else runs must already
-	// hold it.
+	// (specs/src/graph/database-cases.json): a Neo4j the launcher runs makes it
+	// when it first starts, and one somebody else runs must already hold it.
 	Graph KnowledgeIndexGraph `json:"graph"`
 
 	// The vector store the Smelter writes and the Librarian reads: the one the
@@ -291,9 +454,8 @@ type KnowledgeIndexSpec struct {
 
 // KnowledgeIndexGraph: The graph store the Weaver writes and the Librarian
 // reads. The knowledge base's graph is in the database its DID names
-// (protocol/specs/src/graph/database-cases.json): a Neo4j the launcher runs
-// makes it when it first starts, and one somebody else runs must already hold
-// it.
+// (specs/src/graph/database-cases.json): a Neo4j the launcher runs makes it
+// when it first starts, and one somebody else runs must already hold it.
 type KnowledgeIndexGraph struct {
 	// The graph store's driver: `neo4j`.
 	Type string `json:"type"`
@@ -460,93 +622,6 @@ type KnowledgeIndexWeaver struct {
 	Resources Resources `json:"resources"`
 }
 
-// Issuer: The issuer the launcher runs for the knowledge bases on a machine,
-// with a realm for each, and the database it keeps their realms in. It
-// belongs to no knowledge base, so its document is kept in the launcher's
-// state home, in `stack/issuer.yaml`, not in a knowledge base's repository. A
-// knowledge base trusts it by naming `shared`; one trusting somebody else's
-// issuer names it at `external`.
-type Issuer struct {
-	// The group and version of Semiont's kinds. The group names who defines a
-	// kind, under the domain the knowledge bases' DIDs use; which knowledge base
-	// a document is about is said inside it.
-	ApiVersion string `json:"apiVersion"`
-
-	Kind string `json:"kind"`
-
-	// What names a document, as Kubernetes names an object. Documents refer to
-	// one another by `name`.
-	Metadata Metadata `json:"metadata"`
-
-	// The issuer, where it is published, and the database it keeps its realms
-	// in.
-	Spec IssuerSpec `json:"spec"`
-}
-
-// IssuerSpec: The issuer, where it is published, and the database it keeps
-// its realms in.
-type IssuerSpec struct {
-	// The issuer's driver: `keycloak`.
-	Type string `json:"type"`
-
-	// The container image a service runs, as a registry names it:
-	// `ghcr.io/the-ai-alliance/semiont-gateway:latest`.
-	Image string `json:"image"`
-
-	// What a container is given, in Kubernetes' spelling.
-	Resources Resources `json:"resources"`
-
-	// The port the issuer is published on, on this machine: the origin of every
-	// realm's `iss`, so the one number wherever the issuer is reached.
-	Port int `json:"port"`
-
-	// The database the issuer keeps its realms in.
-	Database IssuerDatabase `json:"database"`
-}
-
-// IssuerDatabase: The database the issuer keeps its realms in.
-type IssuerDatabase struct {
-	// The database's driver: `postgres`.
-	Type string `json:"type"`
-
-	// The database the issuer keeps its realms in: a lowercase PostgreSQL
-	// identifier, as PostgreSQL itself names an unquoted one. On a PostgreSQL
-	// the launcher runs, the launcher creates it; on one somebody else runs
-	// (`external`), it must already exist there.
-	Name string `json:"name"`
-
-	// The user the issuer signs in as.
-	User string `json:"user"`
-
-	// The container image a service runs, as a registry names it:
-	// `ghcr.io/the-ai-alliance/semiont-gateway:latest`.
-	Image *string `json:"image,omitempty"`
-
-	// What a container is given, in Kubernetes' spelling.
-	Resources *Resources `json:"resources,omitempty"`
-
-	// The port a PostgreSQL the launcher runs is published on, on this machine,
-	// where the issuer reaches it. One somebody else runs is reached at
-	// `external`.
-	Port *int `json:"port,omitempty"`
-
-	// A database somebody else runs.
-	External *IssuerDatabaseExternal `json:"external,omitempty"`
-}
-
-// IssuerDatabaseExternal: A database somebody else runs.
-type IssuerDatabaseExternal struct {
-	// A host name or address the issuer can reach.
-	Host string `json:"host"`
-
-	// The port it listens on.
-	Port int `json:"port"`
-
-	// A secret the document names and does not hold. The launcher hands it to
-	// the service that needs it, from where the reference says it is.
-	Password SecretRef `json:"password"`
-}
-
 // VectorStore: The vector store the launcher runs for the knowledge bases on
 // a machine, each knowledge base's index in collections of its own. It
 // belongs to no knowledge base, so its document is kept in the launcher's
@@ -554,7 +629,7 @@ type IssuerDatabaseExternal struct {
 // A knowledge base keeps its index in it by naming `shared` at
 // `spec.vectors`.
 type VectorStore struct {
-	// The group and version of Semiont's kinds. The group names who defines a
+	// The group and version of Xynoplex's kinds. The group names who defines a
 	// kind, under the domain the knowledge bases' DIDs use; which knowledge base
 	// a document is about is said inside it.
 	ApiVersion string `json:"apiVersion"`
@@ -593,7 +668,7 @@ type VectorStoreSpec struct {
 // its Inference document gives a job an engine. A worker needs only the
 // Gateway, and an issuer's token with the worker's role.
 type WorkerPool struct {
-	// The group and version of Semiont's kinds. The group names who defines a
+	// The group and version of Xynoplex's kinds. The group names who defines a
 	// kind, under the domain the knowledge bases' DIDs use; which knowledge base
 	// a document is about is said inside it.
 	ApiVersion string `json:"apiVersion"`
@@ -626,83 +701,6 @@ type WorkerPoolWorker struct {
 
 	// What a container is given, in Kubernetes' spelling.
 	Resources Resources `json:"resources"`
-}
-
-// Inference: The engines a machine uses for a knowledge base: the providers
-// it reaches, and the provider and model each job and each Librarian actor is
-// done with. A knowledge base's repository may carry several, one for each
-// provider, and a machine chooses one.
-type Inference struct {
-	// The group and version of Semiont's kinds. The group names who defines a
-	// kind, under the domain the knowledge bases' DIDs use; which knowledge base
-	// a document is about is said inside it.
-	ApiVersion string `json:"apiVersion"`
-
-	Kind string `json:"kind"`
-
-	// What names a document, as Kubernetes names an object. Documents refer to
-	// one another by `name`.
-	Metadata Metadata `json:"metadata"`
-
-	// The providers, and the engine for each job and each Librarian actor.
-	Spec InferenceSpec `json:"spec"`
-}
-
-// InferenceSpec: The providers, and the engine for each job and each
-// Librarian actor.
-type InferenceSpec struct {
-	// Each provider an engine names, and how it is reached.
-	Providers map[api.EngineProvider]Provider `json:"providers"`
-
-	// The engine each job is done with when software does it, and the engine
-	// each Librarian actor asks.
-	Engines api.ArchivistEngines `json:"engines"`
-}
-
-// Provider: How an inference provider is reached.
-type Provider struct {
-	// Where the provider's API is reached. Anthropic's own API, and the shared
-	// Ollama, are stated by no baseURL.
-	BaseURL *string `json:"baseURL,omitempty"`
-
-	// A secret the document names and does not hold. The launcher hands it to
-	// the service that needs it, from where the reference says it is.
-	ApiKey *SecretRef `json:"apiKey,omitempty"`
-}
-
-// Browser: The shared Browser: one viewer for every knowledge base the
-// machine reaches. It belongs to no knowledge base, so its document is kept
-// in the launcher's state home, in `stack/browser.yaml`, not in a knowledge
-// base's repository.
-type Browser struct {
-	// The group and version of Semiont's kinds. The group names who defines a
-	// kind, under the domain the knowledge bases' DIDs use; which knowledge base
-	// a document is about is said inside it.
-	ApiVersion string `json:"apiVersion"`
-
-	Kind string `json:"kind"`
-
-	// What names a document, as Kubernetes names an object. Documents refer to
-	// one another by `name`.
-	Metadata Metadata `json:"metadata"`
-
-	// How the Browser runs.
-	Spec BrowserSpec `json:"spec"`
-}
-
-// BrowserSpec: How the Browser runs.
-type BrowserSpec struct {
-	// The container image a service runs, as a registry names it:
-	// `ghcr.io/the-ai-alliance/semiont-gateway:latest`.
-	Image string `json:"image"`
-
-	// What a container is given, in Kubernetes' spelling.
-	Resources Resources `json:"resources"`
-
-	// The port the Browser is published on, on this machine's loopback: where a
-	// person opens it, and the origin the issuer's realm allows its sign-in
-	// from.
-	Port int `json:"port"`
 }
 
 // ProjectConfig: A knowledge base's committed `.semiont/config.yaml`: its

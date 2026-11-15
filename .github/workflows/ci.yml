@@ -87,9 +87,12 @@ jobs:
       - name: Make help lists every public target
         if: runner.os == 'Linux'
         run: python3 scripts/test_make_help.py
-      - name: The control API's generated Go matches the spec
+      - name: The generated Go matches the spec
         if: runner.os == 'Linux'
-        run: node scripts/generate-control.mjs --check
+        run: |
+          for generator in control owner-only stack mcp-tools; do
+            node "scripts/generate-$generator.mjs" --check
+          done
       - name: Download the SDK bundle
         uses: actions/download-artifact@v8
         with:
