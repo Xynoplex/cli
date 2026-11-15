@@ -110,9 +110,9 @@ func (j *DiscoveredKB) UnmarshalJSON(value []byte) error {
 }
 
 // The launcher's KB discovery document — the schema authority for
-// <stateDir>/discovery/kbs.json, which xynaut (Go, internal/launcher)
-// regenerates on every stack mutation and the Browser container mounts read-only
-// at /discovery. NOT an API endpoint: a static document fetched same-origin by
+// <stateDir>/discovery/kbs.json, which the Xynoplex CLI (Xynoplex/cli) regenerates
+// on every stack mutation and the Browser container mounts read-only at
+// /discovery. NOT an API endpoint: a static document fetched same-origin by
 // browsers (via the Browser's static server). An empty kbs list is meaningful
 // ("the launcher manages nothing right now") and distinct from an absent file.
 type DiscoveryDocument struct {

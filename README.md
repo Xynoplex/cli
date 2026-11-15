@@ -475,7 +475,7 @@ xynaut stop
   `protocol/specs/src/discovery/DiscoveryDocument.json`, and BOTH languages
   generate from it — @xynoplex/core's types.ts via the OpenAPI pipeline, and
   this launcher's `discovery_types_gen.go` via go-jsonschema (go:generate in
-  discovery.go) — so schema drift is a compile error, not a convention. The
+  discovery.go), and CI fails when the committed file drifts from the schema. The
   Browser container mounts the directory read-only at `/discovery`, where the
   Browser image's server serves it; an empty stack set writes an empty list,
   because an absent file is ambiguous.
