@@ -40,15 +40,15 @@ func TestPreflightIdentityNamesTheRepairForThisIssuer(t *testing.T) {
 		{
 			name:    "a realm this launcher runs",
 			managed: true,
-			want:    []string{"semiont-dispatcher", "xynolog identity sync", "xynolog start"},
+			want:    []string{"xynolog-dispatcher", "xynolog identity sync", "xynolog start"},
 			// The foreign-issuer instructions are noise here: there is no
 			// client for the operator to create by hand.
-			absent: []string{"SEMIONT_OIDC_CLIENT_SECRET_"},
+			absent: []string{"XYNOLOG_OIDC_CLIENT_SECRET_"},
 		},
 		{
 			name:    "an issuer somebody else runs",
 			managed: false,
-			want:    []string{"semiont-dispatcher", "SEMIONT_OIDC_CLIENT_SECRET_"},
+			want:    []string{"xynolog-dispatcher", "XYNOLOG_OIDC_CLIENT_SECRET_"},
 			// Naming sync here would send them to a command that cannot
 			// reach their realm and would fail on the missing admin password.
 			absent: []string{"xynolog identity sync"},
@@ -153,13 +153,13 @@ func TestPreflightIdentityNamesTheRepairForARefusedWorkerKey(t *testing.T) {
 			name:    "a realm this launcher runs",
 			managed: true,
 			want:    []string{serviceClientID("worker"), "xynolog identity sync", "the worker's key", "xynolog start"},
-			absent:  []string{"DIFFERENT secret", "SEMIONT_OIDC_CLIENT_SECRET_"},
+			absent:  []string{"DIFFERENT secret", "XYNOLOG_OIDC_CLIENT_SECRET_"},
 		},
 		{
 			name:    "an issuer somebody else runs",
 			managed: false,
 			want:    []string{serviceClientID("worker"), "signed-JWT", "xynolog worker key"},
-			absent:  []string{"xynolog identity sync", "SEMIONT_OIDC_CLIENT_SECRET_"},
+			absent:  []string{"xynolog identity sync", "XYNOLOG_OIDC_CLIENT_SECRET_"},
 		},
 	} {
 		t.Run(tc.name, func(t *testing.T) {

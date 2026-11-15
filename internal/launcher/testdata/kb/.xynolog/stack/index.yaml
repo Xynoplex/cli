@@ -1,4 +1,4 @@
-apiVersion: semiont.the-ai-alliance.github.io/v1alpha1
+apiVersion: xynolog.org/v1alpha1
 kind: KnowledgeIndex
 metadata:
   name: index
@@ -18,14 +18,14 @@ spec:
     model: nomic-embed-text
     chunking: { chunkSize: 512, overlap: 64 }
   librarian:
-    image: ghcr.io/the-ai-alliance/semiont-librarian:latest
+    image: ghcr.io/xynolog/xynolog-librarian:latest
     resources: { limits: { memory: 2G } }
     gather: { settleTimeoutMs: 15000 }
     search: { semanticFloor: 0.6 }
   smelter:
-    image: ghcr.io/the-ai-alliance/semiont-smelter:latest
+    image: ghcr.io/xynolog/xynolog-smelter:latest
     resources: { limits: { memory: 2G } }
     pdfsAtOnce: 1
   weaver:
-    image: ghcr.io/the-ai-alliance/semiont-weaver:latest
+    image: ghcr.io/xynolog/xynolog-weaver:latest
     resources: { limits: { memory: 2G } }

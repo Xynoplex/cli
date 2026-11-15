@@ -5,9 +5,9 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/Xynoplex/cli/internal/launcher/harness"
+	"github.com/xynolog/cli/internal/launcher/harness"
 
-	"github.com/Xynoplex/sdk/go/bus"
+	"github.com/xynolog/sdk/go/bus"
 )
 
 // The knowledge verbs, in process against the fake transport.

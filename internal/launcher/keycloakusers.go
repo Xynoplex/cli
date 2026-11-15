@@ -4,7 +4,7 @@ package launcher
 // client/mapper/realm-settings surface. Both speak Keycloak's admin API with
 // the same bootstrap-admin token (adminToken) and the same HTTP client.
 //
-// Only Keycloak. An external issuer (spec.issuer.external) is one Semiont does not
+// Only Keycloak. An external issuer (spec.issuer.external) is one Xynolog does not
 // administer: accounts there are created at the issuer and then sign in here.
 // The caller enforces that before reaching any of this.
 
@@ -19,7 +19,7 @@ import (
 )
 
 // realmUser: what the realm holds for one address. `id` is the `sub` its
-// tokens will carry, and so the subject every Semiont DID is derived from.
+// tokens will carry, and so the subject every Xynolog DID is derived from.
 type realmUser struct {
 	id      string
 	email   string

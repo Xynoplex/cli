@@ -96,7 +96,7 @@ jobs:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           TAG="v${{ steps.version.outputs.version }}"
-          echo "Attaching Semiont Desktop to release $TAG..."
+          echo "Attaching Xynolog Desktop to release $TAG..."
           find artifacts -type f \( -name '*.dmg' -o -name '*.deb' \) | while read f; do
             echo "  Uploading $(basename "$f")..."
             gh release upload "$TAG" "$f" --clobber

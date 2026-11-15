@@ -13,7 +13,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/Xynoplex/sdk/go/bus"
+	"github.com/xynolog/sdk/go/bus"
 )
 
 func TestMCPAGenerationWithoutItsTitleOrStorageUriIsRefused(t *testing.T) {

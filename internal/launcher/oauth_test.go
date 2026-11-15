@@ -8,9 +8,9 @@ import (
 	"testing"
 	"time"
 
-	"github.com/Xynoplex/cli/internal/launcher/harness"
+	"github.com/xynolog/cli/internal/launcher/harness"
 
-	xynoplex "github.com/Xynoplex/sdk/go"
+	xynolog "github.com/xynolog/sdk/go"
 )
 
 // `xynolog login` shows the one-time code AND the verification URI, always,
@@ -23,7 +23,7 @@ import (
 // step's stdin is commonly /dev/null, which IS a character device, and would
 // read as interactive.
 func TestPromptToOpenAlwaysShowsTheCodeAndURI(t *testing.T) {
-	code := xynoplex.DeviceCode{
+	code := xynolog.DeviceCode{
 		UserCode:                "ABCD-1234",
 		VerificationURI:         "https://issuer.test/device",
 		VerificationURIComplete: "https://issuer.test/device?user_code=ABCD-1234",

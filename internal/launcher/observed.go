@@ -18,7 +18,7 @@ package launcher
 //
 // A reading is of one knowledge base: the readout labels each series with the
 // resource that exported it (collectorConfig), and a service serving one KB
-// names it there as `semiont.kb`, its DID — `semiont_kb` in the readout. Every
+// names it there as `xynolog.kb`, its DID — `xynolog_kb` in the readout. Every
 // reading requires that label, so another KB's numbers are never read as this
 // one's.
 
@@ -29,8 +29,8 @@ import (
 	"strings"
 )
 
-// kbLabel: the label the readout carries a series' `semiont.kb` as.
-const kbLabel = "semiont_kb"
+// kbLabel: the label the readout carries a series' `xynolog.kb` as.
+const kbLabel = "xynolog_kb"
 
 // labelValue escapes a label's value as the readout writes it: a DID may hold
 // `"` or `\`.
@@ -42,7 +42,7 @@ var labelValue = strings.NewReplacer(`\`, `\\`, `"`, `\"`, "\n", `\n`)
 // returns false.
 //
 // Requiring labels also settles the prefix collision a readout is full of:
-// for `semiont_job_queue_size_estimate` the remainder after the name opens
+// for `xynolog_job_queue_size_estimate` the remainder after the name opens
 // with "_", not "{", so it is skipped rather than read as the metric asked for.
 func forEachSample(readout, name, kb string, want map[string]string, visit func(v float64) bool) {
 	required := []string{kbLabel + `="` + labelValue.Replace(kb) + `"`}
@@ -127,11 +127,11 @@ func promSumInt(readout, name, kb string, want map[string]string) (int, bool) {
 // its process: it starts at zero when the worker does, which is why the line
 // says since when rather than implying all time.
 //
-// Like every reading it requires `semiont_kb`, which the worker — whose
+// Like every reading it requires `xynolog_kb`, which the worker — whose
 // resource names no knowledge base, since a worker may serve several — must
 // carry on each point.
 func jobsConcluded(readout, kb string) (completed, failed int, ok bool) {
-	const c = "semiont_job_outcome_total"
+	const c = "xynolog_job_outcome_total"
 	comp, cok := promSumInt(readout, c, kb, map[string]string{"job_outcome": "completed"})
 	fail, fok := promSumInt(readout, c, kb, map[string]string{"job_outcome": "failed"})
 	// Either may legitimately be absent — nothing has failed yet on most
@@ -152,8 +152,8 @@ func jobsConcluded(readout, kb string) (completed, failed int, ok bool) {
 // a mixture of two questions; if throughput is worth showing it earns its own
 // line, with the window named.
 func queueDepth(readout, kb string) (pending, running int, ok bool) {
-	const g = "semiont_job_queue_size"
-	svc := map[string]string{"job": "semiont-dispatcher"}
+	const g = "xynolog_job_queue_size"
+	svc := map[string]string{"job": "xynolog-dispatcher"}
 	with := func(status string) map[string]string {
 		m := map[string]string{"job_status": status}
 		for k, v := range svc {
@@ -181,11 +181,11 @@ func queueDepth(readout, kb string) (pending, running int, ok bool) {
 // replica, give or take the watch's lag. A local stack runs one gateway for its
 // knowledge base.
 func ledgerOccupancy(readout, kb string) (claims, claimsMax int, ok bool) {
-	const g = "semiont_bus_correlation_size"
+	const g = "xynolog_bus_correlation_size"
 	// The collector renders OTel's dotted attribute keys with underscores, so
 	// `correlation.kind` arrives as `correlation_kind` (as `job.status` does).
 	get := func(k string) (int, bool) {
-		return promGaugeInt(readout, g, kb, map[string]string{"job": "semiont-gateway", "correlation_kind": k})
+		return promGaugeInt(readout, g, kb, map[string]string{"job": "xynolog-gateway", "correlation_kind": k})
 	}
 	c, cok := get("claims")
 	cm, cmok := get("claims_max")

@@ -10,8 +10,8 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/Xynoplex/cli/internal/launcher/stack"
-	xynoplex "github.com/Xynoplex/sdk/go"
+	"github.com/xynolog/cli/internal/launcher/stack"
+	xynolog "github.com/xynolog/sdk/go"
 )
 
 // controlHandler runs one request's operation, saying what it does through u:
@@ -451,7 +451,7 @@ func controlAuthLogin(req *controlRequest, u *UI) (any, *controlFailure) {
 		u.Refuse(controlCodeAlreadySignedIn, "Already signed in to %s: the gateway accepts the stored session.", key)
 		return nil, failed(u, controlCodeAlreadySignedIn)
 	}
-	signedIn, ok := signIn(req.ctx, u, target, func(code xynoplex.DeviceCode) {
+	signedIn, ok := signIn(req.ctx, u, target, func(code xynolog.DeviceCode) {
 		action := ControlUserAction{RequestId: req.id, VerificationUri: code.VerificationURI,
 			VerificationUriComplete: stated(code.VerificationURIComplete), UserCode: code.UserCode,
 			ExpiresInSeconds: int(code.ExpiresIn.Seconds())}

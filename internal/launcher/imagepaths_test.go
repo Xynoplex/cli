@@ -100,12 +100,12 @@ func TestExactlyOneContainerMountsTheKB(t *testing.T) {
 	// all — the others cannot mount it because they are not given it, which is
 	// the property expressed in the signatures themselves.
 	fleet := map[string][]string{
-		"gateway":   gatewayArgs("kb", "/stage", exposure{rt: "container", addr: "1.2.3.4"}, "secret", "jwt", "v", semiontDescriptor("gateway").mem, 4000, nil, nil),
-		"archivist": archivistArgs("kb", kbRoot, "/stage", exposure{rt: "container", addr: "1.2.3.4"}, semiontDescriptor("archivist").ports[0].port, "client-secret", "v", semiontDescriptor("archivist").mem, nil, nil),
-		"librarian": librarianArgs("kb", "/stage", exposure{rt: "container", addr: "1.2.3.4"}, semiontDescriptor("librarian").ports[0].port, "client-secret", "v", semiontDescriptor("librarian").mem, nil, nil, nil),
-		"worker":    workerArgs("/state/shared/worker.json", exposure{rt: "container", addr: "1.2.3.4"}, "client-key", "v", semiontDescriptor("worker").mem, nil, nil),
-		"smelter":   smelterArgs("kb", "/stage", exposure{rt: "container", addr: "1.2.3.4"}, semiontDescriptor("smelter").ports[0].port, "client-secret", "v", semiontDescriptor("smelter").mem, nil, nil, nil),
-		"weaver":    weaverArgs("kb", "/stage", exposure{rt: "container", addr: "1.2.3.4"}, semiontDescriptor("weaver").ports[0].port, "client-secret", "v", semiontDescriptor("weaver").mem, nil, nil),
+		"gateway":   gatewayArgs("kb", "/stage", exposure{rt: "container", addr: "1.2.3.4"}, "secret", "jwt", "v", xynologDescriptor("gateway").mem, 4000, nil, nil),
+		"archivist": archivistArgs("kb", kbRoot, "/stage", exposure{rt: "container", addr: "1.2.3.4"}, xynologDescriptor("archivist").ports[0].port, "client-secret", "v", xynologDescriptor("archivist").mem, nil, nil),
+		"librarian": librarianArgs("kb", "/stage", exposure{rt: "container", addr: "1.2.3.4"}, xynologDescriptor("librarian").ports[0].port, "client-secret", "v", xynologDescriptor("librarian").mem, nil, nil, nil),
+		"worker":    workerArgs("/state/shared/worker.json", exposure{rt: "container", addr: "1.2.3.4"}, "client-key", "v", xynologDescriptor("worker").mem, nil, nil),
+		"smelter":   smelterArgs("kb", "/stage", exposure{rt: "container", addr: "1.2.3.4"}, xynologDescriptor("smelter").ports[0].port, "client-secret", "v", xynologDescriptor("smelter").mem, nil, nil, nil),
+		"weaver":    weaverArgs("kb", "/stage", exposure{rt: "container", addr: "1.2.3.4"}, xynologDescriptor("weaver").ports[0].port, "client-secret", "v", xynologDescriptor("weaver").mem, nil, nil),
 	}
 
 	var mounters []string
@@ -126,7 +126,7 @@ func TestExactlyOneContainerMountsTheKB(t *testing.T) {
 // An in-container supervisor restarts the archivist on crash and on hang —
 // the only mechanism that can be true on all three runtimes (Apple container
 // has no --restart at all). Supervision is a per-run opt-in (the launcher
-// passes SEMIONT_SUPERVISE and boot.sh wraps the CMD), so this asserts the
+// passes XYNOLOG_SUPERVISE and boot.sh wraps the CMD), so this asserts the
 // image half — the shared supervisor on board, parameterized for the
 // archivist — against the files, never by running anything. The launcher
 // half is TestStartOptsEveryServiceIntoSupervision.
@@ -138,7 +138,7 @@ func TestArchivistRunsUnderTheSupervisor(t *testing.T) {
 	for what, want := range map[string]string{
 		"the shared supervisor":              "images/shared/supervise.sh",
 		"the boot entrypoint that arms it":   "images/shared/boot.sh",
-		"the entry point, stated once (CMD)": "/usr/local/bin/semiont-archivist",
+		"the entry point, stated once (CMD)": "/usr/local/bin/xynolog-archivist",
 		"the supervisor's probe target":      "SUPERVISE_PROBE=http://localhost:24103/health",
 	} {
 		if !strings.Contains(string(df), want) {
@@ -151,7 +151,7 @@ func TestArchivistRunsUnderTheSupervisor(t *testing.T) {
 	}
 	s := string(sup)
 	for what, want := range map[string]string{
-		"a durable log on the state mount":     "/semiont-state/",
+		"a durable log on the state mount":     "/xynolog-state/",
 		"a TERM trap (xynolog stop wins)":      "trap",
 		"a rapid-failure cap (fail-fast boot)": "MAX_RAPID",
 		"the env-driven health self-probe":     "SUPERVISE_PROBE",
@@ -176,7 +176,7 @@ func TestArchivistRunsUnderTheSupervisor(t *testing.T) {
 // TestLibrarianDocumentIsWhereTheImageLooks).
 func TestServiceHealthPortsAgreeAcrossAllHomes(t *testing.T) {
 	const svc = "archivist"
-	want := fmt.Sprint(semiontDescriptor(svc).ports[0].port)
+	want := fmt.Sprint(xynologDescriptor(svc).ports[0].port)
 	df, err := os.ReadFile(serviceDockerfile(svc))
 	if err != nil {
 		t.Fatalf("%s: reading Dockerfile: %v", svc, err)
@@ -197,15 +197,15 @@ func TestServiceHealthPortsAgreeAcrossAllHomes(t *testing.T) {
 // mounts its own document onto its own path.
 func TestGatewayDocumentMountsOntoItsOwnPath(t *testing.T) {
 	want := ":" + gatewayDocumentTarget + ":ro"
-	if args := strings.Join(gatewayArgs("kb", "/stage", exposure{rt: "container", addr: "1.2.3.4"}, "secret", "jwt", "v", semiontDescriptor("gateway").mem, 4000, nil, nil), " "); !strings.Contains(args, want) {
+	if args := strings.Join(gatewayArgs("kb", "/stage", exposure{rt: "container", addr: "1.2.3.4"}, "secret", "jwt", "v", xynologDescriptor("gateway").mem, 4000, nil, nil), " "); !strings.Contains(args, want) {
 		t.Errorf("the gateway's document is not mounted onto %s:\n%s", gatewayDocumentTarget, args)
 	}
 	for name, args := range map[string][]string{
-		"archivist": archivistArgs("kb", "/kb", "/stage", exposure{rt: "container", addr: "1.2.3.4"}, semiontDescriptor("archivist").ports[0].port, "client-secret", "v", semiontDescriptor("archivist").mem, nil, nil),
-		"worker":    workerArgs("/state/shared/worker.json", exposure{rt: "container", addr: "1.2.3.4"}, "client-key", "v", semiontDescriptor("worker").mem, nil, nil),
-		"smelter":   smelterArgs("kb", "/stage", exposure{rt: "container", addr: "1.2.3.4"}, semiontDescriptor("smelter").ports[0].port, "client-secret", "v", semiontDescriptor("smelter").mem, nil, nil, nil),
-		"weaver":    weaverArgs("kb", "/stage", exposure{rt: "container", addr: "1.2.3.4"}, semiontDescriptor("weaver").ports[0].port, "client-secret", "v", semiontDescriptor("weaver").mem, nil, nil),
-		"librarian": librarianArgs("kb", "/stage", exposure{rt: "container", addr: "1.2.3.4"}, semiontDescriptor("librarian").ports[0].port, "client-secret", "v", semiontDescriptor("librarian").mem, nil, nil, nil),
+		"archivist": archivistArgs("kb", "/kb", "/stage", exposure{rt: "container", addr: "1.2.3.4"}, xynologDescriptor("archivist").ports[0].port, "client-secret", "v", xynologDescriptor("archivist").mem, nil, nil),
+		"worker":    workerArgs("/state/shared/worker.json", exposure{rt: "container", addr: "1.2.3.4"}, "client-key", "v", xynologDescriptor("worker").mem, nil, nil),
+		"smelter":   smelterArgs("kb", "/stage", exposure{rt: "container", addr: "1.2.3.4"}, xynologDescriptor("smelter").ports[0].port, "client-secret", "v", xynologDescriptor("smelter").mem, nil, nil, nil),
+		"weaver":    weaverArgs("kb", "/stage", exposure{rt: "container", addr: "1.2.3.4"}, xynologDescriptor("weaver").ports[0].port, "client-secret", "v", xynologDescriptor("weaver").mem, nil, nil),
+		"librarian": librarianArgs("kb", "/stage", exposure{rt: "container", addr: "1.2.3.4"}, xynologDescriptor("librarian").ports[0].port, "client-secret", "v", xynologDescriptor("librarian").mem, nil, nil, nil),
 	} {
 		if strings.Contains(strings.Join(args, " "), gatewayDocumentTarget) {
 			t.Errorf("%s mounts the gateway's document path", name)

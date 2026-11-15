@@ -1,4 +1,4 @@
-// Xynolog — host-installed launcher for local Semiont stacks.
+// Xynolog — host-installed launcher for local Xynolog stacks.
 //
 // Drives the container runtime CLI (Apple `container`, docker, or podman)
 // directly via subprocesses.
@@ -9,19 +9,19 @@ import (
 	"os"
 	"strings"
 
-	"github.com/Xynoplex/cli/internal/launcher"
-	"github.com/Xynoplex/cli/internal/launcher/verbs"
+	"github.com/xynolog/cli/internal/launcher"
+	"github.com/xynolog/cli/internal/launcher/verbs"
 )
 
 func usage(w *os.File) {
 	fmt.Fprint(w, `Usage: xynolog <command> [options]
 
-Local Semiont stack launcher — drives your container runtime
+Local Xynolog stack launcher — drives your container runtime
 (Apple container, Docker, or Podman) directly.
 
 Stack lifecycle:
   init      Birth a new KB here: permanent identity, git repo, registration
-  start     Start the local Semiont stack
+  start     Start the local Xynolog stack
   status    Report container state and application health per service
   logs      Follow the running stack's service logs
   stop      Stop the stack across all installed runtimes

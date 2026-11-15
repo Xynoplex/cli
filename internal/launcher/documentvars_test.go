@@ -7,8 +7,8 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/Xynoplex/cli/internal/launcher/stack"
-	xynoplex "github.com/Xynoplex/sdk/go"
+	"github.com/xynolog/cli/internal/launcher/stack"
+	xynolog "github.com/xynolog/sdk/go"
 )
 
 // namedVariables: every variable a document names — the string under each key
@@ -97,7 +97,7 @@ func TestEveryVariableADocumentNamesIsHanded(t *testing.T) {
 		handed := withDaemonCredentialVars(byService, p.plan, st.KnowledgeBase.Spec.Messaging.Signal.Type == "nats")
 		// And the token a start mints for each service it hands one
 		// (vectorsTokenEnv).
-		did, err := xynoplex.KbDid(exampleKB.Domain)
+		did, err := xynolog.KbDid(exampleKB.Domain)
 		if err != nil {
 			t.Fatal(err)
 		}

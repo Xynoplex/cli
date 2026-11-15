@@ -13,7 +13,7 @@ import (
 	"os"
 	"strings"
 
-	launcher "github.com/Xynoplex/cli/internal/launcher"
+	launcher "github.com/xynolog/cli/internal/launcher"
 )
 
 const frameUsage = `Usage: xynolog frame --entity-type <name> [--entity-type <name> ...]

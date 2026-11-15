@@ -20,7 +20,7 @@ import (
 
 // fakeFile: the file, in the directory NewFake is given, that says what each
 // image's attestation is in a launcher built for the scenario suite. An image
-// it does not name is attested as a Semiont release built it.
+// it does not name is attested as a Xynolog release built it.
 const fakeFile = "fake-sigstore.json"
 
 // fakeAttestation: what a scenario says one image's attestation is. Absent is
@@ -113,7 +113,7 @@ func (f *fake) trustedMaterial() (root.TrustedMaterial, []verify.VerifierOption,
 	return authority, []verify.VerifierOption{verify.WithTransparencyLog(1), verify.WithObserverTimestamps(1)}, nil
 }
 
-// said: the scenario's word on image, else a Semiont release's attestation
+// said: the scenario's word on image, else a Xynolog release's attestation
 // of it — the Browser's workflow for the Browser's image, the services'
 // workflow for every other.
 func (f *fake) said(image string) (fakeAttestation, error) {
@@ -133,8 +133,8 @@ func (f *fake) said(image string) (fakeAttestation, error) {
 		}
 	}
 	workflow := "publish-service-images.yml"
-	if strings.Contains(name, "/semiont-browser:") {
+	if strings.Contains(name, "/xynolog-browser:") {
 		workflow = "publish-browser.yml"
 	}
-	return fakeAttestation{Identity: "https://github.com/The-AI-Alliance/semiont/.github/workflows/" + workflow + "@refs/tags/v0.7.0"}, nil
+	return fakeAttestation{Identity: "https://github.com/xynolog/images/.github/workflows/" + workflow + "@refs/tags/v0.7.0"}, nil
 }

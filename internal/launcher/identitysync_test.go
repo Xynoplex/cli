@@ -12,12 +12,12 @@ import (
 	"sync"
 	"testing"
 
-	xynoplex "github.com/Xynoplex/sdk/go"
+	xynolog "github.com/xynolog/sdk/go"
 )
 
 // `xynolog identity sync` — the repair the identity preflight's refusals name.
 //
-// The preflight says "this realm has no semiont-weaver client"; sync is what
+// The preflight says "this realm has no xynolog-weaver client"; sync is what
 // adds it. These drive a STUB admin API for the same reason the preflight
 // tests do: what is asserted is the launcher's reconciliation, and a real
 // Keycloak cannot be made to be missing a client on demand.
@@ -285,8 +285,8 @@ func TestIdentitySyncCreatesOnlyTheMissingClients(t *testing.T) {
 	}
 	missing := all[len(all)-1]
 
-	s := newStubAdmin(t, "semiont", present)
-	rep, err := syncServiceClients(s.srv.URL, "semiont", "admin", "pw", "semiont-gateway", testAccounts())
+	s := newStubAdmin(t, "xynolog", present)
+	rep, err := syncServiceClients(s.srv.URL, "xynolog", "admin", "pw", "xynolog-gateway", testAccounts())
 	if err != nil {
 		t.Fatalf("sync: %v", err)
 	}
@@ -305,16 +305,16 @@ func TestIdentitySyncCreatesTheClientTheImportWOULDHave(t *testing.T) {
 	// The shape is the thing: a hand-created client is exactly where the flat
 	// `roles` claim and the audience mapper get missed, and the gateway
 	// rejects both silently-looking-correct forms.
-	s := newStubAdmin(t, "semiont", nil)
-	if _, err := syncServiceClients(s.srv.URL, "semiont", "admin", "pw", "semiont-gateway", testAccounts()); err != nil {
+	s := newStubAdmin(t, "xynolog", nil)
+	if _, err := syncServiceClients(s.srv.URL, "xynolog", "admin", "pw", "xynolog-gateway", testAccounts()); err != nil {
 		t.Fatalf("sync: %v", err)
 	}
 	if len(s.created) != len(accountServices()) {
 		t.Fatalf("created %d clients, want %d", len(s.created), len(accountServices()))
 	}
 	for i, want := range map[int]map[string]any{
-		0:                  serviceAccountClient(secretClients[0], secretForTest(secretClients[0]), "semiont-gateway"),
-		len(s.created) - 1: workerClient(localWorkerLabel, testWorkerKey().registeredKey, "semiont-gateway"),
+		0:                  serviceAccountClient(secretClients[0], secretForTest(secretClients[0]), "xynolog-gateway"),
+		len(s.created) - 1: workerClient(localWorkerLabel, testWorkerKey().registeredKey, "xynolog-gateway"),
 	} {
 		got, _ := json.Marshal(s.created[i])
 		want, _ := json.Marshal(want)
@@ -328,8 +328,8 @@ func TestIdentitySyncTouchesNoAccounts(t *testing.T) {
 	// The property that keeps this out of "delete and re-import" territory:
 	// configuration only, never users. A sync that could touch accounts is one
 	// nobody can safely run against a deployment that has any.
-	s := newStubAdmin(t, "semiont", nil)
-	if _, err := syncServiceClients(s.srv.URL, "semiont", "admin", "pw", "semiont-gateway", testAccounts()); err != nil {
+	s := newStubAdmin(t, "xynolog", nil)
+	if _, err := syncServiceClients(s.srv.URL, "xynolog", "admin", "pw", "xynolog-gateway", testAccounts()); err != nil {
 		t.Fatalf("sync: %v", err)
 	}
 	if s.touched("/users") {
@@ -341,9 +341,9 @@ func TestIdentitySyncTouchesNoAccounts(t *testing.T) {
 }
 
 func TestIdentitySyncReportsAnAdminLoginFailure(t *testing.T) {
-	s := newStubAdmin(t, "semiont", nil)
+	s := newStubAdmin(t, "xynolog", nil)
 	s.badLogin = true
-	_, err := syncServiceClients(s.srv.URL, "semiont", "admin", "wrong", "semiont-gateway", testAccounts())
+	_, err := syncServiceClients(s.srv.URL, "xynolog", "admin", "wrong", "xynolog-gateway", testAccounts())
 	if err == nil {
 		t.Fatal("want an error when the bootstrap admin credential is refused")
 	}
@@ -360,7 +360,7 @@ func TestIdentitySyncReportsAnAdminLoginFailure(t *testing.T) {
 // address it does not count as private, as Docker Desktop delivers this
 // machine's connections — must not send the operator hunting for a password.
 func TestAdminLoginRefusalsSayWhichRefusal(t *testing.T) {
-	s := newStubAdmin(t, "semiont", nil)
+	s := newStubAdmin(t, "xynolog", nil)
 	s.httpsOnly = true
 	_, err := adminToken(s.srv.URL, "admin", "right")
 	if err == nil {
@@ -394,8 +394,8 @@ func TestIdentitySyncIsIdempotent(t *testing.T) {
 	for _, svc := range accountServices() {
 		all = append(all, serviceClientRep(svc, serviceRolesClaim(svc)))
 	}
-	s := newStubAdmin(t, "semiont", all)
-	rep, err := syncServiceClients(s.srv.URL, "semiont", "admin", "pw", "semiont-gateway", testAccounts())
+	s := newStubAdmin(t, "xynolog", all)
+	rep, err := syncServiceClients(s.srv.URL, "xynolog", "admin", "pw", "xynolog-gateway", testAccounts())
 	if err != nil {
 		t.Fatalf("sync: %v", err)
 	}
@@ -472,9 +472,9 @@ func TestIdentitySyncReconcilesTheWorkersRolesMapper(t *testing.T) {
 		}
 		reps = append(reps, serviceClientRep(svc, value))
 	}
-	s := newStubAdmin(t, "semiont", reps)
+	s := newStubAdmin(t, "xynolog", reps)
 
-	rep, err := syncServiceClients(s.srv.URL, "semiont", "admin", "pw", "semiont-gateway", testAccounts())
+	rep, err := syncServiceClients(s.srv.URL, "xynolog", "admin", "pw", "xynolog-gateway", testAccounts())
 	if err != nil {
 		t.Fatalf("sync: %v", err)
 	}
@@ -530,16 +530,16 @@ func TestIdentitySyncAddsTheKindMapperToAnOlderRealm(t *testing.T) {
 	for _, svc := range accountServices() {
 		reps = append(reps, withoutMapper(serviceClientRep(svc, serviceRolesClaim(svc)), agentKindMapperName))
 	}
-	s := newStubAdmin(t, "semiont", reps)
+	s := newStubAdmin(t, "xynolog", reps)
 
-	rep, err := syncServiceClients(s.srv.URL, "semiont", "admin", "pw", "semiont-gateway", testAccounts())
+	rep, err := syncServiceClients(s.srv.URL, "xynolog", "admin", "pw", "xynolog-gateway", testAccounts())
 	if err != nil {
 		t.Fatalf("sync: %v", err)
 	}
 	if len(s.added) != len(accountServices()) {
 		t.Fatalf("kind mapper added to %d clients, want every account's (%d): %v", len(s.added), len(accountServices()), s.added)
 	}
-	want, _ := renderedMapper(serviceAccountClient("gateway", "unused", "semiont-gateway"), agentKindMapperName)
+	want, _ := renderedMapper(serviceAccountClient("gateway", "unused", "xynolog-gateway"), agentKindMapperName)
 	got, _ := json.Marshal(s.added[serviceClientID("gateway")])
 	wantJSON, _ := json.Marshal(want)
 	if string(got) != string(wantJSON) {
@@ -568,9 +568,9 @@ func TestIdentitySyncReconcilesAKindMapperThatSaysOtherwise(t *testing.T) {
 		}
 		reps = append(reps, r)
 	}
-	s := newStubAdmin(t, "semiont", reps)
+	s := newStubAdmin(t, "xynolog", reps)
 
-	rep, err := syncServiceClients(s.srv.URL, "semiont", "admin", "pw", "semiont-gateway", testAccounts())
+	rep, err := syncServiceClients(s.srv.URL, "xynolog", "admin", "pw", "xynolog-gateway", testAccounts())
 	if err != nil {
 		t.Fatalf("sync: %v", err)
 	}
@@ -610,9 +610,9 @@ func TestIdentitySyncBringsTheWorkersClientToThisMachinesKey(t *testing.T) {
 		}
 		reps = append(reps, r)
 	}
-	s := newStubAdmin(t, "semiont", reps)
+	s := newStubAdmin(t, "xynolog", reps)
 
-	rep, err := syncServiceClients(s.srv.URL, "semiont", "admin", "pw", "semiont-gateway", testAccounts())
+	rep, err := syncServiceClients(s.srv.URL, "xynolog", "admin", "pw", "xynolog-gateway", testAccounts())
 	if err != nil {
 		t.Fatalf("sync: %v", err)
 	}
@@ -642,15 +642,15 @@ func TestIdentitySyncBringsTheWorkersClientToThisMachinesKey(t *testing.T) {
 // in to.
 func TestIdentitySyncAddsMissingLoopbackRedirects(t *testing.T) {
 	reps := append(allServiceClientReps(),
-		map[string]any{"clientId": xynoplex.BrowserClientID, "redirectUris": []any{"http://localhost:3000/*"}},
-		map[string]any{"clientId": xynoplex.ScriptClientID})
-	s := newStubAdmin(t, "semiont", reps)
+		map[string]any{"clientId": xynolog.BrowserClientID, "redirectUris": []any{"http://localhost:3000/*"}},
+		map[string]any{"clientId": xynolog.ScriptClientID})
+	s := newStubAdmin(t, "xynolog", reps)
 
-	rep, err := syncRealm(s.srv.URL, "semiont", "admin", "pw", "semiont-gateway", 300, catalogBrowser().Spec.Port, testAccounts())
+	rep, err := syncRealm(s.srv.URL, "xynolog", "admin", "pw", "xynolog-gateway", 300, catalogBrowser().Spec.Port, testAccounts())
 	if err != nil {
 		t.Fatalf("sync: %v", err)
 	}
-	patch, ok := s.updated[xynoplex.BrowserClientID]
+	patch, ok := s.updated[xynolog.BrowserClientID]
 	if !ok {
 		t.Fatal("a realm pinned to :3000 was left pinned")
 	}
@@ -674,15 +674,15 @@ func TestIdentitySyncAddsMissingLoopbackRedirects(t *testing.T) {
 // name.
 func TestIdentitySyncDisablesTheImplicitFlow(t *testing.T) {
 	reps := append(allServiceClientReps(),
-		map[string]any{"clientId": xynoplex.BrowserClientID, "implicitFlowEnabled": true,
+		map[string]any{"clientId": xynolog.BrowserClientID, "implicitFlowEnabled": true,
 			"redirectUris": []any{"http://localhost/*", "http://127.0.0.1/*"}},
-		map[string]any{"clientId": xynoplex.ScriptClientID})
-	s := newStubAdmin(t, "semiont", reps)
+		map[string]any{"clientId": xynolog.ScriptClientID})
+	s := newStubAdmin(t, "xynolog", reps)
 
-	if _, err := syncRealm(s.srv.URL, "semiont", "admin", "pw", "semiont-gateway", 300, catalogBrowser().Spec.Port, testAccounts()); err != nil {
+	if _, err := syncRealm(s.srv.URL, "xynolog", "admin", "pw", "xynolog-gateway", 300, catalogBrowser().Spec.Port, testAccounts()); err != nil {
 		t.Fatalf("sync: %v", err)
 	}
-	patch, ok := s.updated[xynoplex.BrowserClientID]
+	patch, ok := s.updated[xynolog.BrowserClientID]
 	if !ok {
 		t.Fatal("a client with the implicit flow enabled was left alone")
 	}
@@ -695,12 +695,12 @@ func TestIdentitySyncDisablesTheImplicitFlow(t *testing.T) {
 // warns when the realm disagrees; sync is what changes it.
 func TestIdentitySyncCorrectsTheAccessTokenLifespan(t *testing.T) {
 	reps := append(allServiceClientReps(),
-		map[string]any{"clientId": xynoplex.BrowserClientID, "redirectUris": []any{"http://localhost/*", "http://127.0.0.1/*"}},
-		map[string]any{"clientId": xynoplex.ScriptClientID})
-	s := newStubAdmin(t, "semiont", reps)
+		map[string]any{"clientId": xynolog.BrowserClientID, "redirectUris": []any{"http://localhost/*", "http://127.0.0.1/*"}},
+		map[string]any{"clientId": xynolog.ScriptClientID})
+	s := newStubAdmin(t, "xynolog", reps)
 	s.realmCfg = map[string]any{"accessTokenLifespan": float64(1800)}
 
-	if _, err := syncRealm(s.srv.URL, "semiont", "admin", "pw", "semiont-gateway", 300, catalogBrowser().Spec.Port, testAccounts()); err != nil {
+	if _, err := syncRealm(s.srv.URL, "xynolog", "admin", "pw", "xynolog-gateway", 300, catalogBrowser().Spec.Port, testAccounts()); err != nil {
 		t.Fatalf("sync: %v", err)
 	}
 	patch, ok := s.updated["<realm>"]
@@ -726,19 +726,19 @@ func correctRealm() []map[string]any {
 		// A correct realm carries the port-ful web origins too: CORS origins
 		// are matched exactly, so the portless redirect URIs beside them
 		// cannot stand in for the Browser's real origin.
-		map[string]any{"clientId": xynoplex.BrowserClientID, "implicitFlowEnabled": false,
+		map[string]any{"clientId": xynolog.BrowserClientID, "implicitFlowEnabled": false,
 			"redirectUris": []any{"http://localhost/*", "http://127.0.0.1/*", "http://10.0.0.5:3000/*"},
 			"webOrigins":   []any{"http://localhost:3000", "http://127.0.0.1:3000", "http://10.0.0.5:3000"}},
-		map[string]any{"clientId": xynoplex.ScriptClientID, "implicitFlowEnabled": false})
+		map[string]any{"clientId": xynolog.ScriptClientID, "implicitFlowEnabled": false})
 }
 
 // The control: a correct realm is not written to at all. Without this, every
 // assertion above passes against a sync that PUTs unconditionally.
 func TestIdentitySyncLeavesACorrectRealmAlone(t *testing.T) {
-	s := newStubAdmin(t, "semiont", correctRealm())
+	s := newStubAdmin(t, "xynolog", correctRealm())
 	s.realmCfg = map[string]any{"accessTokenLifespan": float64(300)}
 
-	rep, err := syncRealm(s.srv.URL, "semiont", "admin", "pw", "semiont-gateway", 300, catalogBrowser().Spec.Port, testAccounts())
+	rep, err := syncRealm(s.srv.URL, "xynolog", "admin", "pw", "xynolog-gateway", 300, catalogBrowser().Spec.Port, testAccounts())
 	if err != nil {
 		t.Fatalf("sync: %v", err)
 	}
@@ -788,7 +788,7 @@ func TestIdentityVerbRejectsAFlagWithNoValue(t *testing.T) {
 }
 
 func TestIdentityVerbRejectsAnUnknownFlag(t *testing.T) {
-	if code := Identity([]string{"sync", "--realm", "semiont"}); code != 1 {
+	if code := Identity([]string{"sync", "--realm", "xynolog"}); code != 1 {
 		t.Fatalf("exit %d for an unknown flag, want 1 — a typo must not be read as a default run", code)
 	}
 }
@@ -801,15 +801,15 @@ func TestIdentityVerbRejectsAnUnknownFlag(t *testing.T) {
 // preflight's finding names this command by name.
 func TestIdentitySyncAddsMissingBrowserWebOrigins(t *testing.T) {
 	reps := append(allServiceClientReps(),
-		map[string]any{"clientId": xynoplex.BrowserClientID, "webOrigins": []any{"+"}},
-		map[string]any{"clientId": xynoplex.ScriptClientID})
-	s := newStubAdmin(t, "semiont", reps)
+		map[string]any{"clientId": xynolog.BrowserClientID, "webOrigins": []any{"+"}},
+		map[string]any{"clientId": xynolog.ScriptClientID})
+	s := newStubAdmin(t, "xynolog", reps)
 
-	rep, err := syncRealm(s.srv.URL, "semiont", "admin", "pw", "semiont-gateway", 300, catalogBrowser().Spec.Port, testAccounts())
+	rep, err := syncRealm(s.srv.URL, "xynolog", "admin", "pw", "xynolog-gateway", 300, catalogBrowser().Spec.Port, testAccounts())
 	if err != nil {
 		t.Fatalf("sync: %v", err)
 	}
-	patch, ok := s.updated[xynoplex.BrowserClientID]
+	patch, ok := s.updated[xynolog.BrowserClientID]
 	if !ok {
 		t.Fatal("a realm deriving its origins was left deriving them")
 	}
@@ -834,14 +834,14 @@ func TestIdentitySyncAddsMissingBrowserWebOrigins(t *testing.T) {
 // actually work.
 func TestIdentitySyncWritesTheBrowsersActualPort(t *testing.T) {
 	reps := append(allServiceClientReps(),
-		map[string]any{"clientId": xynoplex.BrowserClientID, "webOrigins": []any{"+"}},
-		map[string]any{"clientId": xynoplex.ScriptClientID})
-	s := newStubAdmin(t, "semiont", reps)
+		map[string]any{"clientId": xynolog.BrowserClientID, "webOrigins": []any{"+"}},
+		map[string]any{"clientId": xynolog.ScriptClientID})
+	s := newStubAdmin(t, "xynolog", reps)
 
-	if _, err := syncRealm(s.srv.URL, "semiont", "admin", "pw", "semiont-gateway", 300, 3001, testAccounts()); err != nil {
+	if _, err := syncRealm(s.srv.URL, "xynolog", "admin", "pw", "xynolog-gateway", 300, 3001, testAccounts()); err != nil {
 		t.Fatalf("sync: %v", err)
 	}
-	origins, _ := json.Marshal(s.updated[xynoplex.BrowserClientID]["webOrigins"])
+	origins, _ := json.Marshal(s.updated[xynolog.BrowserClientID]["webOrigins"])
 	if !strings.Contains(string(origins), "http://localhost:3001") {
 		t.Errorf("sync did not write the moved port: %s", origins)
 	}
@@ -854,15 +854,15 @@ func TestIdentitySyncLeavesCorrectWebOriginsAlone(t *testing.T) {
 		origins = append(origins, o)
 	}
 	reps := append(allServiceClientReps(),
-		map[string]any{"clientId": xynoplex.BrowserClientID, "webOrigins": origins,
+		map[string]any{"clientId": xynolog.BrowserClientID, "webOrigins": origins,
 			"redirectUris": []any{"http://localhost/*", "http://127.0.0.1/*"}},
-		map[string]any{"clientId": xynoplex.ScriptClientID})
-	s := newStubAdmin(t, "semiont", reps)
+		map[string]any{"clientId": xynolog.ScriptClientID})
+	s := newStubAdmin(t, "xynolog", reps)
 
-	if _, err := syncRealm(s.srv.URL, "semiont", "admin", "pw", "semiont-gateway", 300, catalogBrowser().Spec.Port, testAccounts()); err != nil {
+	if _, err := syncRealm(s.srv.URL, "xynolog", "admin", "pw", "xynolog-gateway", 300, catalogBrowser().Spec.Port, testAccounts()); err != nil {
 		t.Fatalf("sync: %v", err)
 	}
-	if patch, ok := s.updated[xynoplex.BrowserClientID]; ok {
+	if patch, ok := s.updated[xynolog.BrowserClientID]; ok {
 		if _, touched := patch["webOrigins"]; touched {
 			t.Errorf("a realm already carrying the origins was patched: %v", patch["webOrigins"])
 		}

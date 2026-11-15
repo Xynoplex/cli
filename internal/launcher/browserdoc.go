@@ -8,7 +8,7 @@ package launcher
 import (
 	"fmt"
 
-	"github.com/Xynoplex/cli/internal/launcher/stack"
+	"github.com/xynolog/cli/internal/launcher/stack"
 )
 
 // browserDocument: the Browser's document as a command read it.
@@ -29,13 +29,13 @@ func browserDocumentPath() string {
 // catalogBrowser: the Browser's document as the launcher writes it, from its
 // catalog, as `xynolog init` writes a knowledge base's.
 func catalogBrowser() stack.Browser {
-	d := semiontDescriptor("browser")
+	d := xynologDescriptor("browser")
 	return stack.Browser{
 		ApiVersion: stack.APIVersion,
 		Kind:       "Browser",
 		Metadata:   stack.Metadata{Name: "browser"},
 		Spec: stack.BrowserSpec{
-			Image:     semiontImage("browser", "latest"),
+			Image:     xynologImage("browser", "latest"),
 			Resources: limits(d.mem),
 			Port:      d.defaultPort,
 		},

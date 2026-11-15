@@ -48,10 +48,10 @@ import (
 // JWT_SECRET rotation ring is handed over (loadOrCreateJWTSecret).
 func custodyOwned(name string) bool {
 	switch name {
-	case "JWT_SECRET", "KC_BOOTSTRAP_ADMIN_PASSWORD", "SEMIONT_OIDC_CLIENT_SECRET", "SEMIONT_OIDC_CLIENT_KEY", vectorsTokenVar:
+	case "JWT_SECRET", "KC_BOOTSTRAP_ADMIN_PASSWORD", "XYNOLOG_OIDC_CLIENT_SECRET", "XYNOLOG_OIDC_CLIENT_KEY", vectorsTokenVar:
 		return true
 	}
-	return daemonCredentialVar(name) || strings.HasPrefix(name, "SEMIONT_OIDC_CLIENT_SECRET_")
+	return daemonCredentialVar(name) || strings.HasPrefix(name, "XYNOLOG_OIDC_CLIENT_SECRET_")
 }
 
 // daemonCredentials: the daemons the launcher runs and keeps a credential
@@ -93,7 +93,7 @@ func (p *launchPlan) credentialedDaemons() []string {
 
 // brokerUser: the user of the broker the launcher runs. Not a secret; the
 // pair travels together all the same.
-const brokerUser = "semiont"
+const brokerUser = "xynolog"
 
 // daemonCredentialVar: one of the launcher's daemon-credential names.
 func daemonCredentialVar(name string) bool {
@@ -299,9 +299,9 @@ func keycloakAdminPassword(u *UI) (secret, source string, ok bool) {
 func serviceClientCustody(svc string) string { return "oidc-client-secret-" + svc }
 
 // serviceClientSecretEnv: the environment variable that pins one sidecar's
-// credential, e.g. SEMIONT_OIDC_CLIENT_SECRET_WEAVER.
+// credential, e.g. XYNOLOG_OIDC_CLIENT_SECRET_WEAVER.
 func serviceClientSecretEnv(svc string) string {
-	return "SEMIONT_OIDC_CLIENT_SECRET_" + strings.ToUpper(svc)
+	return "XYNOLOG_OIDC_CLIENT_SECRET_" + strings.ToUpper(svc)
 }
 
 // loadOrCreateServiceClientSecret: the persisted per-root credential for one

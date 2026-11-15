@@ -1,7 +1,7 @@
 package launcher
 
 // session.go — one command's session with a stack's knowledge base: the Go
-// SDK's session (semiont.ResumeSession) over the sign-in `xynolog login`
+// SDK's session (xynolog.ResumeSession) over the sign-in `xynolog login`
 // stored, which asks the gateway who its token is at its start, renews it at
 // the issuer when it has expired or the gateway refuses it, and forgets a
 // sign-in the issuer will not renew, as every SDK's session does
@@ -20,9 +20,9 @@ import (
 	"strconv"
 	"sync"
 
-	xynoplex "github.com/Xynoplex/sdk/go"
-	"github.com/Xynoplex/sdk/go/api"
-	"github.com/Xynoplex/sdk/go/bus"
+	xynolog "github.com/xynolog/sdk/go"
+	"github.com/xynolog/sdk/go/api"
+	"github.com/xynolog/sdk/go/bus"
 )
 
 // Session is one command's session with a stack: the SDK's session over the
@@ -32,10 +32,10 @@ type Session struct {
 	u      *UI
 	key    string // token/stack key: "local:<key>" or "codespace:<repo>"
 	base   string // the stack's gateway base URL, which the tokens are for
-	signIn xynoplex.SignIn
-	token  *xynoplex.Variable[string]
+	signIn xynolog.SignIn
+	token  *xynolog.Variable[string]
 	client *VerbClient
-	sdk    *xynoplex.Session
+	sdk    *xynolog.Session
 	// resumed is closed once sdk is set. The client is made before the SDK's
 	// session, and its stream can be refused, and ask Refresh for a token,
 	// while that session is still being resumed.
@@ -109,7 +109,7 @@ func resume(u *UI, key, base string, channels []bus.Channel) (*Session, error) {
 		return nil, fmt.Errorf("the session for %s cannot be resumed: %w", key, err)
 	}
 	ended, stop := context.WithCancelCause(context.Background())
-	s := &Session{u: u, key: key, base: base, signIn: signIn, token: xynoplex.NewVariable(""), resumed: make(chan struct{}), ended: ended, stop: stop}
+	s := &Session{u: u, key: key, base: base, signIn: signIn, token: xynolog.NewVariable(""), resumed: make(chan struct{}), ended: ended, stop: stop}
 	// A sign-in that cannot be renewed is no session the SDK holds: its token
 	// is sent as it is, and the gateway is the judge.
 	if signIn.RefreshToken == "" {
@@ -119,13 +119,13 @@ func resume(u *UI, key, base string, channels []bus.Channel) (*Session, error) {
 	// transport asks this session for a renewed token, and this session asks
 	// the SDK's.
 	s.client = s.openClient(channels)
-	s.sdk, err = xynoplex.ResumeSession(context.Background(), xynoplex.ResumeConfig{
+	s.sdk, err = xynolog.ResumeSession(context.Background(), xynolog.ResumeConfig{
 		Kb:     target,
 		Client: s.client.Client,
 		Kept:   store.Entry(key),
 		Token:  s.token,
 		HTTP:   &http.Client{Transport: launcherTransport},
-		Timing: xynoplex.DefaultTiming(),
+		Timing: xynolog.DefaultTiming(),
 	})
 	if err != nil {
 		s.client.closeClient()
@@ -169,7 +169,7 @@ func (s *Session) hear() <-chan struct{} {
 	go func() {
 		defer close(heard)
 		for failure := range errs {
-			var own *xynoplex.SessionError
+			var own *xynolog.SessionError
 			if errors.As(failure, &own) {
 				s.failed(own)
 			}
@@ -194,13 +194,13 @@ func (s *Session) noteRenewal(before string) {
 // start refuses nothing: the command goes on, and its requests are the judge.
 // An issuer that did not refuse to renew an expired token leaves no token to
 // go on with: the command says why.
-func (s *Session) failed(err *xynoplex.SessionError) {
+func (s *Session) failed(err *xynolog.SessionError) {
 	switch err.Code {
-	case xynoplex.SessionErrorCodeRefreshExhausted:
+	case xynolog.SessionErrorCodeRefreshExhausted:
 		s.end(&SessionRejected{refresh: errors.New(err.Message), kept: s.stillKept()})
-	case xynoplex.SessionErrorCodeCredentialRefused:
+	case xynolog.SessionErrorCodeCredentialRefused:
 		s.end(&SessionRejected{})
-	case xynoplex.SessionErrorCodeAuthFailed:
+	case xynolog.SessionErrorCodeAuthFailed:
 		s.mu.Lock()
 		defer s.mu.Unlock()
 		s.unconfirmed = err.Message
@@ -274,7 +274,7 @@ func kbTarget(key, base string) (api.KbTarget, error) {
 }
 
 // Refresh is a token in place of refused, the session's token the gateway
-// refused a transport (semiont.TokenRefresher): the SDK's session renews it and
+// refused a transport (xynolog.TokenRefresher): the SDK's session renews it and
 // asks the gateway who the new one is, or gives the token it was renewed to
 // already. ok=false: the session is over, and its end's cause says why.
 func (s *Session) Refresh(ctx context.Context, refused string) (token string, ok bool) {
@@ -322,8 +322,8 @@ func (s *Session) over(why *SessionRejected) {
 
 // unauthorized: the gateway refused the token a call bore.
 func unauthorized(err error) bool {
-	var refused *xynoplex.TransportError
-	return errors.As(err, &refused) && refused.Code == xynoplex.TransportErrorCodeUnauthorized
+	var refused *xynolog.TransportError
+	return errors.As(err, &refused) && refused.Code == xynolog.TransportErrorCodeUnauthorized
 }
 
 // SessionRejected: the gateway refused the token and the renewal could not
@@ -478,8 +478,8 @@ func signOut(ctx context.Context, u *UI, target *StackState) (ControlAuthLogoutR
 	}
 	// Issuer-side first, best-effort: an unreachable issuer must not trap the
 	// user in a session they asked to end — but say what it means.
-	issuer := xynoplex.Issuer{HTTP: &http.Client{Transport: launcherTransport}, Timing: xynoplex.DefaultTiming()}
-	revoked, err := xynoplex.SignOut(ctx, issuer, store.Entry(key))
+	issuer := xynolog.Issuer{HTTP: &http.Client{Transport: launcherTransport}, Timing: xynolog.DefaultTiming()}
+	revoked, err := xynolog.SignOut(ctx, issuer, store.Entry(key))
 	if err != nil {
 		u.Refuse(controlCodeFailed, "Could not remove the stored session: %v", err)
 		return ControlAuthLogoutResult{}, false

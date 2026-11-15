@@ -7,13 +7,13 @@ import (
 	"testing"
 	"time"
 
-	launcher "github.com/Xynoplex/cli/internal/launcher"
-	"github.com/Xynoplex/cli/internal/launcher/harness"
+	launcher "github.com/xynolog/cli/internal/launcher"
+	"github.com/xynolog/cli/internal/launcher/harness"
 
-	xynoplex "github.com/Xynoplex/sdk/go"
-	"github.com/Xynoplex/sdk/go/api"
-	"github.com/Xynoplex/sdk/go/bus"
-	"github.com/Xynoplex/sdk/go/xynoplextest"
+	xynolog "github.com/xynolog/sdk/go"
+	"github.com/xynolog/sdk/go/api"
+	"github.com/xynolog/sdk/go/bus"
+	"github.com/xynolog/sdk/go/xynologtest"
 )
 
 // `xynolog listen`, in process against the faulty transport. It runs until
@@ -54,7 +54,7 @@ type listening struct {
 // listened runs listen with args against fake: the names it asks for are
 // answered with names; once it has asked, asked is called, frames are
 // delivered, and then the stream drops.
-func listened(t *testing.T, fake *xynoplextest.FaultyTransport, args []string, names json.RawMessage, asked func(), frames ...xynoplex.Frame) listening {
+func listened(t *testing.T, fake *xynologtest.FaultyTransport, args []string, names json.RawMessage, asked func(), frames ...xynolog.Frame) listening {
 	t.Helper()
 	fake.QueueReply(namesAsked, names)
 	var run listening
@@ -69,7 +69,7 @@ func listened(t *testing.T, fake *xynoplextest.FaultyTransport, args []string, n
 			fake.Deliver(frame)
 		}
 		time.Sleep(printing)
-		fake.SetState(xynoplex.ConnectionStateReconnecting)
+		fake.SetState(xynolog.ConnectionStateReconnecting)
 		select {
 		case run.code = <-done:
 			run.ended = true
@@ -87,7 +87,7 @@ func TestListenRendersWhatArrivesByNameAndSaysWhenTheStreamDropsInProcess(t *tes
 	fake, restore := withFake(t)
 	defer restore()
 	names := json.RawMessage(`{"resources":[{"@context":"https://schema.org/","@id":"res-42","name":"The Iliad","representations":[]}],"total":1,"offset":0,"limit":200}`)
-	viewed := xynoplex.Frame{Channel: bus.BrowseResourceViewed.Channel(), Payload: json.RawMessage(`{"resourceId":"res-42"}`)}
+	viewed := xynolog.Frame{Channel: bus.BrowseResourceViewed.Channel(), Payload: json.RawMessage(`{"resourceId":"res-42"}`)}
 
 	run := listened(t, fake, nil, names, func() {}, viewed)
 	// A stream that ends on its own is not a stop the user asked for.
@@ -117,7 +117,7 @@ func TestListenToAScopeHoldsItAndPrintsWhatItCarriesRawInProcess(t *testing.T) {
 		t.Fatal(err)
 	}
 	carried := bus.ResourceScopedChannels[0]
-	frame := xynoplex.Frame{Channel: carried, Envelope: xynoplex.Envelope{Scope: resource}, Payload: json.RawMessage(`{"resourceId":"res-7"}`)}
+	frame := xynolog.Frame{Channel: carried, Envelope: xynolog.Envelope{Scope: resource}, Payload: json.RawMessage(`{"resourceId":"res-7"}`)}
 	held := 0
 
 	run := listened(t, fake, []string{"--scope", "res-7", "--json"}, noNames, func() { held = fake.Holds(resource) }, frame)
@@ -155,8 +155,8 @@ func TestListenDoesNotWarnOfAnOperationsRequestInProcess(t *testing.T) {
 	verbFixture(t)
 	request := bus.FrameAddEntityType.Request().Channel()
 	// The stream names the request, as the one listen asks for does.
-	fake := xynoplextest.NewFaultyTransport(xynoplextest.FaultyConfig{Channels: slices.Concat(bus.BridgedChannels, []bus.Channel{request})})
-	defer launcher.UseTransport(func(xynoplex.HTTPTransportConfig) xynoplex.Transport { return fake })()
+	fake := xynologtest.NewFaultyTransport(xynologtest.FaultyConfig{Channels: slices.Concat(bus.BridgedChannels, []bus.Channel{request})})
+	defer launcher.UseTransport(func(xynolog.HTTPTransportConfig) xynolog.Transport { return fake })()
 	run := listened(t, fake, []string{"--channel", string(request)}, noNames, func() {})
 	if strings.Contains(run.output, "is not a bridged channel") {
 		t.Errorf("listen warned of %s, which the gateway delivers:\n%s", request, run.output)

@@ -9,10 +9,10 @@ import (
 	"strings"
 	"time"
 
-	"github.com/Xynoplex/cli/internal/launcher/stack"
+	"github.com/xynolog/cli/internal/launcher/stack"
 )
 
-const imageRegistry = "ghcr.io/the-ai-alliance"
+const imageRegistry = "ghcr.io/xynolog"
 
 // configFreeService: services that read no KB config — a start of them
 // alone needs neither a config nor a root.
@@ -81,22 +81,22 @@ type startOptions struct {
 
 var startUsage = fmt.Sprintf(`Usage: xynolog start [options]
 
-Start a local Semiont stack — the services and daemons the knowledge base's
-.semiont/stack/ documents describe, the Browser its own document describes
+Start a local Xynolog stack — the services and daemons the knowledge base's
+.xynolog/stack/ documents describe, the Browser its own document describes
 (xynolog settings browser), and, for a knowledge base that names the shared
 issuer, the issuer its own document describes (xynolog settings issuer), with
 the knowledge base's realm in it — all in containers.
 
 Options:
-  --config <name>       The Inference document to use, .semiont/stack/inference/
+  --config <name>       The Inference document to use, .xynolog/stack/inference/
                         <name>.yaml (default: this KB's recorded preference —
                         the --config a successful start last used, kept in
                         roots.json — else ollama-gemma)
   --list-configs        List available configs and exit
-  --root <path|name>    KB root to start: a directory (must contain .semiont/)
+  --root <path|name>    KB root to start: a directory (must contain .xynolog/)
                         or the basename of a registered root (roots register on
                         every real start; see xynolog status). Wins over
-                        SEMIONT_ROOT and cwd discovery.
+                        XYNOLOG_ROOT and cwd discovery.
   --service <name>      Start (restart) just this one service, leaving the rest
                         of the stack untouched:
                         %s.
@@ -142,10 +142,10 @@ Options:
   --help, -h            Show this help
 
 Environment:
-  SEMIONT_ROOT          KB root override, analogous to GIT_DIR: skip discovery
-                        and use this path (must contain .semiont/; invalid
+  XYNOLOG_ROOT          KB root override, analogous to GIT_DIR: skip discovery
+                        and use this path (must contain .xynolog/; invalid
                         values are an error, never ignored). Default: walk up
-                        from the current directory looking for .semiont/.
+                        from the current directory looking for .xynolog/.
   JWT_SECRET            The gateway's token-signing key, min 32 chars (default:
                         generated ONCE per KB root and kept, so tokens survive
                         a restart). An ordered, comma-separated LIST rotates
@@ -259,8 +259,8 @@ func Start(u *UI, args []string) int {
 		}
 	}
 
-	// Resolve the KB root: SEMIONT_ROOT override (strict), else walk up from
-	// cwd for .semiont/ — deliberately after arg parsing so --help works
+	// Resolve the KB root: XYNOLOG_ROOT override (strict), else walk up from
+	// cwd for .xynolog/ — deliberately after arg parsing so --help works
 	// anywhere. Only flows that read the config need a root at all, and for
 	// a full start and --service archivist that root must additionally be a
 	// git clone (requireGitClone, below). The config-free targets
@@ -275,7 +275,7 @@ func Start(u *UI, args []string) int {
 	if rootNeeded {
 		var err error
 		if opts.root != "" {
-			// --root wins over SEMIONT_ROOT and discovery: a path is
+			// --root wins over XYNOLOG_ROOT and discovery: a path is
 			// validated directly, anything else resolves via the registry.
 			root, ident, err = resolveRootArg(opts.root)
 		} else {
@@ -284,7 +284,7 @@ func Start(u *UI, args []string) int {
 		if err != nil {
 			refuseRoot(u, err)
 			if !projectFileRefused(err) {
-				fmt.Fprintln(os.Stderr, "  cd into a KB clone, or set SEMIONT_ROOT / pass --root.")
+				fmt.Fprintln(os.Stderr, "  cd into a KB clone, or set XYNOLOG_ROOT / pass --root.")
 			}
 			return 1
 		}
@@ -425,8 +425,8 @@ func Start(u *UI, args []string) int {
 
 	if opts.cleanOllama {
 		u.Log("Removing Ollama model cache volume...")
-		u.EchoCmd(rt, "volume", "rm", "semiont-ollama-models")
-		if err := runSilent(rt, "volume", "rm", "semiont-ollama-models"); err == nil {
+		u.EchoCmd(rt, "volume", "rm", "xynolog-ollama-models")
+		if err := runSilent(rt, "volume", "rm", "xynolog-ollama-models"); err == nil {
 			u.Ok("Removed.")
 		} else {
 			u.Warn("Volume not found.")
@@ -434,7 +434,7 @@ func Start(u *UI, args []string) int {
 		return 0
 	}
 
-	u.Banner("Semiont Local Gateway")
+	u.Banner("Xynolog Local Gateway")
 	if rootNeeded {
 		// A KB must declare its identity to run. The launcher publishes a
 		// discovery document in which `did` is REQUIRED, so a KB with no
@@ -445,7 +445,7 @@ func Start(u *UI, args []string) int {
 		// An address wearing a name is precisely the confusion this rule ends.
 		if ident == nil || ident.didWeb() == "" {
 			u.Fail("This knowledge base declares no did:web identity, so it cannot be started.")
-			fmt.Fprintf(os.Stderr, "  Declare it in %s:\n", filepath.Join(root, ".semiont", projectFileYAML))
+			fmt.Fprintf(os.Stderr, "  Declare it in %s:\n", filepath.Join(root, ".xynolog", projectFileYAML))
 			fmt.Fprintln(os.Stderr, "    site:")
 			fmt.Fprintln(os.Stderr, "      domain: \"owner.github.io:repo\"")
 			fmt.Fprintln(os.Stderr, "  It is the KB's permanent identity — the same string its event log and")
@@ -774,7 +774,7 @@ func startNetwork(u *UI, rt string, kb kbRoot, opts startOptions) (string, bool)
 func printLANReach(u *UI, lan string, plan *launchPlan, e exposure) {
 	fmt.Println()
 	fmt.Printf("  %s\n", u.Wrap(AnsiBold+AnsiYellow, "Answering the network at "+lan+" (xynolog settings network lan):"))
-	fmt.Printf("  Semiont KB         http://%s:%d\n", lan, plan.GatewayPort)
+	fmt.Printf("  Xynolog KB         http://%s:%d\n", lan, plan.GatewayPort)
 	if rp := plan.Roles["identity"]; rp.Presence == presenceLauncher {
 		fmt.Printf("  Issuer             %s   %s\n", identityEndpoint(rp, e), u.Dim("(through the issuer proxy, which passes the realms of the knowledge bases running here alone)"))
 	}
@@ -792,9 +792,9 @@ func printConfigNames(root string) {
 
 // --- Command builders (shared by the real run and --dry-run) ---
 
-// semiontImage: one of Semiont's own images, at a tag.
-func semiontImage(svc, tag string) string {
-	return fmt.Sprintf("%s/semiont-%s:%s", imageRegistry, svc, tag)
+// xynologImage: one of Xynolog's own images, at a tag.
+func xynologImage(svc, tag string) string {
+	return fmt.Sprintf("%s/xynolog-%s:%s", imageRegistry, svc, tag)
 }
 
 // locallyBuilt: whether an image is one built on this machine — tagged
@@ -830,7 +830,7 @@ func prometheusConfig(addr string) string {
   scrape_interval: 15s
 
 scrape_configs:
-  - job_name: semiont
+  - job_name: xynolog
     static_configs:
       - targets: ["%s:24110"]
 `, addr)
@@ -850,7 +850,7 @@ func prometheusArgs(e exposure, configPath string) []string {
 // accepts and discards. Every component here is in the CORE collector image
 // (`components` on 0.137.0); contrib is not needed. The readout labels each
 // series with its resource's attributes, so it names the knowledge base that
-// exported it (`semiont.kb` as `semiont_kb`): status reads its own KB's numbers
+// exported it (`xynolog.kb` as `xynolog_kb`): status reads its own KB's numbers
 // by it (observed.go).
 func collectorConfig(addr string, traces bool) string {
 	tracesExporter := "nop"
@@ -941,8 +941,8 @@ func gatewayArgs(key string, stage string, e exposure, clientSecret, jwt, img, m
 	a = append(a,
 		// The gateway's own account at the realm. It dials the Archivist for
 		// content, events and the branch, and proves who it is like any caller.
-		"--env", "SEMIONT_OIDC_CLIENT_ID="+serviceClientID("gateway"),
-		"--env", "SEMIONT_OIDC_CLIENT_SECRET="+clientSecret,
+		"--env", "XYNOLOG_OIDC_CLIENT_ID="+serviceClientID("gateway"),
+		"--env", "XYNOLOG_OIDC_CLIENT_SECRET="+clientSecret,
 		"--env", "JWT_SECRET="+jwt)
 	a = append(a, superviseEnv()...)
 	return append(a, img)
@@ -955,7 +955,7 @@ func gatewayArgs(key string, stage string, e exposure, clientSecret, jwt, img, m
 // because each builder spelling the same pair is one more chance to update
 // all but one of them.
 func superviseEnv() []string {
-	return []string{"--env", "SEMIONT_SUPERVISE=1"}
+	return []string{"--env", "XYNOLOG_SUPERVISE=1"}
 }
 
 // archivistArgs: the Archivist owns the file-backed record, and its mounts
@@ -973,7 +973,7 @@ func superviseEnv() []string {
 func archivistArgs(key string, kbRoot, stage string, e exposure, port int, clientSecret, img, mem string, userEnv, otel []string, state ...string) []string {
 	a := []string{"run", "-d", "--name", roleContainer("archivist", key), // no --rm: see providedRunArgs
 		"--memory", mem}
-	a = append(a, e.publish("--publish", "archivist", port, semiontDescriptor("archivist").ports[0].port)...)
+	a = append(a, e.publish("--publish", "archivist", port, xynologDescriptor("archivist").ports[0].port)...)
 	a = append(a, "--volume", kbRoot+":"+kbMountTarget,
 		"--volume", stage+"/"+archivistDocumentFile+":"+archivistDocumentTarget+":ro")
 	a = append(a, state...)
@@ -981,8 +981,8 @@ func archivistArgs(key string, kbRoot, stage string, e exposure, port int, clien
 	a = append(a, otel...)
 	a = append(a, identityHostArgs(e.rt, e.addr)...)
 	a = append(a,
-		"--env", "SEMIONT_OIDC_CLIENT_ID="+serviceClientID("archivist"),
-		"--env", "SEMIONT_OIDC_CLIENT_SECRET="+clientSecret)
+		"--env", "XYNOLOG_OIDC_CLIENT_ID="+serviceClientID("archivist"),
+		"--env", "XYNOLOG_OIDC_CLIENT_SECRET="+clientSecret)
 	a = append(a, superviseEnv()...)
 	return append(a, img)
 }
@@ -1004,7 +1004,7 @@ func archivistArgs(key string, kbRoot, stage string, e exposure, port int, clien
 func librarianArgs(key string, stage string, e exposure, port int, clientSecret, img, mem string, userEnv, otel, vectorsEnv []string, state ...string) []string {
 	a := []string{"run", "-d", "--name", roleContainer("librarian", key), // no --rm: see providedRunArgs
 		"--memory", mem}
-	a = append(a, e.publish("--publish", "librarian", port, semiontDescriptor("librarian").ports[0].port)...)
+	a = append(a, e.publish("--publish", "librarian", port, xynologDescriptor("librarian").ports[0].port)...)
 	a = append(a, "--volume", stage+"/"+librarianDocumentFile+":"+librarianDocumentTarget+":ro")
 	a = append(a, state...)
 	a = append(a, userEnv...)
@@ -1013,8 +1013,8 @@ func librarianArgs(key string, stage string, e exposure, port int, clientSecret,
 	a = append(a,
 		// This process's own account at the realm: its token is its bearer at
 		// the gateway, whatever models its matcher and its gatherer ask.
-		"--env", "SEMIONT_OIDC_CLIENT_ID="+serviceClientID("librarian"),
-		"--env", "SEMIONT_OIDC_CLIENT_SECRET="+clientSecret)
+		"--env", "XYNOLOG_OIDC_CLIENT_ID="+serviceClientID("librarian"),
+		"--env", "XYNOLOG_OIDC_CLIENT_SECRET="+clientSecret)
 	a = append(a, vectorsEnv...)
 	a = append(a, superviseEnv()...)
 	return append(a, img)
@@ -1030,14 +1030,14 @@ func librarianArgs(key string, stage string, e exposure, port int, clientSecret,
 func dispatcherArgs(key string, stage string, e exposure, port int, clientSecret, img, mem string, userEnv, otel []string) []string {
 	a := []string{"run", "-d", "--name", roleContainer("dispatcher", key), // no --rm: see providedRunArgs
 		"--memory", mem}
-	a = append(a, e.publish("--publish", "dispatcher", port, semiontDescriptor("dispatcher").ports[0].port)...)
+	a = append(a, e.publish("--publish", "dispatcher", port, xynologDescriptor("dispatcher").ports[0].port)...)
 	a = append(a, "--volume", stage+"/"+dispatcherDocumentFile+":"+dispatcherDocumentTarget+":ro")
 	a = append(a, userEnv...)
 	a = append(a, otel...)
 	a = append(a, identityHostArgs(e.rt, e.addr)...)
 	a = append(a,
-		"--env", "SEMIONT_OIDC_CLIENT_ID="+serviceClientID("dispatcher"),
-		"--env", "SEMIONT_OIDC_CLIENT_SECRET="+clientSecret)
+		"--env", "XYNOLOG_OIDC_CLIENT_ID="+serviceClientID("dispatcher"),
+		"--env", "XYNOLOG_OIDC_CLIENT_SECRET="+clientSecret)
 	a = append(a, superviseEnv()...)
 	return append(a, img)
 }
@@ -1053,7 +1053,7 @@ func dispatcherArgs(key string, stage string, e exposure, port int, clientSecret
 // (workerSecrets), which arrives among the user's. It keeps the issuer's host
 // entry, because it signs in at a local knowledge base's issuer by name.
 func workerArgs(document string, e exposure, clientKey, img, mem string, userEnv, otel []string) []string {
-	port := semiontDescriptor("worker").ports[0].port
+	port := xynologDescriptor("worker").ports[0].port
 	a := []string{"run", "-d", "--name", sharedContainer("worker"), // no --rm: see providedRunArgs
 		"--memory", mem}
 	a = append(a, e.publish("--publish", "worker", port, port)...)
@@ -1064,7 +1064,7 @@ func workerArgs(document string, e exposure, clientKey, img, mem string, userEnv
 	// The worker key it signs each sign-in with (workerkey.go), at every
 	// knowledge base it serves: no secret is sent. Which client it signs in
 	// as at each is that knowledge base's entry in its document.
-	a = append(a, "--env", "SEMIONT_OIDC_CLIENT_KEY="+clientKey)
+	a = append(a, "--env", "XYNOLOG_OIDC_CLIENT_KEY="+clientKey)
 	a = append(a, superviseEnv()...)
 	return append(a, img)
 }
@@ -1084,7 +1084,7 @@ func workerArgs(document string, e exposure, clientKey, img, mem string, userEnv
 func smelterArgs(key string, stage string, e exposure, port int, clientSecret, img, mem string, userEnv, otel, vectorsEnv []string) []string {
 	a := []string{"run", "-d", "--name", roleContainer("smelter", key), // no --rm: see providedRunArgs
 		"--memory", mem}
-	a = append(a, e.publish("--publish", "smelter", port, semiontDescriptor("smelter").ports[0].port)...)
+	a = append(a, e.publish("--publish", "smelter", port, xynologDescriptor("smelter").ports[0].port)...)
 	a = append(a, "--volume", stage+"/"+smelterDocumentFile+":"+smelterDocumentTarget+":ro")
 	a = append(a, userEnv...)
 	a = append(a, otel...)
@@ -1092,8 +1092,8 @@ func smelterArgs(key string, stage string, e exposure, port int, clientSecret, i
 	a = append(a,
 		// This process's own account at the realm: its token is its bearer at
 		// the gateway.
-		"--env", "SEMIONT_OIDC_CLIENT_ID="+serviceClientID("smelter"),
-		"--env", "SEMIONT_OIDC_CLIENT_SECRET="+clientSecret)
+		"--env", "XYNOLOG_OIDC_CLIENT_ID="+serviceClientID("smelter"),
+		"--env", "XYNOLOG_OIDC_CLIENT_SECRET="+clientSecret)
 	a = append(a, vectorsEnv...)
 	a = append(a, superviseEnv()...)
 	return append(a, img)
@@ -1111,7 +1111,7 @@ func smelterArgs(key string, stage string, e exposure, port int, clientSecret, i
 func weaverArgs(key string, stage string, e exposure, port int, clientSecret, img, mem string, userEnv, otel []string) []string {
 	a := []string{"run", "-d", "--name", roleContainer("weaver", key), // no --rm: see providedRunArgs
 		"--memory", mem}
-	a = append(a, e.publish("--publish", "weaver", port, semiontDescriptor("weaver").ports[0].port)...)
+	a = append(a, e.publish("--publish", "weaver", port, xynologDescriptor("weaver").ports[0].port)...)
 	a = append(a, "--volume", stage+"/"+weaverDocumentFile+":"+weaverDocumentTarget+":ro")
 	a = append(a, userEnv...)
 	a = append(a, otel...)
@@ -1119,8 +1119,8 @@ func weaverArgs(key string, stage string, e exposure, port int, clientSecret, im
 	a = append(a,
 		// This process's own account at the realm: its token is its bearer at
 		// the gateway.
-		"--env", "SEMIONT_OIDC_CLIENT_ID="+serviceClientID("weaver"),
-		"--env", "SEMIONT_OIDC_CLIENT_SECRET="+clientSecret)
+		"--env", "XYNOLOG_OIDC_CLIENT_ID="+serviceClientID("weaver"),
+		"--env", "XYNOLOG_OIDC_CLIENT_SECRET="+clientSecret)
 	a = append(a, superviseEnv()...)
 	return append(a, img)
 }
@@ -1131,7 +1131,7 @@ func weaverArgs(key string, stage string, e exposure, port int, clientSecret, im
 func browserArgs(e exposure, doc browserDocument, img string) []string {
 	a := []string{"run", "-d", "--name", sharedContainer("browser"), // no --rm: see providedRunArgs
 		"--memory", doc.spec.Resources.Limits.Memory}
-	a = append(a, e.publish("--publish", "browser", doc.spec.Port, semiontDescriptor("browser").defaultPort)...)
+	a = append(a, e.publish("--publish", "browser", doc.spec.Port, xynologDescriptor("browser").defaultPort)...)
 	// The Browser's KB-discovery view: a read-only DIRECTORY mount (Apple
 	// container cannot single-file mount), which the Browser image's server
 	// serves under /discovery.
@@ -1194,10 +1194,10 @@ func runStart(u *UI, rt, lan string, kb kbRoot, opts startOptions, userEnv []str
 	// (fail-fast is the design; recovery is the in-container supervisor's).
 	u.Stamp("xynolog start: containers ready")
 	fmt.Println()
-	fmt.Printf("%s  %s\n", u.Wrap(AnsiBold+AnsiGreen, "🚀 Semiont stack is up"), u.Dim("("+took(time.Since(t0))+")"))
+	fmt.Printf("%s  %s\n", u.Wrap(AnsiBold+AnsiGreen, "🚀 Xynolog stack is up"), u.Dim("("+took(time.Since(t0))+")"))
 	fmt.Println()
-	fmt.Printf("  Semiont Browser    %s\n", u.Bold(browser.endpoint()))
-	fmt.Printf("  Semiont KB         http://localhost:%d\n", plan.GatewayPort)
+	fmt.Printf("  Xynolog Browser    %s\n", u.Bold(browser.endpoint()))
+	fmt.Printf("  Xynolog KB         http://localhost:%d\n", plan.GatewayPort)
 	neo4jLogin := ""
 	if g := plan.Roles["graph"]; g.Presence == presenceLauncher {
 		// The password is the launcher's: say where it is kept, never print
@@ -1243,7 +1243,7 @@ func ollamaCacheAsked(cache string) string {
 		home, _ := os.UserHomeDir()
 		return filepath.Join(home, ".ollama")
 	case "volume":
-		return "semiont-ollama-models"
+		return "xynolog-ollama-models"
 	}
 	return ""
 }
@@ -1256,7 +1256,7 @@ func chooseOllamaVolume(u *UI, opts startOptions) string {
 		u.Log("Using host model cache.")
 		return ollamaCacheAsked("host")
 	case "volume":
-		u.Log("Using named volume semiont-ollama-models for model cache.")
+		u.Log("Using named volume xynolog-ollama-models for model cache.")
 		return ollamaCacheAsked("volume")
 	}
 	home, _ := os.UserHomeDir()
@@ -1268,7 +1268,7 @@ func chooseOllamaVolume(u *UI, opts startOptions) string {
 			}
 		}
 	}
-	u.Log("Using named volume semiont-ollama-models for model cache.")
+	u.Log("Using named volume xynolog-ollama-models for model cache.")
 	return ollamaCacheAsked("volume")
 }
 
@@ -1397,7 +1397,7 @@ func settlePorts(ports ...int) {
 }
 
 // requirePortFree fails when a TCP port is already held, naming the offending
-// process(es). By this point every semiont-* container has been swept under
+// process(es). By this point every xynolog-* container has been swept under
 // every installed runtime, so a holder is provably foreign — the launcher never
 // signals it; killing it is the user's call, each time.
 func requirePortFree(u *UI, port int, service string) bool {
@@ -1406,7 +1406,7 @@ func requirePortFree(u *UI, port int, service string) bool {
 		return true
 	}
 	u.Fail("Port %d (needed for %s) is held by %s.", port, service, describeProcs(pids))
-	fmt.Fprintln(os.Stderr, "  This is not a Semiont container. Stop it and re-run (e.g. "+stopProcessesHint(systemName(), pids)+").")
+	fmt.Fprintln(os.Stderr, "  This is not a Xynolog container. Stop it and re-run (e.g. "+stopProcessesHint(systemName(), pids)+").")
 	return false
 }
 

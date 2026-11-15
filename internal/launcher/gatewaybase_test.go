@@ -15,7 +15,7 @@ func TestGatewayBaseIsTheRecordedOneOrNone(t *testing.T) {
 	}
 	for name, st := range map[string]*StackState{
 		"no gateway service":            {Services: map[string]ServiceState{}},
-		"a gateway with no endpoint":    {Services: map[string]ServiceState{"gateway": {Container: "semiont-gateway"}}},
+		"a gateway with no endpoint":    {Services: map[string]ServiceState{"gateway": {Container: "xynolog-gateway"}}},
 		"an endpoint that is no health": {Services: map[string]ServiceState{"gateway": {Endpoint: "tcp:localhost:4000"}}},
 	} {
 		base, err := GatewayBase(st)

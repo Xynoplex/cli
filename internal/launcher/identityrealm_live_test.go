@@ -21,10 +21,10 @@ import (
 // CI's "Launcher Tests (Go, Keycloak)" job runs it beside TestIdentitySyncLive,
 // and fails if it skips. Run it as that test's comment says.
 func TestStartCreatesTheRealmLive(t *testing.T) {
-	base := os.Getenv("SEMIONT_LIVE_KEYCLOAK")
+	base := os.Getenv("XYNOLOG_LIVE_KEYCLOAK")
 	pw := os.Getenv("KC_BOOTSTRAP_ADMIN_PASSWORD")
 	if base == "" || pw == "" {
-		t.Skip("set SEMIONT_LIVE_KEYCLOAK and KC_BOOTSTRAP_ADMIN_PASSWORD to run")
+		t.Skip("set XYNOLOG_LIVE_KEYCLOAK and KC_BOOTSTRAP_ADMIN_PASSWORD to run")
 	}
 	base = strings.TrimSuffix(base, "/")
 	const realm = "example.test-realmtest"

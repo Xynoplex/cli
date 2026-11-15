@@ -9,7 +9,7 @@ import (
 	"strings"
 	"testing"
 
-	xynoplex "github.com/Xynoplex/sdk/go"
+	xynolog "github.com/xynolog/sdk/go"
 )
 
 // Live reconciliation against a REAL Keycloak, in a throwaway realm.
@@ -27,23 +27,23 @@ import (
 // CI's "Launcher Tests (Go, Keycloak)" job runs it, with TestWorkerGrantLive
 // and TestStartCreatesTheRealmLive, against the Keycloak the launcher starts
 // (internal/launcher/scripts/keycloak-image.sh), and fails if any of them
-// skips. Elsewhere it is skipped unless SEMIONT_LIVE_KEYCLOAK
+// skips. Elsewhere it is skipped unless XYNOLOG_LIVE_KEYCLOAK
 // names a base URL. Run it against the shared Keycloak with the admin
 // password the launcher keeps for the machine:
 //
-//	SEMIONT_LIVE_KEYCLOAK=http://localhost:8080 \
-//	KC_BOOTSTRAP_ADMIN_PASSWORD=$(cat "$HOME/Library/Application Support/semiont/shared/keycloak-admin-password") \
+//	XYNOLOG_LIVE_KEYCLOAK=http://localhost:8080 \
+//	KC_BOOTSTRAP_ADMIN_PASSWORD=$(cat "$HOME/Library/Application Support/xynolog/shared/keycloak-admin-password") \
 //	go -C internal/launcher test . -run 'Live$' -v
 //
 // It creates its own realm and deletes it, so the KB's realm is never touched.
 func TestIdentitySyncLive(t *testing.T) {
-	base := os.Getenv("SEMIONT_LIVE_KEYCLOAK")
+	base := os.Getenv("XYNOLOG_LIVE_KEYCLOAK")
 	pw := os.Getenv("KC_BOOTSTRAP_ADMIN_PASSWORD")
 	if base == "" || pw == "" {
-		t.Skip("set SEMIONT_LIVE_KEYCLOAK and KC_BOOTSTRAP_ADMIN_PASSWORD to run")
+		t.Skip("set XYNOLOG_LIVE_KEYCLOAK and KC_BOOTSTRAP_ADMIN_PASSWORD to run")
 	}
 	base = strings.TrimSuffix(base, "/")
-	const realm = "semiont-synctest"
+	const realm = "xynolog-synctest"
 	const audience = "did:web:example.test:synctest"
 
 	tok, err := adminToken(base, "admin", pw)
@@ -86,7 +86,7 @@ func TestIdentitySyncLive(t *testing.T) {
 	//    And for the worker, by the assertion the preflight signs: Keycloak
 	//    checks it with the key sync registered, and stamps the worker role.
 	worker, err := clientCredentialsClaims(tokenEndpoint,
-		xynoplex.KeyCredential{Issuer: issuer, ClientID: serviceClientID("worker"), PrivateKey: testWorkerKey().signer})
+		xynolog.KeyCredential{Issuer: issuer, ClientID: serviceClientID("worker"), PrivateKey: testWorkerKey().signer})
 	if err != nil {
 		t.Fatalf("the worker's grant: %v — the client sync created does not take the worker key", err)
 	}
@@ -194,7 +194,7 @@ func liveTokenEndpoint(t *testing.T, base, realm string) (issuer, tokenEndpoint 
 func liveClientCredentials(t *testing.T, issuer, tokenEndpoint, clientID, secret string) map[string]any {
 	t.Helper()
 	claims, err := clientCredentialsClaims(tokenEndpoint,
-		xynoplex.SecretCredential{Issuer: issuer, ClientID: clientID, ClientSecret: secret})
+		xynolog.SecretCredential{Issuer: issuer, ClientID: clientID, ClientSecret: secret})
 	if err != nil {
 		t.Fatalf("client-credentials grant for %s: %v — the client sync created is not one Keycloak will mint for", clientID, err)
 	}

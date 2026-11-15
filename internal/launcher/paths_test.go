@@ -7,7 +7,7 @@ import (
 	"strings"
 	"testing"
 
-	xynoplex "github.com/Xynoplex/sdk/go"
+	xynolog "github.com/xynolog/sdk/go"
 )
 
 // The data home and the log dir on each system, whichever machine runs this:
@@ -21,28 +21,28 @@ func TestTheDataHomeAndTheLogDirAreWhereEachSystemPutsThem(t *testing.T) {
 	}{
 		{why: "macOS keeps data beside state, and logs in the platform's log home",
 			system: "macos", home: "/Users/alice",
-			wantData: "/Users/alice/Library/Application Support/semiont", wantLog: "/Users/alice/Library/Logs/semiont"},
+			wantData: "/Users/alice/Library/Application Support/xynolog", wantLog: "/Users/alice/Library/Logs/xynolog"},
 		{why: "macOS reads no XDG variable",
 			system: "macos", home: "/Users/alice", xdg: "/var/x",
-			wantData: "/Users/alice/Library/Application Support/semiont", wantLog: "/Users/alice/Library/Logs/semiont"},
+			wantData: "/Users/alice/Library/Application Support/xynolog", wantLog: "/Users/alice/Library/Logs/xynolog"},
 		{why: "Linux defaults",
 			system: "linux", home: "/home/alice",
-			wantData: "/home/alice/.local/share/semiont", wantLog: "/home/alice/.local/state/semiont"},
+			wantData: "/home/alice/.local/share/xynolog", wantLog: "/home/alice/.local/state/xynolog"},
 		{why: "Linux follows the XDG variable it is given",
 			system: "linux", home: "/home/alice", xdg: "/var/x",
-			wantData: "/var/x/semiont", wantLog: "/var/x/semiont"},
+			wantData: "/var/x/xynolog", wantLog: "/var/x/xynolog"},
 		{why: "Windows keeps both under the local application data",
 			system: "windows", home: `C:\Users\alice`, local: winLocal,
-			wantData: winLocal + `\semiont`, wantLog: winLocal + `\semiont\logs`},
+			wantData: winLocal + `\xynolog`, wantLog: winLocal + `\xynolog\logs`},
 		{why: "Windows follows LOCALAPPDATA where it is not under the home",
 			system: "windows", home: `C:\Users\alice`, local: `D:\Profiles\alice\Local`,
-			wantData: `D:\Profiles\alice\Local\semiont`, wantLog: `D:\Profiles\alice\Local\semiont\logs`},
+			wantData: `D:\Profiles\alice\Local\xynolog`, wantLog: `D:\Profiles\alice\Local\xynolog\logs`},
 		{why: "Windows, with LOCALAPPDATA not set: where it is by default",
 			system: "windows", home: `C:\Users\alice`,
-			wantData: winLocal + `\semiont`, wantLog: winLocal + `\semiont\logs`},
+			wantData: winLocal + `\xynolog`, wantLog: winLocal + `\xynolog\logs`},
 		{why: "Windows reads no XDG variable",
 			system: "windows", home: `C:\Users\alice`, xdg: `D:\x`, local: winLocal,
-			wantData: winLocal + `\semiont`, wantLog: winLocal + `\semiont\logs`},
+			wantData: winLocal + `\xynolog`, wantLog: winLocal + `\xynolog\logs`},
 		{why: "no home, no data home and no log dir", system: "linux", xdg: "/var/x"},
 		{why: "no home on Windows either", system: "windows", local: winLocal},
 	} {
@@ -64,7 +64,7 @@ func TestTheDataHomeIsTheStateHomeWhereTheSystemKeepsOneBucket(t *testing.T) {
 		{"windows", `C:\Users\alice`, `C:\Users\alice\AppData\Local`},
 		{"windows", `C:\Users\alice`, ""},
 	} {
-		state, _ := xynoplex.StateDir(xynoplex.System(c.system), c.home, "", c.local)
+		state, _ := xynolog.StateDir(xynolog.System(c.system), c.home, "", c.local)
 		if data := dataDirFor(c.system, c.home, "", c.local); data != state {
 			t.Errorf("%s: the data home %q is not the state home %q", c.system, data, state)
 		}

@@ -14,7 +14,7 @@ import (
 	"os"
 	"strings"
 
-	xynoplex "github.com/Xynoplex/sdk/go"
+	xynolog "github.com/xynolog/sdk/go"
 	"golang.org/x/term"
 )
 
@@ -76,7 +76,7 @@ func Login(args []string) int {
 	if !ok {
 		return 1
 	}
-	if _, ok := signIn(context.Background(), u, target, func(code xynoplex.DeviceCode) {
+	if _, ok := signIn(context.Background(), u, target, func(code xynolog.DeviceCode) {
 		promptToOpen(u, code)
 		u.Log("Waiting for approval at the issuer...")
 	}); !ok {
@@ -89,14 +89,14 @@ func Login(args []string) int {
 // chose, through the issuer it trusts, and keeps the session. shown is given
 // the one-time code the person approves the sign-in with. ok=false: refused,
 // and said.
-func signIn(ctx context.Context, u *UI, target *StackState, shown func(xynoplex.DeviceCode)) (ControlAuthLoginResult, bool) {
+func signIn(ctx context.Context, u *UI, target *StackState, shown func(xynolog.DeviceCode)) (ControlAuthLoginResult, bool) {
 	base, ok := StackBase(u, target, "login")
 	if !ok {
 		return ControlAuthLoginResult{}, false
 	}
 	key := StackKey(target)
 
-	issuer := xynoplex.Issuer{HTTP: &http.Client{Transport: launcherTransport}, Timing: xynoplex.DefaultTiming()}
+	issuer := xynolog.Issuer{HTTP: &http.Client{Transport: launcherTransport}, Timing: xynolog.DefaultTiming()}
 	endpoints, err := issuer.Discover(ctx, base)
 	if err != nil {
 		u.Refuse(controlCodeUnreachable, "%v", err)
@@ -117,9 +117,9 @@ func signIn(ctx context.Context, u *UI, target *StackState, shown func(xynoplex.
 	// means the realm's audience mapper and the knowledge base's own resource
 	// identifier disagree, and keeping the token would only defer that error
 	// to the first verb.
-	asker := xynoplex.NewHTTPTransport(xynoplex.HTTPTransportConfig{
-		BaseURL: base, Token: xynoplex.NewVariable(tokens.Access),
-		HTTP: &http.Client{Transport: launcherTransport}, Timing: xynoplex.DefaultTiming(),
+	asker := xynolog.NewHTTPTransport(xynolog.HTTPTransportConfig{
+		BaseURL: base, Token: xynolog.NewVariable(tokens.Access),
+		HTTP: &http.Client{Transport: launcherTransport}, Timing: xynolog.DefaultTiming(),
 	})
 	me, err := asker.GetCurrentUser(ctx)
 	asker.Close()
@@ -132,10 +132,10 @@ func signIn(ctx context.Context, u *UI, target *StackState, shown func(xynoplex.
 		return ControlAuthLoginResult{}, false
 	}
 
-	if err := keepSignIn(ctx, key, xynoplex.HeldSignIn{
+	if err := keepSignIn(ctx, key, xynolog.HeldSignIn{
 		Access:             tokens.Access,
 		Refresh:            tokens.Refresh,
-		ClientID:           xynoplex.ScriptClientID,
+		ClientID:           xynolog.ScriptClientID,
 		TokenEndpoint:      endpoints.Token,
 		RevocationEndpoint: endpoints.Revocation,
 	}); err != nil {

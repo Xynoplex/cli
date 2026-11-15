@@ -4,8 +4,8 @@ import (
 	"path/filepath"
 	"testing"
 
-	"github.com/Xynoplex/cli/internal/launcher/stack"
-	"github.com/Xynoplex/sdk/go/api"
+	"github.com/xynolog/cli/internal/launcher/stack"
+	"github.com/xynolog/sdk/go/api"
 )
 
 // fixtureRoot: the fixture knowledge base the launcher's tests read.
@@ -111,10 +111,10 @@ var catalogWorkerPoolDocument = workerPoolDocument{spec: catalogWorkerPool().Spe
 // base's documents and the state home's do, and they name the
 // launcher's own: each daemon at its descriptor's image (the broker's, which
 // TestBrokerPairIsReadByTheLaunchedBrokersParser holds to go.mod), each
-// Semiont service at latest, and each at its descriptor's memory. A copy of a
+// Xynolog service at latest, and each at its descriptor's memory. A copy of a
 // pin nothing moves is refused by lint:nats-version; this is what moves it.
 func TestTheFixtureStackNamesTheDescriptorsImages(t *testing.T) {
-	dir := filepath.Join(fixtureRoot, ".semiont", "stack")
+	dir := filepath.Join(fixtureRoot, ".xynolog", "stack")
 	kb, err := stack.Read[stack.KnowledgeBase](filepath.Join(dir, "knowledge-base.yaml"), "KnowledgeBase")
 	if err != nil {
 		t.Fatal(err)
@@ -134,12 +134,12 @@ func TestTheFixtureStackNamesTheDescriptorsImages(t *testing.T) {
 		image, memory      string
 		wantImage, wantMem string
 	}{
-		{"the gateway", kb.Spec.Gateway.Image, kb.Spec.Gateway.Resources.Limits.Memory, semiontImage("gateway", "latest"), semiontDescriptor("gateway").mem},
-		{"the dispatcher", kb.Spec.Dispatcher.Image, kb.Spec.Dispatcher.Resources.Limits.Memory, semiontImage("dispatcher", "latest"), semiontDescriptor("dispatcher").mem},
-		{"the archivist", kb.Spec.Archivist.Image, kb.Spec.Archivist.Resources.Limits.Memory, semiontImage("archivist", "latest"), semiontDescriptor("archivist").mem},
-		{"the librarian", index.Spec.Librarian.Image, index.Spec.Librarian.Resources.Limits.Memory, semiontImage("librarian", "latest"), semiontDescriptor("librarian").mem},
-		{"the smelter", index.Spec.Smelter.Image, index.Spec.Smelter.Resources.Limits.Memory, semiontImage("smelter", "latest"), semiontDescriptor("smelter").mem},
-		{"the weaver", index.Spec.Weaver.Image, index.Spec.Weaver.Resources.Limits.Memory, semiontImage("weaver", "latest"), semiontDescriptor("weaver").mem},
+		{"the gateway", kb.Spec.Gateway.Image, kb.Spec.Gateway.Resources.Limits.Memory, xynologImage("gateway", "latest"), xynologDescriptor("gateway").mem},
+		{"the dispatcher", kb.Spec.Dispatcher.Image, kb.Spec.Dispatcher.Resources.Limits.Memory, xynologImage("dispatcher", "latest"), xynologDescriptor("dispatcher").mem},
+		{"the archivist", kb.Spec.Archivist.Image, kb.Spec.Archivist.Resources.Limits.Memory, xynologImage("archivist", "latest"), xynologDescriptor("archivist").mem},
+		{"the librarian", index.Spec.Librarian.Image, index.Spec.Librarian.Resources.Limits.Memory, xynologImage("librarian", "latest"), xynologDescriptor("librarian").mem},
+		{"the smelter", index.Spec.Smelter.Image, index.Spec.Smelter.Resources.Limits.Memory, xynologImage("smelter", "latest"), xynologDescriptor("smelter").mem},
+		{"the weaver", index.Spec.Weaver.Image, index.Spec.Weaver.Resources.Limits.Memory, xynologImage("weaver", "latest"), xynologDescriptor("weaver").mem},
 		{"the broker", *kb.Spec.Messaging.Image, kb.Spec.Messaging.Resources.Limits.Memory, descriptorFor("messaging", "jetstream").image, descriptorFor("messaging", "jetstream").mem},
 		{"the graph store", *index.Spec.Graph.Image, index.Spec.Graph.Resources.Limits.Memory, descriptorFor("graph", "neo4j").image, descriptorFor("graph", "neo4j").mem},
 		{"the vector store", vectors.spec.Image, vectors.spec.Resources.Limits.Memory, descriptorFor("vectors", "qdrant").image, descriptorFor("vectors", "qdrant").mem},

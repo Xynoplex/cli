@@ -16,7 +16,7 @@ import (
 	"strings"
 	"time"
 
-	xynoplex "github.com/Xynoplex/sdk/go"
+	xynolog "github.com/xynolog/sdk/go"
 )
 
 const statusUsage = `Usage: xynolog status [--root <path|name>] [--repo <owner/name> [--refresh]] [--service <name>] [--runtime container|docker|podman] [--verbose] [--billing]
@@ -512,7 +512,7 @@ func readRow(v stackView, role string, shared map[string]*ServiceState) statusRo
 
 	// The concrete product rides in the SERVICE cell — "identity-store
 	// (PostgreSQL)" — rather than a column that is an em-dash for every
-	// Semiont service.
+	// Xynolog service.
 	r := statusRow{role: role, rec: rec}
 	// No record, no driver, no product: the launcher does not name a
 	// technology for a role nothing has selected one for. Every record a
@@ -1107,7 +1107,7 @@ func Roots(args []string) int {
 	found := printRoots(u, localStacks(ss))
 	found += printRemoteKBs(u, codespaceStacks(ss))
 	if found == 0 {
-		fmt.Printf("  %s\n", u.Dim("(none — cd into a KB clone, set SEMIONT_ROOT, start with --root, "+
+		fmt.Printf("  %s\n", u.Dim("(none — cd into a KB clone, set XYNOLOG_ROOT, start with --root, "+
 			"or --runtime codespace --repo <owner>/<name>)"))
 	}
 	return 0
@@ -1138,7 +1138,7 @@ func printRootsPointer(u *UI, locals, cs []*StackState) {
 		}
 	}
 	if n == 0 {
-		fmt.Printf("  %s\n", u.Dim("(none — cd into a KB clone, set SEMIONT_ROOT, start with --root, "+
+		fmt.Printf("  %s\n", u.Dim("(none — cd into a KB clone, set XYNOLOG_ROOT, start with --root, "+
 			"or --runtime codespace --repo <owner>/<name>)"))
 	} else {
 		fmt.Printf("  %d known — full catalog: %s\n", n, u.Bold("xynolog roots"))
@@ -1169,7 +1169,7 @@ func printRootsPointer(u *UI, locals, cs []*StackState) {
 type knownRoot struct {
 	path string
 	// current: how this command's directory selects it — "cwd" standing in
-	// it, "semiont-root" by SEMIONT_ROOT — or "" when it does not.
+	// it, "xynolog-root" by XYNOLOG_ROOT — or "" when it does not.
 	current string
 	running bool
 	// entry: its registry row; nil when it is not registered.
@@ -1184,7 +1184,7 @@ type knownRoot struct {
 
 // knownRoots: each local root this machine knows — the one this command's
 // directory selects, each running stack's, each registered one — in that
-// order, each once; and the warning an invalid SEMIONT_ROOT, or a clone whose
+// order, each once; and the warning an invalid XYNOLOG_ROOT, or a clone whose
 // project file is refused, gives without failing the listing.
 func knownRoots(locals []*StackState) (roots []*knownRoot, warning error) {
 	byPath := map[string]*knownRoot{}
@@ -1199,10 +1199,10 @@ func knownRoots(locals []*StackState) (roots []*knownRoot, warning error) {
 	}
 	if path, source, _, err := resolveKBRoot(); err == nil {
 		at(path).current = "cwd"
-		if source == "SEMIONT_ROOT" {
-			at(path).current = "semiont-root"
+		if source == "XYNOLOG_ROOT" {
+			at(path).current = "xynolog-root"
 		}
-	} else if os.Getenv("SEMIONT_ROOT") != "" || projectFileRefused(err) {
+	} else if os.Getenv("XYNOLOG_ROOT") != "" || projectFileRefused(err) {
 		warning = err
 	}
 	for _, st := range locals {
@@ -1239,8 +1239,8 @@ func (r *knownRoot) labels() []string {
 	switch r.current {
 	case "cwd":
 		out = append(out, "discovered from cwd")
-	case "semiont-root":
-		out = append(out, "SEMIONT_ROOT")
+	case "xynolog-root":
+		out = append(out, "XYNOLOG_ROOT")
 	}
 	if r.running {
 		out = append(out, "running stack")
@@ -1254,9 +1254,9 @@ func (r *knownRoot) labels() []string {
 	return out
 }
 
-// printRoots reports the Semiont roots: every registered root (roots.json —
+// printRoots reports the Xynolog roots: every registered root (roots.json —
 // the launcher's memory of roots it has actually used), merged with the one
-// resolvable from here (SEMIONT_ROOT or cwd discovery) and each running
+// resolvable from here (XYNOLOG_ROOT or cwd discovery) and each running
 // stack's, each annotated with everything true about it. Vanished paths are
 // flagged, not hidden.
 // Reports how many it printed: the KNOWLEDGE BASES section is shared with
@@ -1357,19 +1357,19 @@ var sessionStateText = map[string]string{
 // storedTokenState is what the gateway at base says of a stored token: asked
 // once, by a transport that opens no stream and renews nothing.
 func storedTokenState(base, token string) string {
-	asker := xynoplex.NewHTTPTransport(xynoplex.HTTPTransportConfig{
-		BaseURL: base, Token: xynoplex.NewVariable(token),
-		HTTP: &http.Client{Transport: launcherTransport}, Timing: xynoplex.DefaultTiming(),
+	asker := xynolog.NewHTTPTransport(xynolog.HTTPTransportConfig{
+		BaseURL: base, Token: xynolog.NewVariable(token),
+		HTTP: &http.Client{Transport: launcherTransport}, Timing: xynolog.DefaultTiming(),
 	})
 	defer asker.Close()
 	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
 	defer cancel()
 	_, err := asker.GetCurrentUser(ctx)
-	var refused *xynoplex.TransportError
+	var refused *xynolog.TransportError
 	switch {
 	case err == nil:
 		return sessionValid
-	case errors.As(err, &refused) && refused.Code == xynoplex.TransportErrorCodeUnauthorized:
+	case errors.As(err, &refused) && refused.Code == xynolog.TransportErrorCodeUnauthorized:
 		return sessionExpired
 	}
 	return sessionUnverified
@@ -1625,9 +1625,9 @@ func roleHealthy(role, endpoint string) bool {
 		return probeHealth(endpoint)
 	}
 	// Asked with no token, by a transport that opens no stream without one.
-	asker := xynoplex.NewHTTPTransport(xynoplex.HTTPTransportConfig{
-		BaseURL: base, Token: xynoplex.NewVariable(""),
-		HTTP: &http.Client{Transport: launcherTransport}, Timing: xynoplex.DefaultTiming(),
+	asker := xynolog.NewHTTPTransport(xynolog.HTTPTransportConfig{
+		BaseURL: base, Token: xynolog.NewVariable(""),
+		HTTP: &http.Client{Transport: launcherTransport}, Timing: xynolog.DefaultTiming(),
 	})
 	defer asker.Close()
 	// The budget matches the generic prober's, so one slow role cannot stall

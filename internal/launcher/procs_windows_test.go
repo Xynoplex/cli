@@ -9,7 +9,7 @@ import (
 	"strconv"
 	"testing"
 
-	"github.com/Xynoplex/cli/internal/launcher/harness"
+	"github.com/xynolog/cli/internal/launcher/harness"
 )
 
 // A port this process listens on is reported with this process as its holder.
@@ -44,11 +44,11 @@ func TestTheLaunchersHomesFollowLocalAppData(t *testing.T) {
 		"the state home": StateDir(),
 		"the data home":  dataDir(),
 	} {
-		if want := elsewhere + `\semiont`; got != want {
+		if want := elsewhere + `\xynolog`; got != want {
 			t.Errorf("%s = %q, want %q", what, got, want)
 		}
 	}
-	if got, want := logDir(), elsewhere+`\semiont\logs`; got != want {
+	if got, want := logDir(), elsewhere+`\xynolog\logs`; got != want {
 		t.Errorf("the log dir = %q, want %q", got, want)
 	}
 }

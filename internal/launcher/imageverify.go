@@ -3,21 +3,21 @@ package launcher
 import (
 	"strings"
 
-	"github.com/Xynoplex/cli/internal/launcher/provenance"
+	"github.com/xynolog/cli/internal/launcher/provenance"
 )
 
-// semiontWorkflow: the workflow of The-AI-Alliance/semiont that builds and
+// xynologWorkflow: the workflow of xynolog/images that builds and
 // attests a service's image — the Browser's own, and one for every other.
-func semiontWorkflow(svc string) string {
+func xynologWorkflow(svc string) string {
 	if svc == "browser" {
 		return "publish-browser.yml"
 	}
 	return "publish-service-images.yml"
 }
 
-// semiontRelease: the release that builds a service's image.
-func semiontRelease(svc string) provenance.Release {
-	return provenance.Release{Repository: "The-AI-Alliance/semiont", Workflow: semiontWorkflow(svc)}
+// xynologRelease: the release that builds a service's image.
+func xynologRelease(svc string) provenance.Release {
+	return provenance.Release{Repository: "xynolog/images", Workflow: xynologWorkflow(svc)}
 }
 
 // pinnedImage: img as it runs once verified, by the digest its attestation is
@@ -52,7 +52,7 @@ func verifyStackImages(x executor, fc flowCtx, svcs []string) bool {
 		verified++
 	}
 	if verified > 0 {
-		x.say(sayOK, "Images verified %s", x.dim("(each built and signed by a Semiont release; each runs by its digest)"))
+		x.say(sayOK, "Images verified %s", x.dim("(each built and signed by a Xynolog release; each runs by its digest)"))
 	}
 	warnUnverified(x, local)
 	return true
@@ -64,6 +64,6 @@ func warnUnverified(x executor, images []string) {
 	if len(images) == 0 {
 		return
 	}
-	x.say(sayWarn, "Unverified: %s — built on this machine (:local), not by a Semiont release. For development only.", strings.Join(images, ", "))
+	x.say(sayWarn, "Unverified: %s — built on this machine (:local), not by a Xynolog release. For development only.", strings.Join(images, ", "))
 	x.note("unverified: %s — built on this machine (:local) and never pulled; for development only", strings.Join(images, ", "))
 }

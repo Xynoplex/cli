@@ -1,23 +1,23 @@
 # Xynolog
 
-A host-installed CLI that runs a local Xynoplex stack by driving your container
+A host-installed CLI that runs a local Xynolog stack by driving your container
 runtime (Apple `container`, Docker, or Podman) directly: the platform's seven
 services (gateway, dispatcher, archivist, librarian, worker, smelter, weaver)
 and the Browser, and beside them Keycloak, PostgreSQL, NATS, Neo4j, Qdrant,
 the telemetry containers and, when a model runs locally, Ollama. The operator's
-[service catalog](https://github.com/Xynoplex/images#images) says what each is
+[service catalog](https://github.com/xynolog/images#images) says what each is
 for.
 
 ## What this is for
 
 The launcher is the **laptop path**: one command brings up a full stack on a
-machine with no scheduler running. It is not the only way to run Xynoplex, and
+machine with no scheduler running. It is not the only way to run Xynolog, and
 it is not a dependency of the service images.
 
 The published images are standalone artifacts. They run against whatever
 PostgreSQL, Neo4j, Qdrant and inference you already have, under Kubernetes, ECS
 or Nomad, with no launcher involved — see the
-[Xynoplex protocol contracts](https://github.com/Xynoplex/protocol/tree/main/contract)
+[Xynolog protocol contracts](https://github.com/xynolog/protocol/tree/main/contract)
 for the interfaces each deployment must satisfy.
 
 What the launcher adds on top of `run` is the part those platforms leave to
@@ -43,11 +43,11 @@ dependency.
 Install the latest tagged CLI with Go:
 
 ```sh
-go install github.com/Xynoplex/cli/cmd/xynolog@latest
+go install github.com/xynolog/cli/cmd/xynolog@latest
 ```
 
 Or download and unpack the archive for your OS and CPU architecture from
-the [GitHub Releases](https://github.com/Xynoplex/cli/releases).
+the [GitHub Releases](https://github.com/xynolog/cli/releases).
 Releases cover macOS, Linux and Windows, arm64 and amd64, with Linux `.deb`
 and `.rpm` packages.
 Windows archives hold `xynolog.exe`. The binary is static: no language
@@ -67,7 +67,7 @@ What init does:
   identity stamped into the committed event log.
 - **Documents built, not copied**: `--inference anthropic|ollama --model <id>
   --embedding ollama:<model>` writes the stack's documents into
-  `.semiont/stack/` from the launcher's own knowledge — the images and memory
+  `.xynolog/stack/` from the launcher's own knowledge — the images and memory
   of its catalog, and an Inference document that gives both actors and every
   job one engine, the model chosen (per-job refinement is your edit, under
   `spec.engines.jobs.mark.<motivation>` and `spec.engines.jobs.yield`).
@@ -79,7 +79,7 @@ What init does:
   registry's 404, and degrade to accept-with-warning when sources are
   unreachable — unknown is not missing.
 - **Or copy from the template, explicitly**: `--from-template [url|dir]`
-  shallow-clones and copies its `.semiont/stack/` — vetted, all-or-nothing
+  shallow-clones and copies its `.xynolog/stack/` — vetted, all-or-nothing
   — and `--devcontainer` copies the codespace set with the display name
   rewritten to yours, making a locally-born KB `--runtime codespace`
   eligible. Identity is NEVER copied.
@@ -123,7 +123,7 @@ xynolog stop
   on the block a start would take and keeps none. A stop with no record
   verifies every kept block's service and broker ports released.
 - **Several KBs run side by side.** Each KB's containers are named for it,
-  `semiont-<kb>-<product>` (`<kb>` is its did:web domain with each run of
+  `xynolog-<kb>-<product>` (`<kb>` is its did:web domain with each run of
   characters outside `A-Za-z0-9._-` replaced by one `-`), and its stack is
   recorded, and its sign-in kept, under `local:<kb>`. A start leaves every
   other KB's stack running. It refuses a second copy of a KB that another
@@ -140,7 +140,7 @@ xynolog stop
   (`protocol/specs/src/stack/Browser.json`), naming its image, its memory and the port
   it is published on, read with the reader a KB's documents are. The first
   command that needs it and finds none writes it from the launcher's catalog
-  (`semiont-browser:latest`, 1G, port 3000) and says where; from then on the
+  (`xynolog-browser:latest`, 1G, port 3000) and says where; from then on the
   file is what runs, and one that does not hold refuses the start, with its
   line, before anything is stopped or started.
   ANY start ensures it — including a codespace start, when a local container
@@ -160,7 +160,7 @@ xynolog stop
   `xynolog identity sync`, which the preflight names when it is missing.
 - **The shared Ollama is not a stack member either**: one Ollama serves
   every KB here whose documents name `ollama` with no address.
-  When the launcher runs it as a container (`semiont-ollama`, when none is
+  When the launcher runs it as a container (`xynolog-ollama`, when none is
   installed on the machine), its record lives beside the stacks, as the
   Browser's does, with its runtime, image, the address it is published at
   and the model cache it mounts; its port is never among a stack's claims,
@@ -178,7 +178,7 @@ xynolog stop
   service leaves it.
 - **The shared Qdrant serves every KB whose KnowledgeIndex names
   `spec.vectors.shared`**, as `xynolog init` writes, each KB's index in
-  collections of its own. It runs as `semiont-qdrant` from the vector
+  collections of its own. It runs as `xynolog-qdrant` from the vector
   store's document in the state home (`stack/vectors.yaml`, which `xynolog
   settings vectors` shows), published on that document's port (6330) and on
   no KB's block, with its store in `shared/qdrant` in the data home. Its
@@ -190,7 +190,7 @@ xynolog stop
   `start --group index` keeps it. `xynolog stop` stops it with the last
   stack, as `stop --group index` does; `xynolog stop --service vectors`
   stops it alone. A KnowledgeIndex naming `image` and `resources` runs a
-  Qdrant of the KB's own instead, `semiont-<kb>-qdrant` on its block.
+  Qdrant of the KB's own instead, `xynolog-<kb>-qdrant` on its block.
   Either runs with an API key the launcher generates and keeps
   (`qdrant-api-key`, the machine's for the shared Qdrant, the KB's for its
   own) and its JWT access control on. Each start signs the smelter a token
@@ -215,10 +215,10 @@ xynolog stop
 - **The worker's settings belong to no KB either**: `stack/workers.yaml` in
   the state home, kind `WorkerPool` (`protocol/specs/src/stack/WorkerPool.json`),
   naming its image, its memory and its log level, written and read as the
-  Browser's is (`semiont-worker:latest`, 2G, info) by the first start that
+  Browser's is (`xynolog-worker:latest`, 2G, info) by the first start that
   runs a worker. A KB's repository holds none: its Inference document's
   `spec.engines.jobs` says which jobs a worker does, and with which engines.
-- **One worker serves a list of KBs** (`semiont-worker`). A
+- **One worker serves a list of KBs** (`xynolog-worker`). A
   KB's start puts it on the list when one of its jobs has an engine, as that
   start places it, and takes it off when none does; `xynolog worker kb add`,
   run inside a KB on the list, adds a KB someone else runs, offered that
@@ -470,10 +470,10 @@ xynolog stop
 - **The Browser discovery view**: every
   stack mutation regenerates `<state>/discovery/kbs.json` — each managed KB's
   localhost endpoint, placement, did:web and site name; `managedBy:
-  semiont-launcher` so the Browser can split managed from manual entries.
+  xynolog-launcher` so the Browser can split managed from manual entries.
   Endpoints and identity only, never a secret. The schema authority is
   `protocol/specs/src/discovery/DiscoveryDocument.json`, and BOTH languages
-  generate from it — @xynoplex/core's types.ts via the OpenAPI pipeline, and
+  generate from it — @xynolog/core's types.ts via the OpenAPI pipeline, and
   this launcher's `discovery_types_gen.go` via go-jsonschema (go:generate in
   discovery.go), and CI fails when the committed file drifts from the schema. The
   Browser container mounts the directory read-only at `/discovery`, where the
@@ -487,12 +487,12 @@ xynolog stop
   reports any survivor with its PID and process name — never kills it, since
   after the sweeps a holder is provably not one of this launcher's containers. `start`'s
   preflight likewise name-sweeps its knowledge base's containers
-  (`semiont-<kb>-*`) under every installed runtime, and refuses a port another
+  (`xynolog-<kb>-*`) under every installed runtime, and refuses a port another
   knowledge base's running stack claims, naming it; so a held port at check
   time means a genuinely foreign process, and the error names it and suggests
   the `kill` for you to run yourself. (There is
   deliberately no `--force-kill-ports`-style option: the launcher owns
-  everything named `semiont-*` across every runtime it can see, and never
+  everything named `xynolog-*` across every runtime it can see, and never
   signals anything else.)
 - **`xynolog stop --group <name>` stops one group of services**, named as
   `status` reads them. A knowledge base's group (`record`, `index`) takes
@@ -522,8 +522,8 @@ xynolog stop
   lists it under LAUNCHER PATHS. Logging is best-effort — it never blocks a
   command.
 - **The launcher derives its work from the KB's documents in
-  `.semiont/stack/`** — the files every service's configuration is written
-  from (see the [stack schemas](https://github.com/Xynoplex/protocol/tree/main/specs/src/stack)), each held to its
+  `.xynolog/stack/`** — the files every service's configuration is written
+  from (see the [stack schemas](https://github.com/xynolog/protocol/tree/main/specs/src/stack)), each held to its
   schema in `protocol/specs/src/stack/` before anything launches. For each daemon a
   document describes (the graph, the vectors, the broker, the issuer's
   database) it states who runs it, one way or the other and never both
@@ -548,7 +548,7 @@ xynolog stop
   the dispatcher's, the Smelter's, the Weaver's and the Librarian's also name
   the knowledge base the service serves (`kb`); the Archivist reads it from the
   tree it keeps. Every service but the worker names it by its DID in its
-  telemetry (`semiont.kb`), by which `xynolog status` reads that knowledge
+  telemetry (`xynolog.kb`), by which `xynolog status` reads that knowledge
   base's numbers and no other's. One address reaches a container through its
   environment instead: the telemetry collector's
   (`OTEL_EXPORTER_OTLP_ENDPOINT`). `xynolog start --dry-run` lists
@@ -626,26 +626,26 @@ xynolog stop
   `ollama` listing a model Ollama does not serve gets nothing, the same
   per-model-not-per-row rule that keeps a Claude from being checked against
   Ollama. A wrong ceiling would be worse than a missing one.
-- KB-root discovery (`SEMIONT_ROOT` is analogous to `GIT_DIR`): the override
+- KB-root discovery (`XYNOLOG_ROOT` is analogous to `GIT_DIR`): the override
   is strict (invalid values error, never fall back), else the root is found
-  by walking up from cwd for `.semiont/`. git is not
+  by walking up from cwd for `.xynolog/`. git is not
   part of discovery — the must-be-a-git-clone invariant applies to a full
   start and `--service archivist` (the one service that mounts `/kb`);
-  every other service needs at most the `.semiont/` tree. `xynolog status`
+  every other service needs at most the `.xynolog/` tree. `xynolog status`
   reports the root(s) in its KNOWLEDGE BASES section.
 - The launcher remembers every root a real start used in `roots.json` (beside
   `stack.json`; entries survive stops, vanished paths are flagged not
   dropped). `xynolog start --root <path|name>` selects a root explicitly — a
   directory, or the basename of a registered root — winning over
-  `SEMIONT_ROOT` and cwd discovery; the KNOWLEDGE BASES status section
+  `XYNOLOG_ROOT` and cwd discovery; the KNOWLEDGE BASES status section
   lists the registry with last-used annotations.
 - **`--config` is sticky per KB**: it names the Inference document a start
-  runs, `.semiont/stack/inference/<name>.yaml`. `xynolog init` records the
+  runs, `.xynolog/stack/inference/<name>.yaml`. `xynolog init` records the
   one it wrote on the root's `roots.json` entry, a successful start with an
   explicit `--config` records the name it ran, and `xynolog settings config
   <name>` sets it; later starts without the flag use it (banner says
   `Config: anthropic (this KB's recorded config; override with --config)`;
-  status shows it under SEMIONT ROOTS). An explicit flag always wins and
+  status shows it under XYNOLOG ROOTS). An explicit flag always wins and
   re-records; failed starts and `--dry-run` record nothing, so a typo'd name
   never becomes the default. The preference is per-user-per-machine — which
   Inference document you run depends on your API keys, so it lives in the
@@ -683,7 +683,7 @@ xynolog stop
   document names, and `xynolog init` names `:latest`. An image tagged
   `:local`, built on this machine by the images repository's `make build`, is never
   pulled; a KB runs one by naming it. The Browser, which no KB owns, runs
-  the image its own document names, `ghcr.io/the-ai-alliance/semiont-browser:latest`
+  the image its own document names, `ghcr.io/xynolog/xynolog-browser:latest`
   as the launcher writes it.
 
 ### Login and upload
@@ -696,7 +696,7 @@ state home, mode 0600. No password ever reaches the launcher; a script's
 session is the stored refresh token from one interactive sign-in.
 `xynolog yield --upload <file>` then registers files as KB resources.
 Files must live under the KB root (storage URIs are repo-relative; the
-content belongs in the repo) — and commit the `.semiont/events/` files an
+content belongs in the repo) — and commit the `.xynolog/events/` files an
 upload creates: they ARE the documents. Both verbs speak to the gateway
 through `packages/go/sdk`, the Go client generated from the same OpenAPI
 authority as the TypeScript SDK's types.
@@ -938,7 +938,7 @@ signed in, through the Go SDK. Setting it up is one line,
 claude mcp add xynolog -- xynolog mcp
 ```
 
-and [Xynoplex Go SDK guide](https://github.com/Xynoplex/sdk/blob/main/go/sdk/README.md) has
+and [Xynolog Go SDK guide](https://github.com/xynolog/sdk/blob/main/go/sdk/README.md) has
 the other clients' form. What the server does that a verb does not:
 
 - **One session for each KB, held across calls.** The KBs are the recorded
@@ -1014,7 +1014,7 @@ existing knowledge base.
   for each to end, and exits.
 
 The rules are in
-[the Control API specification](https://github.com/Xynoplex/protocol/blob/main/contract/LAUNCHER-CONTROL.md).
+[the Control API specification](https://github.com/xynolog/protocol/blob/main/contract/LAUNCHER-CONTROL.md).
 
 ### Memory ceilings
 
@@ -1025,7 +1025,7 @@ leave it unlimited inside its shared VM). A container a document describes
 runs at the `resources.limits.memory` that document states, which `xynolog
 init` writes from one table in the launcher; Ollama, the telemetry containers
 and the Browser run at that table's own
-([stack schemas](https://github.com/Xynoplex/protocol/tree/main/specs/src/stack)).
+([stack schemas](https://github.com/xynolog/protocol/tree/main/specs/src/stack)).
 The gateway's capacity follows the ceiling it runs with, and the Smelter
 works on the PDFs at once its `pdfsAtOnce` states. The ceilings are visible in
 every `--dry-run` line.
@@ -1045,7 +1045,7 @@ the real budget.
 left watching it. On a laptop that would mean a service that crashes at 2am
 stays dead until you notice.
 
-For **local** runs the launcher therefore sets `SEMIONT_SUPERVISE`, which
+For **local** runs the launcher therefore sets `XYNOLOG_SUPERVISE`, which
 starts each service under a small in-container supervisor: it restarts a
 crashed process, kills one that stops answering its health endpoint after
 having answered it at least once, and gives up rather than looping when a
@@ -1055,7 +1055,7 @@ a minute of its start is crash-looping: each such death says so in the log,
 with how it died (a kill under a memory ceiling is almost always running out
 of memory), and the next start waits twice as long as the last, up to a
 minute. It is not given up on, since it may be making progress between
-deaths. `semiont.process.restarts` carries the count, so a service that is
+deaths. `xynolog.process.restarts` carries the count, so a service that is
 quietly flapping shows up in metrics instead of only in logs.
 
 Every stack the launcher starts gets it, **codespace stacks included**: inside
@@ -1093,7 +1093,7 @@ clone of the same knowledge base. The daemon runs one way — `-js -sd /data` wi
 because both drivers use the store. `xynolog status` lists it as
 `messaging (NATS)`.
 
-Unlike the Xynoplex service processes, this is a stock third-party image, so it
+Unlike the Xynolog service processes, this is a stock third-party image, so it
 is **outside the supervision census above**: nothing restarts it if it stops.
 On a broker outage the gateway keeps reading healthy and its emits fail until
 the broker returns; the recovery mechanism is to start the container again
@@ -1108,10 +1108,10 @@ XDG directories on Linux, and each other system's own equivalent:
 
 | What | macOS | Linux | Windows |
 |---|---|---|---|
-| **State home**: the stack record (`stack.json`), the registry of knowledge bases and the launcher's settings (`roots.json`), sign-ins (`tokens.json`), `discovery/`, and the Browser's, the worker's, the issuer's and the vector store's documents (`stack/browser.yaml`, `stack/workers.yaml`, `stack/issuer.yaml`, `stack/vectors.yaml`) | `~/Library/Application Support/semiont` | `$XDG_STATE_HOME/semiont` (default `~/.local/state/semiont`) | `%LOCALAPPDATA%\semiont` |
-| **Data home**: `roots/<key>/` for each knowledge base, holding its stores and its kept secrets, and `shared/`, holding the issuer's PostgreSQL, the shared Qdrant and the machine's kept secrets | the state home | `$XDG_DATA_HOME/semiont` (default `~/.local/share/semiont`) | the state home |
-| **Log**: `launcher.log` | `~/Library/Logs/semiont` | the state home | `logs\` in the state home |
-| **Staging**: the configs a running stack mounts | `/tmp/semiont-config.*` | `/tmp/semiont-config.*` | `%TEMP%\semiont-config.*` |
+| **State home**: the stack record (`stack.json`), the registry of knowledge bases and the launcher's settings (`roots.json`), sign-ins (`tokens.json`), `discovery/`, and the Browser's, the worker's, the issuer's and the vector store's documents (`stack/browser.yaml`, `stack/workers.yaml`, `stack/issuer.yaml`, `stack/vectors.yaml`) | `~/Library/Application Support/xynolog` | `$XDG_STATE_HOME/xynolog` (default `~/.local/state/xynolog`) | `%LOCALAPPDATA%\xynolog` |
+| **Data home**: `roots/<key>/` for each knowledge base, holding its stores and its kept secrets, and `shared/`, holding the issuer's PostgreSQL, the shared Qdrant and the machine's kept secrets | the state home | `$XDG_DATA_HOME/xynolog` (default `~/.local/share/xynolog`) | the state home |
+| **Log**: `launcher.log` | `~/Library/Logs/xynolog` | the state home | `logs\` in the state home |
+| **Staging**: the configs a running stack mounts | `/tmp/xynolog-config.*` | `/tmp/xynolog-config.*` | `%TEMP%\xynolog-config.*` |
 
 A knowledge base's `roots/<key>/` holds one directory per store — `neo4j/`
 (graph), `qdrant/` (vectors, when it runs its own Qdrant), `nats/` (job
@@ -1133,7 +1133,7 @@ the directory its stores are in, and what each store takes on disk.
 
 Local-stack databases persist across restarts. Each local xynolog root gets
 its own directory, `roots/<key>` under the launcher's data home, keyed by the
-KB's did:web when `.semiont/config.yaml` declares one (identity travels with the KB, so a moved
+KB's did:web when `.xynolog/config.yaml` declares one (identity travels with the KB, so a moved
 clone keeps its state), else by a hash of the root path. `start`
 bind-mounts each store's subdir into its container. The issuer's PostgreSQL
 is the machine's (`shared/postgres`): its rows — Keycloak's accounts and
@@ -1141,7 +1141,7 @@ every knowledge base's realm, which no event log records — survive `stop`
 and restart. A `meta.json` stamp records which image wrote each store; a
 start whose Issuer document names a *different* database image over existing data
 refuses with a fix-it line rather than risk it (Postgres data is never
-auto-deleted). Keycloak manages its own schema on first boot; Xynoplex applies
+auto-deleted). Keycloak manages its own schema on first boot; Xynolog applies
 no migrations of its own, because the gateway keeps no database.
 
 A knowledge base's own Qdrant (`qdrant/`) and Neo4j (`neo4j/`) state
@@ -1208,7 +1208,7 @@ regenerates regardless.
 ## Development
 
 The CLI entry point is [`cmd/xynolog`](cmd/xynolog). Its implementation is in
-[`internal/launcher`](internal/launcher/README.md), and the Xynoplex Go SDK is an
+[`internal/launcher`](internal/launcher/README.md), and the Xynolog Go SDK is an
 external module dependency.
 
 With a supported container runtime configured, build or run the suite from the repository root:
@@ -1244,7 +1244,7 @@ textfmt -i <dir> -o <file>` writes it as a profile. `go test -coverprofile`
 cannot hold it, since it reads only what the test binary itself wrote, and a
 launcher that ends by a signal writes nothing.
 
-The suite refuses to run when `/tmp/semiont-config.*` exists (a live stack may
+The suite refuses to run when `/tmp/xynolog-config.*` exists (a live stack may
 be mounting those staged configs, and the launcher's preflight sweeps them) —
 stop the stack first, or run the tests in a container.
 
@@ -1252,4 +1252,4 @@ stop the stack first, or run the tests in a container.
 
 The `release` workflow builds archives for macOS, Linux, and Windows, along with
 Linux `.deb` and `.rpm` packages, checksums, and SBOMs from each `vX.Y.Z` tag.
-Release artifacts are published to the Xynoplex GitHub Release for that tag.
+Release artifacts are published to the Xynolog GitHub Release for that tag.

@@ -15,8 +15,8 @@ import (
 	"encoding/hex"
 	"encoding/json"
 
-	xynoplex "github.com/Xynoplex/sdk/go"
-	"github.com/Xynoplex/sdk/go/api"
+	xynolog "github.com/xynolog/sdk/go"
+	"github.com/xynolog/sdk/go/api"
 )
 
 // weaverDocumentFile: the Weaver is configured by a document, not a copy of
@@ -26,16 +26,16 @@ const weaverDocumentFile = "weaver.json"
 // weaverDocumentTarget: where the Weaver reads that document — the path its
 // image passes to `--config`. TestConfigDocumentsAreWhereTheImagesLook holds
 // the two together.
-const weaverDocumentTarget = "/etc/semiont/weaver.json"
+const weaverDocumentTarget = "/etc/xynolog/weaver.json"
 
 // cursorsPath: where a follower of the record — the Weaver, the Smelter —
 // keeps its cursors, in its container's own temporary directory. ONE decider
-// for both documents. Never under the knowledge base's .semiont (ruled
+// for both documents. Never under the knowledge base's .xynolog (ruled
 // 2026-10-21): a cursor is never a correctness input, so losing the file,
 // as every `xynolog start` does when it makes the container again, costs
 // time and never correctness. The service mounts no state for it.
 func cursorsPath(service string) string {
-	return "/tmp/semiont/" + service + "-cursors.json"
+	return "/tmp/xynolog/" + service + "-cursors.json"
 }
 
 // graphSecrets: the variables a document reaching the graph names, and so the
@@ -71,7 +71,7 @@ func graphConfig(p placement, served api.KbIdentity, who string) (graph api.Grap
 	if g.Type != string(api.Neo4jGraphConfigTypeNeo4j) {
 		return graph, planErr(p.st.Files.KnowledgeIndex, "spec.graph.type", "is %q: the launcher writes %s's document for a neo4j graph alone", g.Type, who)
 	}
-	did, err := xynoplex.KbDid(served.Domain)
+	did, err := xynolog.KbDid(served.Domain)
 	if err != nil {
 		return graph, err
 	}
@@ -101,7 +101,7 @@ func weaverDocument(p placement, served api.KbIdentity) ([]byte, error) {
 		return nil, err
 	}
 	doc.CursorsPath = cursorsPath("weaver")
-	doc.Port = semiontDescriptor("weaver").ports[0].port
+	doc.Port = xynologDescriptor("weaver").ports[0].port
 	doc.LogLevel = p.st.KnowledgeIndex.Spec.LogLevel
 	doc.LogFormat = api.LogFormatJson
 	return json.MarshalIndent(doc, "", "  ")

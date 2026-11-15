@@ -8,7 +8,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/Xynoplex/cli/internal/launcher/harness"
+	"github.com/xynolog/cli/internal/launcher/harness"
 )
 
 // declaredUser: the USER an image's Dockerfile switches to last — the uid its
@@ -28,19 +28,19 @@ func declaredUser(t *testing.T, parts ...string) string {
 	return user
 }
 
-// The Semiont images run as a non-root user (uid 1001). On a Linux Docker host
+// The Xynolog images run as a non-root user (uid 1001). On a Linux Docker host
 // the invoker is some other uid, so a bind-mount dir the launcher creates 0755
 // is unwritable inside — the archivist died with EACCES in a codespace
 // (uid 1000). macOS runtimes map ownership and hide it.
 //
 // Which stores this covers is read from the images: a store whose owner is a
-// Semiont-built role is written by the user its Dockerfile declares. Both
+// Xynolog-built role is written by the user its Dockerfile declares. Both
 // mount paths create the dirs they mount, so each is run on a fresh data home.
-func TestStoresASemiontImageWritesAreWritableByItsUser(t *testing.T) {
+func TestStoresAXynologImageWritesAreWritableByItsUser(t *testing.T) {
 	gated := 0
 	for _, role := range slices.Sorted(maps.Keys(stateStores)) {
 		spec := stateStores[role]
-		if _, ok := lookupDescriptor(spec.owner, driverSemiont); !ok {
+		if _, ok := lookupDescriptor(spec.owner, driverXynolog); !ok {
 			continue // a third-party image; its entrypoint starts as root
 		}
 		user := declaredUser(t, serviceDockerfile(spec.owner))
@@ -50,7 +50,7 @@ func TestStoresASemiontImageWritesAreWritableByItsUser(t *testing.T) {
 		gated++
 		mounts := map[string]func(x *liveExec, kb kbRoot) bool{
 			"owner": func(x *liveExec, kb kbRoot) bool {
-				_, ok := x.stateMounts(role, spec, semiontImage(spec.owner, "test"), kb)
+				_, ok := x.stateMounts(role, spec, xynologImage(spec.owner, "test"), kb)
 				return ok
 			},
 			"unstamped": func(x *liveExec, kb kbRoot) bool {
@@ -86,6 +86,6 @@ func TestStoresASemiontImageWritesAreWritableByItsUser(t *testing.T) {
 		}
 	}
 	if gated == 0 {
-		t.Fatal("no store is written by a Semiont image — the census read nothing, so the Dockerfile parse or the owner lookup broke")
+		t.Fatal("no store is written by a Xynolog image — the census read nothing, so the Dockerfile parse or the owner lookup broke")
 	}
 }

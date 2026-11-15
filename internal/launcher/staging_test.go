@@ -4,7 +4,7 @@ import (
 	"os"
 	"testing"
 
-	"github.com/Xynoplex/cli/internal/launcher/harness"
+	"github.com/xynolog/cli/internal/launcher/harness"
 )
 
 // What keeps a stack's staged documents from other users is the directory
@@ -26,7 +26,7 @@ func TestTheStagingDirIsReachableOnlyByItsOwner(t *testing.T) {
 // site.siteName.
 func TestTheProjectFileNamesTheSite(t *testing.T) {
 	committed := "project:\n  name: Example Knowledge Base\n  version: 0.1.0\ngit:\n  sync: true\nsite:\n  domain: example.org:kb\n  siteName: The Example Site\n"
-	id, err := yamlKBIdentity(".semiont/config.yaml", []byte(committed))
+	id, err := yamlKBIdentity(".xynolog/config.yaml", []byte(committed))
 	if err != nil {
 		t.Fatal(err)
 	}

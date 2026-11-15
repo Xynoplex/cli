@@ -7,8 +7,8 @@ package launcher
 // (workerPlan); the worker that does them runs as this document says.
 
 import (
-	"github.com/Xynoplex/cli/internal/launcher/stack"
-	"github.com/Xynoplex/sdk/go/api"
+	"github.com/xynolog/cli/internal/launcher/stack"
+	"github.com/xynolog/sdk/go/api"
 )
 
 // workerPoolDocument: the worker's document as a command read it.
@@ -36,8 +36,8 @@ func catalogWorkerPool() stack.WorkerPool {
 		Spec: stack.WorkerPoolSpec{
 			LogLevel: api.LogLevelInfo,
 			Worker: stack.WorkerPoolWorker{
-				Image:     semiontImage("worker", "latest"),
-				Resources: limits(semiontDescriptor("worker").mem),
+				Image:     xynologImage("worker", "latest"),
+				Resources: limits(xynologDescriptor("worker").mem),
 			},
 		},
 	}

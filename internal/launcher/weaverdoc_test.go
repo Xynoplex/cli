@@ -10,20 +10,20 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/Xynoplex/sdk/go/api"
+	"github.com/xynolog/sdk/go/api"
 
-	"github.com/Xynoplex/cli/internal/launcher/stack"
+	"github.com/xynolog/cli/internal/launcher/stack"
 )
 
 // exampleGraphDatabase: the database exampleKB's graph is in.
 var exampleGraphDatabase = graphDatabase("did:web:example.github.io:example-kb")
 
 // externalGraph: st with a Neo4j somebody else runs at graph.internal, signed
-// in to as semiont, its password named GRAPH_PASSWORD.
+// in to as xynolog, its password named GRAPH_PASSWORD.
 func externalGraph(st *stack.Stack) {
 	g := &st.KnowledgeIndex.Spec.Graph
 	g.Image, g.Resources = nil, nil
-	g.Username = "semiont"
+	g.Username = "xynolog"
 	g.External = &stack.KnowledgeIndexGraphExternal{Uri: "bolt://graph.internal:7687", Password: stack.SecretRef{FromEnv: "GRAPH_PASSWORD"}}
 }
 
@@ -74,13 +74,13 @@ func TestWeaverDocumentStatesWhatThePlacementDecides(t *testing.T) {
 	if graph != want {
 		t.Errorf("graph = %+v, want %+v", graph, want)
 	}
-	if doc.CursorsPath != "/tmp/semiont/weaver-cursors.json" {
+	if doc.CursorsPath != "/tmp/xynolog/weaver-cursors.json" {
 		t.Errorf("cursorsPath = %q, want the Weaver's file of the container's own disk", doc.CursorsPath)
 	}
-	if doc.Archivist.Host != "192.168.64.1" || doc.Archivist.Port != semiontDescriptor("archivist").ports[0].port {
+	if doc.Archivist.Host != "192.168.64.1" || doc.Archivist.Port != xynologDescriptor("archivist").ports[0].port {
 		t.Errorf("archivist = %+v, want where this start places the Archivist", doc.Archivist)
 	}
-	if doc.Port != semiontDescriptor("weaver").ports[0].port {
+	if doc.Port != xynologDescriptor("weaver").ports[0].port {
 		t.Errorf("port = %d, want the descriptor's", doc.Port)
 	}
 	if doc.LogLevel != api.LogLevelDebug || doc.LogFormat != api.LogFormatJson {
@@ -96,7 +96,7 @@ func TestWeaverDocumentNamesTheGraphPassword(t *testing.T) {
 	externalGraph(st)
 	p := placed(t, st)
 	_, graph := weaverDocumentOf(t, p)
-	if graph.PasswordEnv != "GRAPH_PASSWORD" || graph.Uri != "bolt://graph.internal:7687" || graph.Username != "semiont" || graph.Database != exampleGraphDatabase {
+	if graph.PasswordEnv != "GRAPH_PASSWORD" || graph.Uri != "bolt://graph.internal:7687" || graph.Username != "xynolog" || graph.Database != exampleGraphDatabase {
 		t.Errorf("graph = %+v, want somebody else's Neo4j as its document states it, its password by name", graph)
 	}
 	if got := graphSecrets(p); len(got) != 1 || got[0] != "GRAPH_PASSWORD" {
@@ -167,7 +167,7 @@ func TestWeaverDocumentIsWhereTheImageLooks(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	args := strings.Join(weaverArgs("kb", "/stage", exposure{rt: "container", addr: "1.2.3.4"}, semiontDescriptor("weaver").ports[0].port, "client-secret", "v", semiontDescriptor("weaver").mem, []string{"--env", "NEO4J_PASSWORD"}, nil), " ")
+	args := strings.Join(weaverArgs("kb", "/stage", exposure{rt: "container", addr: "1.2.3.4"}, xynologDescriptor("weaver").ports[0].port, "client-secret", "v", xynologDescriptor("weaver").mem, []string{"--env", "NEO4J_PASSWORD"}, nil), " ")
 	if want := "/stage/" + weaverDocumentFile + ":" + weaverDocumentTarget + ":ro"; !strings.Contains(args, want) {
 		t.Errorf("the Weaver's document is not mounted onto %s:\n%s", weaverDocumentTarget, args)
 	}
@@ -176,7 +176,7 @@ func TestWeaverDocumentIsWhereTheImageLooks(t *testing.T) {
 			t.Errorf("the Weaver is handed %s, which it does not read:\n%s", unread, args)
 		}
 	}
-	for _, handed := range []string{"SEMIONT_OIDC_CLIENT_ID=" + serviceClientID("weaver"), "SEMIONT_OIDC_CLIENT_SECRET=client-secret", "--env NEO4J_PASSWORD"} {
+	for _, handed := range []string{"XYNOLOG_OIDC_CLIENT_ID=" + serviceClientID("weaver"), "XYNOLOG_OIDC_CLIENT_SECRET=client-secret", "--env NEO4J_PASSWORD"} {
 		if !strings.Contains(args, handed) {
 			t.Errorf("the Weaver is not handed %s:\n%s", handed, args)
 		}

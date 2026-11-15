@@ -15,8 +15,8 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/Xynoplex/cli/internal/launcher/harness"
-	"github.com/Xynoplex/cli/internal/launcher/stack"
+	"github.com/xynolog/cli/internal/launcher/harness"
+	"github.com/xynolog/cli/internal/launcher/stack"
 )
 
 // syncFixture readies `identity sync` against admin for the fixture knowledge
@@ -204,16 +204,16 @@ func TestIdentityGrantPrintsWhatTheWorkersOwnerNeeds(t *testing.T) {
 	harness.MustContainAll(t, "stdout", stdout,
 		"granted alice",
 		"Domain:     example.github.io:test-kb\n",
-		"Client id:  semiont-worker-alice\n",
+		"Client id:  xynolog-worker-alice\n",
 		"Gateway:    "+gateway+"\n",
-		"xynolog worker kb add example.github.io:test-kb --gateway "+gateway+" --client-id semiont-worker-alice\n")
+		"xynolog worker kb add example.github.io:test-kb --gateway "+gateway+" --client-id xynolog-worker-alice\n")
 	if strings.Contains(stdout, "Issuer") || strings.Contains(stdout, "--issuer") {
 		t.Errorf("the grant states an issuer; the gateway names the one it trusts:\n%s", stdout)
 	}
 	harness.MustContainAll(t, "stderr", stderr, "None is secret")
 	harness.MustContainAll(t, "stdout", stdout, "a worker on another machine cannot reach")
-	if len(admin.created) != 1 || admin.created[0]["clientId"] != "semiont-worker-alice" {
-		t.Errorf("created %v, want semiont-worker-alice alone", admin.created)
+	if len(admin.created) != 1 || admin.created[0]["clientId"] != "xynolog-worker-alice" {
+		t.Errorf("created %v, want xynolog-worker-alice alone", admin.created)
 	}
 }
 
@@ -251,10 +251,10 @@ func TestIdentityRevokeDeletesTheGrant(t *testing.T) {
 	if code != 0 {
 		t.Fatalf("exit %d\nstdout:\n%s\nstderr:\n%s", code, stdout, stderr)
 	}
-	harness.MustContainAll(t, "stdout", stdout, "revoked alice", "semiont-worker-alice")
+	harness.MustContainAll(t, "stdout", stdout, "revoked alice", "xynolog-worker-alice")
 	harness.MustContainAll(t, "stderr", stderr, "stays good until it expires", "within 300s")
-	if len(admin.deleted) != 1 || admin.deleted[0] != "semiont-worker-alice" {
-		t.Errorf("deleted %v, want semiont-worker-alice alone", admin.deleted)
+	if len(admin.deleted) != 1 || admin.deleted[0] != "xynolog-worker-alice" {
+		t.Errorf("deleted %v, want xynolog-worker-alice alone", admin.deleted)
 	}
 }
 
@@ -280,7 +280,7 @@ func fixtureCopy(t *testing.T, src string, edit func(stackDir string)) string {
 	if err := os.CopyFS(root, os.DirFS(src)); err != nil {
 		t.Fatal(err)
 	}
-	edit(filepath.Join(root, ".semiont", "stack"))
+	edit(filepath.Join(root, ".xynolog", "stack"))
 	return root
 }
 
@@ -335,7 +335,7 @@ func TestIdentityGrantSaysWhatItDid(t *testing.T) {
 		want string
 	}{
 		{"the same key", []map[string]any{grantedRep("alice", k.registeredKey)}, "alice is already granted this key (" + k.thumbprint + ")"},
-		{"another key", []map[string]any{grantedRep("alice", anotherWorkerKey(t))}, "updated semiont-worker-alice: key now " + k.thumbprint},
+		{"another key", []map[string]any{grantedRep("alice", anotherWorkerKey(t))}, "updated xynolog-worker-alice: key now " + k.thumbprint},
 	} {
 		t.Run(c.name, func(t *testing.T) {
 			admin := newStubAdmin(t, fixtureKB(t).key(), append(correctRealm(), c.held...))
@@ -344,7 +344,7 @@ func TestIdentityGrantSaysWhatItDid(t *testing.T) {
 			if code != 0 {
 				t.Fatalf("exit %d\nstdout:\n%s\nstderr:\n%s", code, stdout, stderr)
 			}
-			harness.MustContainAll(t, "stdout", stdout, c.want, "Client id:  semiont-worker-alice")
+			harness.MustContainAll(t, "stdout", stdout, c.want, "Client id:  xynolog-worker-alice")
 		})
 	}
 }

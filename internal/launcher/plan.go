@@ -18,9 +18,9 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/Xynoplex/sdk/go/api"
+	"github.com/xynolog/sdk/go/api"
 
-	"github.com/Xynoplex/cli/internal/launcher/stack"
+	"github.com/xynolog/cli/internal/launcher/stack"
 )
 
 // presence: whether a role is part of this stack, and WHO runs it. What the
@@ -90,7 +90,7 @@ type rolePlan struct {
 
 type launchPlan struct {
 	// Roles: the roles whose presence the documents decide — every
-	// dependency role, and the worker. Semiont's other services are in every
+	// dependency role, and the worker. Xynolog's other services are in every
 	// stack and have no row (runs).
 	Roles       map[string]rolePlan
 	GatewayPort int
@@ -117,7 +117,7 @@ type launchPlan struct {
 	// ServiceVars: the user variables each stack service is handed — only
 	// those its configuration document names.
 	ServiceVars map[string][]string
-	// Images and Memory: each of Semiont's services this stack runs, with the
+	// Images and Memory: each of Xynolog's services this stack runs, with the
 	// image its document names and the ceiling it states. The worker's are
 	// the shared worker document's (runWorkerAs).
 	Images map[string]string
@@ -387,7 +387,7 @@ func (rp rolePlan) container(key string) string {
 	return spec.containerName(key)
 }
 
-// ollamaRunArgs: the semiont-ollama `run -d` argv. Separate from
+// ollamaRunArgs: the xynolog-ollama `run -d` argv. Separate from
 // providedRunArgs because the OWNING role varies (inference, or embedding
 // when the engines are all remote) while the container, image and port
 // shape do not — the OWNER's descriptor would be wrong for embedding, whose
@@ -405,7 +405,7 @@ func ollamaRunArgs(e exposure, rp rolePlan, extra ...string) []string {
 }
 
 // runs: whether this start runs role's container, asked of the roles the
-// launcher places by fiat — Semiont's own services and the observability tier
+// launcher places by fiat — Xynolog's own services and the observability tier
 // — and never of a dependency role, whose presence has more answers than two
 // (flowDepRole). The plan carries the one fiat role a config decides, the
 // worker; a role it does not carry runs whenever the walk reaches it.
@@ -436,7 +436,7 @@ func planPortChecks(plan *launchPlan, e exposure) []portNeed {
 		}
 		checks = append(checks, rolePortNeeds(plan, role, e)...)
 	}
-	// The gateway's port is config-owned; every other Semiont port is
+	// The gateway's port is config-owned; every other Xynolog port is
 	// launcher fiat, on the knowledge base's port block. No browser here: the
 	// Browser is not a stack member — its port is checked inside flowBrowser,
 	// and only when (re)starting.
@@ -465,7 +465,7 @@ func rolePortNeeds(plan *launchPlan, role string, e exposure) []portNeed {
 }
 
 // fiatRoles: the stack's roles whose ports are the launcher's fiat, whatever
-// a config says — the Semiont services behind the gateway. ONE list for the
+// a config says — the Xynolog services behind the gateway. ONE list for the
 // two sites that decide it: a full start requires the ports of the ones it
 // runs free, and a stop holding no record of the stack's claims verifies
 // every one's released. The telemetry's and the worker's are shared,
@@ -479,7 +479,7 @@ func knownDrivers(role string) string {
 }
 
 // blockRoles: the roles whose ports a knowledge base's port block places —
-// Semiont's services behind the gateway, and the daemons of its stack whose
+// Xynolog's services behind the gateway, and the daemons of its stack whose
 // port is the launcher's to choose. The gateway's is its document's, and the
 // shared containers' the machine's: the issuer's in its own document.
 var blockRoles = slices.Concat(fiatRoles(), []string{"graph", "vectors", "messaging"})
@@ -498,10 +498,10 @@ func (p *launchPlan) hostPort(role string, ctrPort int) int {
 	return blockPort(ctrPort, p.Block)
 }
 
-// servicePort: where this start publishes one of Semiont's services behind
+// servicePort: where this start publishes one of Xynolog's services behind
 // the gateway (fiatRoles).
 func (p *launchPlan) servicePort(role string) int {
-	return p.hostPort(role, semiontDescriptor(role).ports[0].port)
+	return p.hostPort(role, xynologDescriptor(role).ports[0].port)
 }
 
 // portNeeds: role's launcher-fiat port claims (stackPortNeeds), where this
@@ -555,7 +555,7 @@ func externalBrokerAt(servers string) (host string, port int) {
 // Archivist's document are written from (jobEngines); everything that
 // enumerates the stack follows it (launchPlan.runs).
 func workerPlan(st *stack.Stack) rolePlan {
-	worker := rolePlan{Role: "worker", Driver: driverSemiont, Presence: presenceLauncher}
+	worker := rolePlan{Role: "worker", Driver: driverXynolog, Presence: presenceLauncher}
 	if len(jobEngines(st.Inference.Spec.Engines)) == 0 {
 		worker.Presence = presenceAbsent
 	}
@@ -877,7 +877,7 @@ func derivePlan(st *stack.Stack, issuer *issuerDocument, vectors *vectorStoreDoc
 		plan.Roles["inference"] = rp
 	}
 
-	// worker — the one of Semiont's own services the documents decide: run
+	// worker — the one of Xynolog's own services the documents decide: run
 	// when the engines give a job an engine, as the shared worker document
 	// says (runWorkerAs).
 	plan.Roles["worker"] = workerPlan(st)

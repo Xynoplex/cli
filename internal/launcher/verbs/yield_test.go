@@ -6,11 +6,11 @@ import (
 	"testing"
 	"time"
 
-	"github.com/Xynoplex/cli/internal/launcher/harness"
+	"github.com/xynolog/cli/internal/launcher/harness"
 
-	xynoplex "github.com/Xynoplex/sdk/go"
-	"github.com/Xynoplex/sdk/go/bus"
-	"github.com/Xynoplex/sdk/go/xynoplextest"
+	xynolog "github.com/xynolog/sdk/go"
+	"github.com/xynolog/sdk/go/bus"
+	"github.com/xynolog/sdk/go/xynologtest"
 )
 
 // `xynolog yield --delegate`, in process against the faulty transport: it
@@ -30,7 +30,7 @@ var (
 // delegated runs yield --delegate res-src with more args against fake, which
 // gathers res-src's context and creates job-1. Once the job is created, the
 // job's end is delivered. It gives the exit code and everything printed.
-func delegated(t *testing.T, fake *xynoplextest.FaultyTransport, end xynoplex.Frame, more ...string) (int, string) {
+func delegated(t *testing.T, fake *xynologtest.FaultyTransport, end xynolog.Frame, more ...string) (int, string) {
 	t.Helper()
 	fake.QueueReply(gathering, gatheredSource)
 	fake.QueueReply(creating, json.RawMessage(`{"jobId":"job-1"}`))
@@ -58,8 +58,8 @@ func delegated(t *testing.T, fake *xynoplextest.FaultyTransport, end xynoplex.Fr
 }
 
 // requestsOf is every request a verb sent on channel, in order.
-func requestsOf(fake *xynoplextest.FaultyTransport, channel bus.Channel) []xynoplextest.RequestLogEntry {
-	var on []xynoplextest.RequestLogEntry
+func requestsOf(fake *xynologtest.FaultyTransport, channel bus.Channel) []xynologtest.RequestLogEntry {
+	var on []xynologtest.RequestLogEntry
 	for _, request := range fake.RequestLog() {
 		if request.Channel == channel {
 			on = append(on, request)
@@ -69,7 +69,7 @@ func requestsOf(fake *xynoplextest.FaultyTransport, channel bus.Channel) []xynop
 }
 
 // jobEnd is a frame of job-1's lifecycle, a yield job's on res-src.
-func jobEnd(t *testing.T, channel bus.Channel, more map[string]any) xynoplex.Frame {
+func jobEnd(t *testing.T, channel bus.Channel, more map[string]any) xynolog.Frame {
 	t.Helper()
 	payload := map[string]any{"resourceId": "res-src", "jobId": "job-1", "jobType": "yield"}
 	for name, value := range more {
@@ -79,7 +79,7 @@ func jobEnd(t *testing.T, channel bus.Channel, more map[string]any) xynoplex.Fra
 	if err != nil {
 		t.Fatal(err)
 	}
-	return xynoplex.Frame{Channel: channel, Payload: encoded}
+	return xynolog.Frame{Channel: channel, Payload: encoded}
 }
 
 func TestYieldDelegateGathersCreatesAndFollowsItsJobInProcess(t *testing.T) {

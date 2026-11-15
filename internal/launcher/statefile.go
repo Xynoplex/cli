@@ -9,7 +9,7 @@ import (
 	"sort"
 	"time"
 
-	xynoplex "github.com/Xynoplex/sdk/go"
+	xynolog "github.com/xynolog/sdk/go"
 )
 
 // The launcher records what it believes each stack IS in stack.json under
@@ -71,7 +71,7 @@ type StackState struct {
 	UpdatedAt time.Time `json:"updatedAt"`
 	Runtime   string    `json:"runtime"`
 	KBRoot    string    `json:"kbRoot,omitempty"`
-	KBDid     string    `json:"kbDid,omitempty"` // did:web from .semiont/config.yaml
+	KBDid     string    `json:"kbDid,omitempty"` // did:web from .xynolog/config.yaml
 	Config    string    `json:"config,omitempty"`
 	HostAddr  string    `json:"hostAddr,omitempty"`
 	// LanAddr: this Mac's address on the network, when the stack was started
@@ -126,10 +126,10 @@ func (st *StackState) platform() platform {
 }
 
 // StateDir is the launcher's state home on this machine: where the SDK says it
-// is (semiont.StateDir, held to protocol/specs/src/sign-in-store/cases.json), from what
+// is (xynolog.StateDir, held to protocol/specs/src/sign-in-store/cases.json), from what
 // this machine's environment says. "" when no home is resolvable.
 func StateDir() string {
-	dir, _ := xynoplex.StateDir(xynoplex.ThisSystem(), userHome(), os.Getenv("XDG_STATE_HOME"), os.Getenv("LOCALAPPDATA"))
+	dir, _ := xynolog.StateDir(xynolog.ThisSystem(), userHome(), os.Getenv("XDG_STATE_HOME"), os.Getenv("LOCALAPPDATA"))
 	return dir
 }
 
@@ -238,7 +238,7 @@ func (ss *StackSet) refuseUnreadable(u *UI) bool {
 	fmt.Fprintln(os.Stderr, "  nothing to stop while the real stack keeps running.")
 	fmt.Fprintln(os.Stderr, "  Set the record aside, then stop what is running by name:")
 	fmt.Fprintf(os.Stderr, "    %s\n", setAsideHint(systemName(), p, p+".unreadable"))
-	fmt.Fprintln(os.Stderr, "    xynolog stop          (sweeps every Semiont container here by name)")
+	fmt.Fprintln(os.Stderr, "    xynolog stop          (sweeps every Xynolog container here by name)")
 	fmt.Fprintln(os.Stderr, "    gh codespace list     (a codespace stack stops there)")
 	return true
 }

@@ -1,4 +1,4 @@
-apiVersion: semiont.the-ai-alliance.github.io/v1alpha1
+apiVersion: xynolog.org/v1alpha1
 kind: Issuer
 metadata:
   name: issuer

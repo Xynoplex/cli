@@ -11,7 +11,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/Xynoplex/cli/internal/launcher/harness"
+	"github.com/xynolog/cli/internal/launcher/harness"
 )
 
 func main() {

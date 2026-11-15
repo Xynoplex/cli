@@ -141,14 +141,14 @@ func readAsItSays(t *testing.T, c stackCase) {
 // A refusal names the line the refused value is on, and the line of the
 // object a missing field belongs in.
 func TestARefusalNamesItsLine(t *testing.T) {
-	text := []byte(`apiVersion: semiont.the-ai-alliance.github.io/v1alpha1
+	text := []byte(`apiVersion: xynolog.org/v1alpha1
 kind: WorkerPool
 metadata:
   name: workers
 spec:
   logLevel: info
   worker:
-    imgae: ghcr.io/the-ai-alliance/semiont-worker:latest
+    imgae: ghcr.io/xynolog/xynolog-worker:latest
     resources: { limits: { memory: 2G } }
 `)
 	refusals, err := Check("WorkerPool", text)
@@ -170,8 +170,8 @@ spec:
 // Each document of the fixture knowledge base reads into its type, and a
 // refused one is refused with its file and kind.
 func TestTheFixtureDocumentsReadIntoTheirTypes(t *testing.T) {
-	semiont := fixturePath("internal/launcher/testdata/kb/.semiont")
-	stack := filepath.Join(semiont, "stack")
+	xynolog := fixturePath("internal/launcher/testdata/kb/.xynolog")
+	stack := filepath.Join(xynolog, "stack")
 
 	kb, err := Read[KnowledgeBase](filepath.Join(stack, "knowledge-base.yaml"), "KnowledgeBase")
 	if err != nil {
@@ -202,7 +202,7 @@ func TestTheFixtureDocumentsReadIntoTheirTypes(t *testing.T) {
 	if !named || anthropic.ApiKey == nil || anthropic.ApiKey.FromEnv != "ANTHROPIC_API_KEY" || inference.Spec.Engines.Jobs.Yield == nil {
 		t.Errorf("the Inference did not read into its type: %+v", inference.Spec)
 	}
-	project, err := Read[ProjectConfig](filepath.Join(semiont, "config.yaml"), "ProjectConfig")
+	project, err := Read[ProjectConfig](filepath.Join(xynolog, "config.yaml"), "ProjectConfig")
 	if err != nil {
 		t.Fatal(err)
 	}

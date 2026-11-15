@@ -6,11 +6,11 @@ import "encoding/json"
 import "fmt"
 import "reflect"
 
-// One knowledge base the Semiont launcher manages on this machine, as published in
+// One knowledge base the Xynolog launcher manages on this machine, as published in
 // the discovery document (see DiscoveryDocument). Endpoints and identity only —
 // never credentials; login remains the consumer's per-KB business.
 type DiscoveredKB struct {
-	// The KB's did:web identifier, from its committed .semiont/config.yaml —
+	// The KB's did:web identifier, from its committed .xynolog/config.yaml —
 	// "did:web:" + its site.domain, verbatim. REQUIRED: a KB that declares no domain
 	// has no identity to publish, and the launcher refuses to start it rather than
 	// inventing or defaulting one. NOT unique within a document: a did names the
@@ -27,7 +27,7 @@ type DiscoveredKB struct {
 	Host string `json:"host"`
 
 	// The agent that owns this entry's lifecycle (the launcher writes
-	// "semiont-launcher"). Consumers treat managed entries as authoritative for
+	// "xynolog-launcher"). Consumers treat managed entries as authoritative for
 	// themselves — upsert on appearance, remove on disappearance — and never touch
 	// entries they did not write.
 	ManagedBy string `json:"managedBy"`
@@ -44,7 +44,7 @@ type DiscoveredKB struct {
 	// the stack's identity
 	Repo *string `json:"repo,omitempty,omitzero"`
 
-	// Human-readable site name from the KB's .semiont/config.yaml (site.siteName),
+	// Human-readable site name from the KB's .xynolog/config.yaml (site.siteName),
 	// for display
 	SiteName *string `json:"siteName,omitempty,omitzero"`
 }
@@ -110,7 +110,7 @@ func (j *DiscoveredKB) UnmarshalJSON(value []byte) error {
 }
 
 // The launcher's KB discovery document — the schema authority for
-// <stateDir>/discovery/kbs.json, which the Xynoplex CLI (Xynoplex/cli) regenerates
+// <stateDir>/discovery/kbs.json, which the Xynolog CLI (xynolog/cli) regenerates
 // on every stack mutation and the Browser container mounts read-only at
 // /discovery. NOT an API endpoint: a static document fetched same-origin by
 // browsers (via the Browser's static server). An empty kbs list is meaningful

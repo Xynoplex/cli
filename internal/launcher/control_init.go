@@ -64,7 +64,7 @@ func controlRootsInitWith(
 	output := &controlInitOutput{ui: u}
 	cmd := command(req.ctx, executable, args...)
 	cmd.Dir = p.Path
-	cmd.Env = withoutSemiontRoot(os.Environ())
+	cmd.Env = withoutXynologRoot(os.Environ())
 	cmd.Stdout, cmd.Stderr = output, output
 	u.Log("Creating local knowledge base in %s", p.Path)
 	err = cmd.Run()
@@ -83,10 +83,10 @@ func controlRootsInitWith(
 	return ControlRootsInitResult{Path: p.Path}, nil
 }
 
-func withoutSemiontRoot(env []string) []string {
+func withoutXynologRoot(env []string) []string {
 	result := make([]string, 0, len(env))
 	for _, entry := range env {
-		if !strings.HasPrefix(entry, "SEMIONT_ROOT=") {
+		if !strings.HasPrefix(entry, "XYNOLOG_ROOT=") {
 			result = append(result, entry)
 		}
 	}

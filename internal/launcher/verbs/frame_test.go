@@ -5,12 +5,12 @@ import (
 	"strings"
 	"testing"
 
-	launcher "github.com/Xynoplex/cli/internal/launcher"
-	"github.com/Xynoplex/cli/internal/launcher/harness"
+	launcher "github.com/xynolog/cli/internal/launcher"
+	"github.com/xynolog/cli/internal/launcher/harness"
 
-	xynoplex "github.com/Xynoplex/sdk/go"
-	"github.com/Xynoplex/sdk/go/bus"
-	"github.com/Xynoplex/sdk/go/xynoplextest"
+	xynolog "github.com/xynolog/sdk/go"
+	"github.com/xynolog/sdk/go/bus"
+	"github.com/xynolog/sdk/go/xynologtest"
 )
 
 // `xynolog frame`, in process against the fake transport. These were
@@ -25,17 +25,17 @@ import (
 
 // withFake wires a faulty transport plus the on-disk session state a verb
 // needs, and returns the transport and a restore func.
-func withFake(t *testing.T) (*xynoplextest.FaultyTransport, func()) {
+func withFake(t *testing.T) (*xynologtest.FaultyTransport, func()) {
 	t.Helper()
 	verbFixture(t)
-	fake := xynoplextest.NewFaultyTransport(xynoplextest.FaultyConfig{Channels: bus.BridgedChannels})
-	restore := launcher.UseTransport(func(xynoplex.HTTPTransportConfig) xynoplex.Transport { return fake })
+	fake := xynologtest.NewFaultyTransport(xynologtest.FaultyConfig{Channels: bus.BridgedChannels})
+	restore := launcher.UseTransport(func(xynolog.HTTPTransportConfig) xynolog.Transport { return fake })
 	return fake, restore
 }
 
 // signals is every frame a verb emitted that is no request, in order.
-func signals(fake *xynoplextest.FaultyTransport) []xynoplex.Frame {
-	var sent []xynoplex.Frame
+func signals(fake *xynologtest.FaultyTransport) []xynolog.Frame {
+	var sent []xynolog.Frame
 	for _, frame := range fake.Emitted() {
 		if _, request := bus.Operations[frame.Channel]; !request {
 			sent = append(sent, frame)
@@ -45,7 +45,7 @@ func signals(fake *xynoplextest.FaultyTransport) []xynoplex.Frame {
 }
 
 // ops is the channel of every request a verb sent, in order.
-func ops(fake *xynoplextest.FaultyTransport) []bus.Channel {
+func ops(fake *xynologtest.FaultyTransport) []bus.Channel {
 	var channels []bus.Channel
 	for _, request := range fake.RequestLog() {
 		channels = append(channels, request.Channel)
@@ -54,7 +54,7 @@ func ops(fake *xynoplextest.FaultyTransport) []bus.Channel {
 }
 
 // refusing has the gateway refuse every request on channel with failure.
-func refusing(channel bus.Channel, failure string) xynoplextest.Refuse {
+func refusing(channel bus.Channel, failure string) xynologtest.Refuse {
 	return func(operation bus.Channel, _ json.RawMessage) json.RawMessage {
 		if operation != channel {
 			return nil
@@ -98,7 +98,7 @@ func TestFrameStopsAtTheFirstRejectionInProcess(t *testing.T) {
 	fake, restore := withFake(t)
 	defer restore()
 	// A rejection arrives on the operation's failure channel, which the SDK
-	// surfaces as a *semiont.BusRequestError carrying it — what busFail reads
+	// surfaces as a *xynolog.BusRequestError carrying it — what busFail reads
 	// to print the gateway's own words. A plain error would take a different
 	// branch.
 	fake.RefuseWhen(refusing("frame:add-entity-type", `{"message":"vocabulary is frozen"}`))

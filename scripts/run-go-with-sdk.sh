@@ -16,7 +16,7 @@ RUNTIME="$(detect_container_runtime)"
 "$RUNTIME" run --rm -v "$ROOT:/source" -w /source \
   -e "GOOS=${GOOS:-}" -e "GOARCH=${GOARCH:-}" -e "CGO_ENABLED=${CGO_ENABLED:-}" \
   -e "GOPROXY=file:///source/$relative_bundle/go/go-proxy,https://proxy.golang.org" \
-  -e GONOSUMDB=github.com/Xynoplex/sdk/go \
+  -e GONOSUMDB=github.com/xynolog/sdk/go \
   "$GO_IMAGE" sh -euc '
     run_go() {
       log="$(mktemp)"
@@ -47,7 +47,7 @@ RUNTIME="$(detect_container_runtime)"
       fi
     }
 
-    run_go mod download github.com/Xynoplex/sdk/go
+    run_go mod download github.com/xynolog/sdk/go
     if [ "$1" = build-matrix ]; then
       shift
       [ "$#" -gt 0 ] || { echo "build-matrix requires at least one GOOS/GOARCH target" >&2; exit 2; }

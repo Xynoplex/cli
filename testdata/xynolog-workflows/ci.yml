@@ -54,7 +54,7 @@ jobs:
       - name: Which SDKs the conformance suite tests
         id: sdks
         run: |
-          manifest=protocol/conformance/semiont.implementations.json
+          manifest=protocol/conformance/xynolog.implementations.json
           echo "sdks=$(jq -c '.sdks | with_entries(select(.value.wire or .value.live)) | keys' "$manifest")" >> "$GITHUB_OUTPUT"
           echo "worker-sdks=$(jq -c '.sdks | with_entries(select(.value.worker)) | keys' "$manifest")" >> "$GITHUB_OUTPUT"
 
@@ -226,7 +226,7 @@ jobs:
               - 'images/scripts/check-image-crates.mjs'
               - 'packages/rust/scripts/cargo-version.sh'
             # The npm libraries, what they share, and what installs them. The
-            # conformance suites build @semiont/core from the root, so a change
+            # conformance suites build @xynolog/core from the root, so a change
             # here runs them too. Each is named: the filter takes no exclusion
             # without a quantifier that breaks a list of several.
             ts:
@@ -397,13 +397,13 @@ jobs:
           npm run build:packages
 
       - name: Run Desktop type check
-        run: npm run typecheck --workspace=semiont-desktop
+        run: npm run typecheck --workspace=xynolog-desktop
         env:
           CI: true
           NODE_OPTIONS: "--max-old-space-size=4096"
 
       - name: Run Desktop tests
-        run: npm test --workspace=semiont-desktop
+        run: npm test --workspace=xynolog-desktop
         env:
           CI: true
           NODE_OPTIONS: "--max-old-space-size=4096"
@@ -442,10 +442,10 @@ jobs:
 
       # The package and what it is built on, each once, and no more.
       - name: Build the package and the packages it is built on
-        run: npm run build:packages -- @semiont/${{ matrix.package }}
+        run: npm run build:packages -- @xynolog/${{ matrix.package }}
 
       - name: Type-check
-        run: npm run typecheck --workspace=@semiont/${{ matrix.package }}
+        run: npm run typecheck --workspace=@xynolog/${{ matrix.package }}
         env:
           CI: true
 
@@ -571,7 +571,7 @@ jobs:
       - name: Build dependencies
         run: |
           npm ci --include=optional
-          npm run build:packages -- @semiont/react-ui
+          npm run build:packages -- @xynolog/react-ui
 
       - name: Build browser
         run: |
@@ -926,15 +926,15 @@ jobs:
         continue-on-error: true
 
 
-      # The broker is reached only by a crate that asks for semiont-core's
+      # The broker is reached only by a crate that asks for xynolog-core's
       # `nats` feature: the SDK, its telemetry, its HTTP transport,
-      # observability, semiont-core itself and the dispatcher's handlers carry
+      # observability, xynolog-core itself and the dispatcher's handlers carry
       # no NATS client.
       - name: Check which crates can reach the broker
         run: |
-          for crate in semiont semiont-telemetry semiont-http-transport semiont-observability semiont-core semiont-dispatcher-handlers; do
+          for crate in xynolog xynolog-telemetry xynolog-http-transport xynolog-observability xynolog-core xynolog-dispatcher-handlers; do
             if cargo tree --locked -p "$crate" -e normal | grep -q '^.*async-nats '; then
-              echo "✗ $crate reaches async-nats; only a crate that enables semiont-core's nats feature may"
+              echo "✗ $crate reaches async-nats; only a crate that enables xynolog-core's nats feature may"
               exit 1
             fi
           done
@@ -944,8 +944,8 @@ jobs:
       # drivers are crates beside it.
       - name: Check the Archivist's record links no HTTP and no git
         run: |
-          if cargo tree --locked -p semiont-archivist-record -e normal --prefix none | grep -E '^(reqwest|hyper|axum|git2|gix|semiont-http-[a-z]+|async-nats) v'; then
-            echo "✗ semiont-archivist-record links an HTTP client or server, the broker or a git library; the record is files, and those are the crates around it"
+          if cargo tree --locked -p xynolog-archivist-record -e normal --prefix none | grep -E '^(reqwest|hyper|axum|git2|gix|xynolog-http-[a-z]+|async-nats) v'; then
+            echo "✗ xynolog-archivist-record links an HTTP client or server, the broker or a git library; the record is files, and those are the crates around it"
             exit 1
           fi
 
@@ -953,30 +953,30 @@ jobs:
       # are the crates beside it, which a client that wants neither leaves out.
       - name: Check the SDK links no HTTP client and no telemetry
         run: |
-          if cargo tree --locked -p semiont -e normal | grep -E '(^|[^a-z-])(reqwest|hyper|opentelemetry[a-z_-]*) v'; then
-            echo "✗ semiont links an HTTP client or OpenTelemetry; those belong to semiont-http-transport and semiont-telemetry"
+          if cargo tree --locked -p xynolog -e normal | grep -E '(^|[^a-z-])(reqwest|hyper|opentelemetry[a-z_-]*) v'; then
+            echo "✗ xynolog links an HTTP client or OpenTelemetry; those belong to xynolog-http-transport and xynolog-telemetry"
             exit 1
           fi
 
-      # A transport reports through semiont-telemetry's functions, and what
+      # A transport reports through xynolog-telemetry's functions, and what
       # exports is the application's to link: no exporter, no OpenTelemetry
       # SDK and no allocator reading reaches a client through its transport
-      # or through semiont-telemetry, which is no transport either. The
+      # or through xynolog-telemetry, which is no transport either. The
       # transport names no OpenTelemetry of its own.
       - name: Check the HTTP transport links no exporter and names no OpenTelemetry
         run: |
-          for crate in semiont-http-transport semiont-telemetry; do
-            if cargo tree --locked -p "$crate" -e normal --prefix none | grep -E '^(semiont-observability|opentelemetry_sdk|opentelemetry-otlp|opentelemetry-stdout|tikv-jemalloc[a-z-]*) v'; then
-              echo "✗ $crate links an exporter, the OpenTelemetry SDK or jemalloc; those are a service's, in semiont-observability"
+          for crate in xynolog-http-transport xynolog-telemetry; do
+            if cargo tree --locked -p "$crate" -e normal --prefix none | grep -E '^(xynolog-observability|opentelemetry_sdk|opentelemetry-otlp|opentelemetry-stdout|tikv-jemalloc[a-z-]*) v'; then
+              echo "✗ $crate links an exporter, the OpenTelemetry SDK or jemalloc; those are a service's, in xynolog-observability"
               exit 1
             fi
           done
-          if cargo tree --locked -p semiont-telemetry -e normal --prefix none | grep -E '^(reqwest|hyper) v'; then
-            echo "✗ semiont-telemetry links an HTTP client; it is every transport's, and is none"
+          if cargo tree --locked -p xynolog-telemetry -e normal --prefix none | grep -E '^(reqwest|hyper) v'; then
+            echo "✗ xynolog-telemetry links an HTTP client; it is every transport's, and is none"
             exit 1
           fi
-          if cargo tree --locked -p semiont-http-transport -e normal --depth 1 --prefix none | grep -E '^opentelemetry[a-z_-]* v'; then
-            echo "✗ semiont-http-transport names OpenTelemetry itself; a transport reports through semiont-telemetry"
+          if cargo tree --locked -p xynolog-http-transport -e normal --depth 1 --prefix none | grep -E '^opentelemetry[a-z_-]* v'; then
+            echo "✗ xynolog-http-transport names OpenTelemetry itself; a transport reports through xynolog-telemetry"
             exit 1
           fi
 
@@ -987,7 +987,7 @@ jobs:
       - name: Check which crates are published, and at what version
         run: |
           released=$(jq -r .version ../../version.json)
-          expected=$(printf '%s\n' semiont semiont-codegen semiont-http-transport semiont-telemetry | sed "s/$/ $released/" | sort)
+          expected=$(printf '%s\n' xynolog xynolog-codegen xynolog-http-transport xynolog-telemetry | sed "s/$/ $released/" | sort)
           published=$(cargo metadata --locked --no-deps --format-version 1 | jq -r '.packages[] | select(.publish == null) | "\(.name) \(.version)"' | sort)
           if [ "$published" != "$expected" ]; then
             echo "✗ the workspace publishes:"; echo "$published"
@@ -1057,7 +1057,7 @@ jobs:
         run: |
           mkdir "$RUNNER_TEMP/crates"
           cargo metadata --format-version 1 --locked > "$RUNNER_TEMP/crates/metadata.json"
-          for binary in semiont-gateway semiont-dispatcher semiont-archivist; do
+          for binary in xynolog-gateway xynolog-dispatcher xynolog-archivist; do
             for target in x86_64-unknown-linux-musl aarch64-unknown-linux-musl; do
               cargo tree --locked -p "$binary" -e normal,no-proc-macro --target "$target" --prefix none --format '{p}' \
                 > "$RUNNER_TEMP/crates/linked-$binary-$target.txt"
@@ -1068,7 +1068,7 @@ jobs:
   # ── The Rust binaries, built once ─────────────────────────────────────
   # The nine conformance suites start a gateway, and some a dispatcher, an
   # Archivist or the Rust SDK's three drivers, all from packages/rust/target/release
-  # (protocol/conformance/semiont.implementations.json). Each suite built its own: nine
+  # (protocol/conformance/xynolog.implementations.json). Each suite built its own: nine
   # release builds a run, twenty minutes of a pool of twenty against thirteen
   # of suites. This job builds the six binaries once and publishes them; the
   # suites fetch them and build nothing. It runs whenever any suite does: its
@@ -1099,12 +1099,12 @@ jobs:
         uses: actions/cache@v6.1.0
         with:
           path: |
-            packages/rust/target/release/semiont-gateway
-            packages/rust/target/release/semiont-dispatcher
-            packages/rust/target/release/semiont-archivist
-            packages/rust/target/release/semiont-wire-driver
-            packages/rust/target/release/semiont-live-driver
-            packages/rust/target/release/semiont-worker-driver
+            packages/rust/target/release/xynolog-gateway
+            packages/rust/target/release/xynolog-dispatcher
+            packages/rust/target/release/xynolog-archivist
+            packages/rust/target/release/xynolog-wire-driver
+            packages/rust/target/release/xynolog-live-driver
+            packages/rust/target/release/xynolog-worker-driver
           key: ${{ runner.os }}-rust-binaries-workspace-instrumented-${{ hashFiles('version.json', 'protocol/specs/src/**', 'packages/rust/**', 'images/gateway/**', 'images/dispatcher/**', 'images/archivist/**', '.dockerignore') }}
 
       - name: Install the pinned Rust toolchain
@@ -1133,7 +1133,7 @@ jobs:
       # llvm-cov reads must survive the build.
       - name: Build the services and the Rust drivers
         if: steps.binaries.outputs.cache-hit != 'true'
-        run: cargo build --release --locked -p semiont-gateway -p semiont-dispatcher -p semiont-archivist -p semiont-conformance-drivers
+        run: cargo build --release --locked -p xynolog-gateway -p xynolog-dispatcher -p xynolog-archivist -p xynolog-conformance-drivers
         env:
           RUSTC_WORKSPACE_WRAPPER: ${{ github.workspace }}/packages/rust/scripts/instrument-coverage.sh
           CARGO_PROFILE_RELEASE_STRIP: none
@@ -1145,12 +1145,12 @@ jobs:
         with:
           name: rust-binaries
           path: |
-            packages/rust/target/release/semiont-gateway
-            packages/rust/target/release/semiont-dispatcher
-            packages/rust/target/release/semiont-archivist
-            packages/rust/target/release/semiont-wire-driver
-            packages/rust/target/release/semiont-live-driver
-            packages/rust/target/release/semiont-worker-driver
+            packages/rust/target/release/xynolog-gateway
+            packages/rust/target/release/xynolog-dispatcher
+            packages/rust/target/release/xynolog-archivist
+            packages/rust/target/release/xynolog-wire-driver
+            packages/rust/target/release/xynolog-live-driver
+            packages/rust/target/release/xynolog-worker-driver
           # Long enough for a job re-run to find them; storage is free here.
           retention-days: 30
           if-no-files-found: error
@@ -1179,7 +1179,7 @@ jobs:
           path: packages/rust/target/release
 
       - name: Make the binaries executable
-        run: chmod +x packages/rust/target/release/semiont-*
+        run: chmod +x packages/rust/target/release/xynolog-*
 
       - name: Write the gateway's configuration document
         run: |
@@ -1206,9 +1206,9 @@ jobs:
           # The gateway's own service account; boot refuses without it. Nothing
           # here presents it to an issuer.
           export JWT_SECRET=test-secret-key-for-testing-32char
-          export SEMIONT_OIDC_CLIENT_ID=semiont-gateway
-          export SEMIONT_OIDC_CLIENT_SECRET=test-gateway-client-secret
-          nohup packages/rust/target/release/semiont-gateway --config "$RUNNER_TEMP/gateway.json" > "$RUNNER_TEMP/gateway.log" 2>&1 &
+          export XYNOLOG_OIDC_CLIENT_ID=xynolog-gateway
+          export XYNOLOG_OIDC_CLIENT_SECRET=test-gateway-client-secret
+          nohup packages/rust/target/release/xynolog-gateway --config "$RUNNER_TEMP/gateway.json" > "$RUNNER_TEMP/gateway.log" 2>&1 &
           echo "GATEWAY_PID=$!" >> "$GITHUB_ENV"
           for i in $(seq 1 30); do
             if curl -fsS http://localhost:4000/api/health >/dev/null; then echo "The gateway is healthy"; exit 0; fi
@@ -1311,7 +1311,7 @@ jobs:
           path: packages/rust/target/release
 
       - name: Make the binaries executable
-        run: chmod +x packages/rust/target/release/semiont-*
+        run: chmod +x packages/rust/target/release/xynolog-*
 
       - name: Setup Node.js
         uses: actions/setup-node@v7
@@ -1322,13 +1322,13 @@ jobs:
             package-lock.json
             protocol/conformance/package-lock.json
 
-      # The suite imports @semiont/core — its test issuer, and the job stream's
+      # The suite imports @xynolog/core — its test issuer, and the job stream's
       # subjects — and bundles the spec with the root's redocly. Core is the one
       # package it builds.
       - name: Install dependencies
         run: |
           npm ci --include=optional
-          npm run build --workspace=@semiont/core
+          npm run build --workspace=@xynolog/core
 
       # The suite runs every case on the NATS plane too, against a real broker
       # with JetStream, and spawns it from PATH.
@@ -1376,7 +1376,7 @@ jobs:
           path: packages/rust/target/release
 
       - name: Make the binaries executable
-        run: chmod +x packages/rust/target/release/semiont-*
+        run: chmod +x packages/rust/target/release/xynolog-*
 
       - name: Setup Node.js
         uses: actions/setup-node@v7
@@ -1387,12 +1387,12 @@ jobs:
             package-lock.json
             protocol/conformance/package-lock.json
 
-      # The suite imports @semiont/core — its test issuer — and bundles the
+      # The suite imports @xynolog/core — its test issuer — and bundles the
       # spec with the root's redocly. Core is the one package it builds.
       - name: Install dependencies
         run: |
           npm ci --include=optional
-          npm run build --workspace=@semiont/core
+          npm run build --workspace=@xynolog/core
 
       # The dispatcher's queue is JetStream, on a real broker spawned from PATH.
       - name: Install nats-server
@@ -1440,7 +1440,7 @@ jobs:
           path: packages/rust/target/release
 
       - name: Make the binaries executable
-        run: chmod +x packages/rust/target/release/semiont-*
+        run: chmod +x packages/rust/target/release/xynolog-*
 
       - name: Setup Node.js
         uses: actions/setup-node@v7
@@ -1451,12 +1451,12 @@ jobs:
             package-lock.json
             protocol/conformance/package-lock.json
 
-      # The suite imports @semiont/core — its test issuer — and bundles the
+      # The suite imports @xynolog/core — its test issuer — and bundles the
       # spec with the root's redocly. Core is the one package it builds.
       - name: Install dependencies
         run: |
           npm ci --include=optional
-          npm run build --workspace=@semiont/core
+          npm run build --workspace=@xynolog/core
 
       # The harness's global setup refuses to run without a broker on PATH.
       - name: Install nats-server
@@ -1536,7 +1536,7 @@ jobs:
           path: packages/rust/target/release
 
       - name: Make the binaries executable
-        run: chmod +x packages/rust/target/release/semiont-*
+        run: chmod +x packages/rust/target/release/xynolog-*
 
       - name: Fetch the Swift driver and its runtime
         if: matrix.sdk == 'swift'
@@ -1547,7 +1547,7 @@ jobs:
 
       - name: Make the Swift driver executable
         if: matrix.sdk == 'swift'
-        run: chmod +x packages/swift/sdk/.build/conformance/semiont-swift-wire-driver packages/swift/sdk/.build/conformance/bin/SemiontWireDriver
+        run: chmod +x packages/swift/sdk/.build/conformance/xynolog-swift-wire-driver packages/swift/sdk/.build/conformance/bin/XynologWireDriver
 
       - name: Fetch the Haskell wire driver
         if: matrix.sdk == 'haskell'
@@ -1558,7 +1558,7 @@ jobs:
 
       - name: Make the Haskell driver executable
         if: matrix.sdk == 'haskell'
-        run: chmod +x packages/haskell/sdk/conformance/bin/semiont-haskell-*-driver*
+        run: chmod +x packages/haskell/sdk/conformance/bin/xynolog-haskell-*-driver*
 
       - name: Install the Haskell driver's native libraries
         if: matrix.sdk == 'haskell'
@@ -1576,12 +1576,12 @@ jobs:
             protocol/conformance/package-lock.json
 
       # The suite bundles the spec with the root's tools and reads
-      # @semiont/core; the TypeScript drivers run the built SDK, as an
+      # @xynolog/core; the TypeScript drivers run the built SDK, as an
       # application would, and the packages it is built on.
       - name: Install dependencies
         run: |
           npm ci --include=optional
-          npm run build:packages -- @semiont/sdk
+          npm run build:packages -- @xynolog/sdk
 
       # Every case runs on the NATS plane too, against a real broker spawned
       # from PATH.
@@ -1643,10 +1643,10 @@ jobs:
         run: |
           python3 packages/ocaml/check-toolchain.py
           base=$(jq -r '.baseImage' packages/ocaml/toolchain.json)
-          docker build --build-arg "BASE_IMAGE=$base" --tag semiont-ocaml-wire --file packages/ocaml/Dockerfile packages/ocaml
+          docker build --build-arg "BASE_IMAGE=$base" --tag xynolog-ocaml-wire --file packages/ocaml/Dockerfile packages/ocaml
           docker run --rm --volume "$GITHUB_WORKSPACE:/work" \
             --env GIT_CONFIG_COUNT=1 --env GIT_CONFIG_KEY_0=safe.directory --env GIT_CONFIG_VALUE_0=/work \
-            semiont-ocaml-wire dune build conformance/wire_driver.exe
+            xynolog-ocaml-wire dune build conformance/wire_driver.exe
           sudo apt-get update
           sudo apt-get install --yes --no-install-recommends libgmp10
 
@@ -1660,8 +1660,8 @@ jobs:
         run: |
           cd protocol/conformance
           npm ci
-          jq --arg sdk '${{ matrix.sdk }}' '.sdks |= {($sdk): .[$sdk]}' semiont.implementations.json > leg.implementations.json
-          mv leg.implementations.json semiont.implementations.json
+          jq --arg sdk '${{ matrix.sdk }}' '.sdks |= {($sdk): .[$sdk]}' xynolog.implementations.json > leg.implementations.json
+          mv leg.implementations.json xynolog.implementations.json
           npm run test:sdk
         env:
           CI: true
@@ -1749,7 +1749,7 @@ jobs:
           path: packages/rust/target/release
 
       - name: Make the binaries executable
-        run: chmod +x packages/rust/target/release/semiont-*
+        run: chmod +x packages/rust/target/release/xynolog-*
 
       - name: Fetch the Haskell conformance driver
         if: matrix.sdk == 'haskell'
@@ -1760,7 +1760,7 @@ jobs:
 
       - name: Make the Haskell driver executable
         if: matrix.sdk == 'haskell'
-        run: chmod +x packages/haskell/sdk/conformance/bin/semiont-haskell-*-driver*
+        run: chmod +x packages/haskell/sdk/conformance/bin/xynolog-haskell-*-driver*
 
       - name: Install the Haskell driver's native libraries
         if: matrix.sdk == 'haskell'
@@ -1773,10 +1773,10 @@ jobs:
         run: |
           python3 packages/ocaml/check-toolchain.py
           base=$(jq -r '.baseImage' packages/ocaml/toolchain.json)
-          docker build --build-arg "BASE_IMAGE=$base" --tag semiont-ocaml-wire --file packages/ocaml/Dockerfile packages/ocaml
+          docker build --build-arg "BASE_IMAGE=$base" --tag xynolog-ocaml-wire --file packages/ocaml/Dockerfile packages/ocaml
           docker run --rm --volume "$GITHUB_WORKSPACE:/work" \
             --env GIT_CONFIG_COUNT=1 --env GIT_CONFIG_KEY_0=safe.directory --env GIT_CONFIG_VALUE_0=/work \
-            semiont-ocaml-wire dune build conformance/wire_driver.exe
+            xynolog-ocaml-wire dune build conformance/wire_driver.exe
           sudo apt-get update
           sudo apt-get install --yes --no-install-recommends libgmp10
 
@@ -1790,7 +1790,7 @@ jobs:
             protocol/conformance/package-lock.json
 
       # The suite bundles the spec with the root's tools and reads
-      # @semiont/core; the TypeScript worker driver runs the built SDK over the
+      # @xynolog/core; the TypeScript worker driver runs the built SDK over the
       # built transport, as a worker's author would.
       - name: Install dependencies
         run: |
@@ -1861,7 +1861,7 @@ jobs:
 
       - name: Make the Swift driver executable
         if: matrix.sdk == 'swift'
-        run: chmod +x packages/swift/sdk/.build/conformance/semiont-swift-wire-driver packages/swift/sdk/.build/conformance/bin/SemiontWireDriver
+        run: chmod +x packages/swift/sdk/.build/conformance/xynolog-swift-wire-driver packages/swift/sdk/.build/conformance/bin/XynologWireDriver
 
       # The leg's SDK's worker driver alone, put through the corpus against the
       # gateway: the implementations file less every other SDK. The suite
@@ -1871,8 +1871,8 @@ jobs:
         run: |
           cd protocol/conformance
           npm ci
-          jq --arg sdk '${{ matrix.sdk }}' '.sdks |= {($sdk): .[$sdk]}' semiont.implementations.json > leg.implementations.json
-          mv leg.implementations.json semiont.implementations.json
+          jq --arg sdk '${{ matrix.sdk }}' '.sdks |= {($sdk): .[$sdk]}' xynolog.implementations.json > leg.implementations.json
+          mv leg.implementations.json xynolog.implementations.json
           npm run test:worker
         env:
           CI: true
@@ -1936,7 +1936,7 @@ jobs:
           path: packages/rust/target/release
 
       - name: Make the binaries executable
-        run: chmod +x packages/rust/target/release/semiont-*
+        run: chmod +x packages/rust/target/release/xynolog-*
 
       - name: Setup Node.js
         uses: actions/setup-node@v7
@@ -1947,11 +1947,11 @@ jobs:
             package-lock.json
             protocol/conformance/package-lock.json
 
-      # The suite's harness is typed by the built @semiont/core.
+      # The suite's harness is typed by the built @xynolog/core.
       - name: Install dependencies
         run: |
           npm ci --include=optional
-          npm run build --workspace=@semiont/core
+          npm run build --workspace=@xynolog/core
 
       # The harness's global setup refuses to run without a broker on PATH.
       - name: Install nats-server
@@ -1974,7 +1974,7 @@ jobs:
           exit 1
 
       # The suite starts the Python Weaver by the interpreter of its project's
-      # locked environment (semiont.implementations.json): the environment its image has, on
+      # locked environment (xynolog.implementations.json): the environment its image has, on
       # the Python the SDK's floor names, without the development group, with
       # every database's client.
       - name: Setup Python
@@ -2041,7 +2041,7 @@ jobs:
           path: packages/rust/target/release
 
       - name: Make the binaries executable
-        run: chmod +x packages/rust/target/release/semiont-*
+        run: chmod +x packages/rust/target/release/xynolog-*
 
       - name: Setup Node.js
         uses: actions/setup-node@v7
@@ -2052,11 +2052,11 @@ jobs:
             package-lock.json
             protocol/conformance/package-lock.json
 
-      # The suite's harness is typed by the built @semiont/core.
+      # The suite's harness is typed by the built @xynolog/core.
       - name: Install dependencies
         run: |
           npm ci --include=optional
-          npm run build --workspace=@semiont/core
+          npm run build --workspace=@xynolog/core
 
       # The harness's global setup refuses to run without a broker on PATH.
       - name: Install nats-server
@@ -2080,7 +2080,7 @@ jobs:
           exit 1
 
       # The suite starts the Smelter by the interpreter of its project's locked
-      # environment (semiont.implementations.json): the environment its image has, on the
+      # environment (xynolog.implementations.json): the environment its image has, on the
       # Python the SDK's floor names, without the development group. It reads a
       # scanned page with the `tesseract` program, as its image does.
       - name: Setup Python
@@ -2155,7 +2155,7 @@ jobs:
           path: packages/rust/target/release
 
       - name: Make the binaries executable
-        run: chmod +x packages/rust/target/release/semiont-*
+        run: chmod +x packages/rust/target/release/xynolog-*
 
       - name: Setup Node.js
         uses: actions/setup-node@v7
@@ -2166,11 +2166,11 @@ jobs:
             package-lock.json
             protocol/conformance/package-lock.json
 
-      # The suite's harness is typed by the built @semiont/core.
+      # The suite's harness is typed by the built @xynolog/core.
       - name: Install dependencies
         run: |
           npm ci --include=optional
-          npm run build --workspace=@semiont/core
+          npm run build --workspace=@xynolog/core
 
       # The harness's global setup refuses to run without a broker on PATH.
       - name: Install nats-server
@@ -2211,7 +2211,7 @@ jobs:
 
       # The suite starts the Librarian, the Weaver and the Smelter by the
       # interpreters of their projects' locked environments
-      # (semiont.implementations.json): the environments their images have, on the Python
+      # (xynolog.implementations.json): the environments their images have, on the Python
       # the SDK's floor names, without the development group. The Librarian
       # and the Weaver have every database's client, and the Librarian every
       # provider's library. The Smelter reads a scanned page with the
@@ -2284,7 +2284,7 @@ jobs:
           path: packages/rust/target/release
 
       - name: Make the binaries executable
-        run: chmod +x packages/rust/target/release/semiont-*
+        run: chmod +x packages/rust/target/release/xynolog-*
 
       - name: Setup Node.js
         uses: actions/setup-node@v7
@@ -2295,12 +2295,12 @@ jobs:
             package-lock.json
             protocol/conformance/package-lock.json
 
-      # The suite imports @semiont/core — its test issuer — and bundles the
+      # The suite imports @xynolog/core — its test issuer — and bundles the
       # spec with the root's redocly. Core is the one package it builds.
       - name: Install dependencies
         run: |
           npm ci --include=optional
-          npm run build --workspace=@semiont/core
+          npm run build --workspace=@xynolog/core
 
       # The suite starts the Python Worker service by the interpreter of its
       # project's locked environment, made as the worker image makes it: on the
@@ -2386,7 +2386,7 @@ jobs:
           tools="$(rustc --print sysroot)/lib/rustlib/$(rustc -vV | sed -n 's/^host: //p')/bin"
           find target/coverage-profiles -name '*.profraw' > target/profiles.txt
           "$tools/llvm-profdata" merge --sparse --input-files=target/profiles.txt --output=target/suites.profdata
-          binaries=(target/release/semiont-*)
+          binaries=(target/release/xynolog-*)
           objects=()
           for binary in "${binaries[@]:1}"; do objects+=("--object=$binary"); done
           "$tools/llvm-cov" export --format=lcov --instr-profile=target/suites.profdata \
@@ -2523,7 +2523,7 @@ jobs:
       - name: Cache Cabal dependencies
         uses: actions/cache@v6.1.0
         with:
-          path: ~/.cache/semiont/haskell-cabal
+          path: ~/.cache/xynolog/haskell-cabal
           key: ${{ runner.os }}-${{ runner.arch }}-haskell-${{ hashFiles('packages/haskell/probes/Dockerfile', 'packages/haskell/**/cabal.project*', 'packages/haskell/probes/cabal-install.version') }}
           restore-keys: |
             ${{ runner.os }}-${{ runner.arch }}-haskell-
@@ -2689,7 +2689,7 @@ jobs:
         run: |
           cabal update
           cabal check
-          cabal run semiont-codegen -- --check "$GITHUB_WORKSPACE"
+          cabal run xynolog-codegen -- --check "$GITHUB_WORKSPACE"
           cabal build all --enable-tests -j2
           cabal test schema-cases --test-show-details=direct --test-option="$GITHUB_WORKSPACE"
           python api.py --compiler-check
@@ -2727,7 +2727,7 @@ jobs:
         uses: codecov/codecov-action@v7.1.1
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
-          files: ./packages/csharp/sdk/tests/Semiont.Tests/TestResults/**/coverage.cobertura.xml
+          files: ./packages/csharp/sdk/tests/Xynolog.Tests/TestResults/**/coverage.cobertura.xml
           flags: csharp-sdk
           name: csharp-sdk
           verbose: true
@@ -2765,7 +2765,7 @@ jobs:
         uses: codecov/codecov-action@v7.1.1
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
-          files: ./packages/csharp/sdk/tests/Semiont.Tests/TestResults/**/coverage.cobertura.xml
+          files: ./packages/csharp/sdk/tests/Xynolog.Tests/TestResults/**/coverage.cobertura.xml
           flags: csharp-sdk
           name: csharp-sdk-windows
           verbose: true
@@ -2934,7 +2934,7 @@ jobs:
           python-version: '3.12'
 
       - name: Test the sign-in store
-        run: ./gradlew --no-daemon --console=plain test --tests 'semiont.signin.*'
+        run: ./gradlew --no-daemon --console=plain test --tests 'xynolog.signin.*'
 
   test-sdk-python-windows:
     name: Python SDK (sign-in store, Windows)
@@ -3056,7 +3056,7 @@ jobs:
 
       - name: Test the sign-in store
         working-directory: packages/rust
-        run: cargo llvm-cov -p semiont --locked --test sign_in_store --lcov --output-path lcov.info
+        run: cargo llvm-cov -p xynolog --locked --test sign_in_store --lcov --output-path lcov.info
 
       # Merged with the Rust Tests job's upload of the same flag: the code
       # only Windows compiles is measured here alone.
@@ -3818,7 +3818,7 @@ jobs:
         run: npm run generate:bus:check
 
       # Authority: protocol/specs/src → the Python SDK's committed modules
-      # (packages/python/sdk/src/semiont), the bus vocabulary among them.
+      # (packages/python/sdk/src/xynolog), the bus vocabulary among them.
       # TypeScript and Rust build theirs from the same files at build time;
       # Python has no build, so its are committed, and are what can go stale.
       - name: Spec tables vs the Python SDK's generated modules
@@ -3838,9 +3838,9 @@ jobs:
       # (packages/rust/sdk/src/required-schemas.json), the copy Kotlin's
       # generator reads (packages/kotlin/sdk/src/codegen/required-schemas.json),
       # the copy Swift's build plugin reads
-      # (packages/swift/sdk/Sources/SemiontCodegen/required-schemas.json) and the
+      # (packages/swift/sdk/Sources/XynologCodegen/required-schemas.json) and the
       # copy C#'s source generator reads
-      # (packages/csharp/sdk/generators/Semiont.Generator/required-schemas.json).
+      # (packages/csharp/sdk/generators/Xynolog.Generator/required-schemas.json).
       # The rules they are written by are packages/codegen/schemas/required-shapes.mjs's,
       # which no build runs, so the copies are committed, and are what can go stale.
       - name: Component schemas vs the table of what each requires
@@ -3850,7 +3850,7 @@ jobs:
       # Node has them → the code points of each, which decide whether a
       # capital sigma ends a word (protocol/specs/src/annotations/reconcile-cases.json):
       # the copy C#'s source generator reads
-      # (packages/csharp/sdk/generators/Semiont.Generator/unicode-case.json),
+      # (packages/csharp/sdk/generators/Xynolog.Generator/unicode-case.json),
       # the copy Kotlin's generator reads (packages/kotlin/sdk/src/codegen/unicode-case.json)
       # and Go's range tables (packages/go/sdk/annotations/unicodecase_gen.go).
       # Neither .NET, the JDK nor Go's unicode package gives the two properties,
@@ -3866,7 +3866,7 @@ jobs:
       - name: Knowledge base documents vs the launcher's generated Go
         run: node packages/codegen/schemas/generate-stack-go.mjs --check
 
-      # `semiont mcp`'s tools (packages/go/launcher/verbs/mcp-tools.json) and
+      # `xynolog mcp`'s tools (packages/go/launcher/verbs/mcp-tools.json) and
       # the components they name → each tool's input and output schema, made
       # self-contained, and the SDK methods no tool calls
       # (packages/go/launcher/verbs/mcp_tools_gen.go). TestMCPToolsCensus, in
@@ -3909,7 +3909,7 @@ jobs:
       - name: Generated Go client covers every schema
         run: node packages/go/sdk/scripts/check-go-schema-coverage.mjs
 
-      # Authority: protocol/specs/openapi.json → packages/python/sdk/src/semiont/types.py.
+      # Authority: protocol/specs/openapi.json → packages/python/sdk/src/xynolog/types.py.
       # Deterministic because the generator and the formatter are pinned in the
       # package's lockfile, and run on the Python the package's floor names.
       # Its independent oracle is the package's own suite, which holds the
@@ -4197,7 +4197,7 @@ jobs:
     env:
       # Where the tests find the issuer, and the admin password it was started
       # with below: a container this job makes and discards.
-      SEMIONT_LIVE_KEYCLOAK: http://localhost:8080
+      XYNOLOG_LIVE_KEYCLOAK: http://localhost:8080
       KC_BOOTSTRAP_ADMIN_PASSWORD: launcher-keycloak-ci
     defaults:
       run:
@@ -4224,7 +4224,7 @@ jobs:
             -e KC_HOSTNAME=http://keycloak.localhost:8080 \
             "$image" start-dev --hostname-backchannel-dynamic=true
           for attempt in $(seq 1 90); do
-            if curl -sf -o /dev/null "$SEMIONT_LIVE_KEYCLOAK/realms/master"; then
+            if curl -sf -o /dev/null "$XYNOLOG_LIVE_KEYCLOAK/realms/master"; then
               exit 0
             fi
             sleep 2
@@ -4236,11 +4236,11 @@ jobs:
       - name: Keycloak names its issuer elsewhere than where the tests reach it
         working-directory: .
         run: |
-          discovery=$(curl -sf "$SEMIONT_LIVE_KEYCLOAK/realms/master/.well-known/openid-configuration")
+          discovery=$(curl -sf "$XYNOLOG_LIVE_KEYCLOAK/realms/master/.well-known/openid-configuration")
           issuer=$(echo "$discovery" | jq -r .issuer)
           token=$(echo "$discovery" | jq -r .token_endpoint)
-          if [ "$issuer" != "http://keycloak.localhost:8080/realms/master" ] || [ "$token" != "$SEMIONT_LIVE_KEYCLOAK/realms/master/protocol/openid-connect/token" ]; then
-            echo "::error::Keycloak asked at $SEMIONT_LIVE_KEYCLOAK names its issuer $issuer and its token endpoint $token; the launcher's names the issuer at its fixed hostname and the token endpoint where it was asked"
+          if [ "$issuer" != "http://keycloak.localhost:8080/realms/master" ] || [ "$token" != "$XYNOLOG_LIVE_KEYCLOAK/realms/master/protocol/openid-connect/token" ]; then
+            echo "::error::Keycloak asked at $XYNOLOG_LIVE_KEYCLOAK names its issuer $issuer and its token endpoint $token; the launcher's names the issuer at its fixed hostname and the token endpoint where it was asked"
             exit 1
           fi
 

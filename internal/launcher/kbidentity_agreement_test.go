@@ -47,11 +47,11 @@ func TestKBIdentityAgreesWithTheSharedTable(t *testing.T) {
 	for _, c := range table.Cases {
 		t.Run(c.Why, func(t *testing.T) {
 			root := filepath.Join(parent, c.Dir)
-			if err := os.MkdirAll(filepath.Join(root, ".semiont"), 0o755); err != nil {
+			if err := os.MkdirAll(filepath.Join(root, ".xynolog"), 0o755); err != nil {
 				t.Fatal(err)
 			}
 			if c.Config != nil {
-				if err := os.WriteFile(filepath.Join(root, ".semiont", projectFileYAML), []byte(*c.Config), 0o644); err != nil {
+				if err := os.WriteFile(filepath.Join(root, ".xynolog", projectFileYAML), []byte(*c.Config), 0o644); err != nil {
 					t.Fatal(err)
 				}
 			}

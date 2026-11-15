@@ -69,9 +69,9 @@ import (
 	"sync"
 	"time"
 
-	"github.com/Xynoplex/cli/internal/launcher/images"
-	"github.com/Xynoplex/sdk/go/api"
-	"github.com/Xynoplex/sdk/go/bus"
+	"github.com/xynolog/cli/internal/launcher/images"
+	"github.com/xynolog/sdk/go/api"
+	"github.com/xynolog/sdk/go/bus"
 )
 
 func main() {
@@ -165,7 +165,7 @@ func git(args []string) {
 	}
 	if len(args) >= 2 && args[0] == "status" && args[1] == "--porcelain" {
 		if os.Getenv("FAKERT_GIT_DIRTY") != "" {
-			fmt.Println(" M .semiont/stack/inference/anthropic.yaml")
+			fmt.Println(" M .xynolog/stack/inference/anthropic.yaml")
 		}
 		return
 	}
@@ -298,7 +298,7 @@ func codespaceKeycloakPort(name string) string {
 //	FAKERT_GH_SSH_FAIL      ssh fails with the no-sshd error
 //	FAKERT_GH_SSH_FAIL_FIRST  ssh fails for the first n attempts, then works
 //	FAKERT_GH_HOOKS_FAIL    the devcontainer lifecycle command fails (stack never comes up)
-//	FAKERT_GH_KBCONFIG      .semiont/config.yaml content for `ssh -- cat .semiont/config.yaml`
+//	FAKERT_GH_KBCONFIG      .xynolog/config.yaml content for `ssh -- cat .xynolog/config.yaml`
 //	FAKERT_GH_CS_SHUTTING_DOWN_LISTS  the first n `codespace list` calls report a Shutdown
 //	                        codespace as ShuttingDown — a stop GitHub has not finished
 //	FAKERT_GH_CS_KEYCLOAK_PORT  the port the codespace's Keycloak starts on (default 8080;
@@ -353,9 +353,9 @@ func ghCmd(args []string) {
 		body := os.Getenv("FAKERT_GH_BILLING")
 		if body == "" {
 			body = `{"usageItems":[` +
-				`{"date":"2026-01-01T00:00:00Z","product":"codespaces","sku":"Codespaces compute 8-core","quantity":44.29,"unitType":"Hours","grossAmount":31.89,"discountAmount":16.2,"netAmount":15.69,"repositoryName":"semiont"},` +
-				`{"date":"2026-01-01T00:00:00Z","product":"codespaces","sku":"Codespaces storage","quantity":7.71,"unitType":"GigabyteHours","grossAmount":0.54,"discountAmount":0.54,"netAmount":0.0,"repositoryName":"semiont"},` +
-				`{"date":"2026-07-01T00:00:00Z","product":"codespaces","sku":"Codespaces compute 8-core","quantity":4.03,"unitType":"Hours","grossAmount":2.90,"discountAmount":2.90,"netAmount":0.0,"repositoryName":"semiont-template-kb"},` +
+				`{"date":"2026-01-01T00:00:00Z","product":"codespaces","sku":"Codespaces compute 8-core","quantity":44.29,"unitType":"Hours","grossAmount":31.89,"discountAmount":16.2,"netAmount":15.69,"repositoryName":"xynolog"},` +
+				`{"date":"2026-01-01T00:00:00Z","product":"codespaces","sku":"Codespaces storage","quantity":7.71,"unitType":"GigabyteHours","grossAmount":0.54,"discountAmount":0.54,"netAmount":0.0,"repositoryName":"xynolog"},` +
+				`{"date":"2026-07-01T00:00:00Z","product":"codespaces","sku":"Codespaces compute 8-core","quantity":4.03,"unitType":"Hours","grossAmount":2.90,"discountAmount":2.90,"netAmount":0.0,"repositoryName":"kb-template"},` +
 				`{"date":"2026-07-01T00:00:00Z","product":"copilot","sku":"Copilot Cloud Agent","quantity":18.0,"unitType":"Requests","grossAmount":0.72,"discountAmount":0.72,"netAmount":0.0,"repositoryName":""}]}`
 		}
 		fmt.Println(body)
@@ -531,7 +531,7 @@ func ghCodespace(args []string, joined string) {
 		// other remote port is the issuer: each codespace's Keycloak has a
 		// port of its own, forwarded with the same number on both ends.
 		if forwardRemotePort(args) != "4000" {
-			serve("semiont-keycloak", ports)
+			serve("xynolog-keycloak", ports)
 			return
 		}
 		// The gateway advertises the issuer the codespace runs:
@@ -542,20 +542,20 @@ func ghCodespace(args []string, joined string) {
 			issuer = "http://keycloak.localhost:" + codespaceKeycloakPort(codespaceArg(args)) + "/realms/" + fakeRealm
 		}
 		os.Setenv("FAKERT_ADVERTISED_ISSUER", issuer)
-		serve("semiont-gateway", ports)
+		serve("xynolog-gateway", ports)
 	case "logs":
 		// The creation-log follower the health wait tails. A few plausible
 		// lines, then exit — a tailer that ends early is legal (the launcher
 		// treats the stream as decoration, never a gate).
 		fmt.Println("2026-01-01 00:00:00.000Z: Running onCreateCommand...")
-		fmt.Println("2026-01-01 00:00:01.000Z: Pulling semiont-gateway:latest")
+		fmt.Println("2026-01-01 00:00:01.000Z: Pulling xynolog-gateway:latest")
 		// FAKERT_GH_HOOKS_FAIL: the devcontainer's lifecycle command failed —
 		// the stack will never come up, so waiting is pointless. Shaped like
 		// a real creation log: the CAUSE (a service refusing to boot)
 		// several lines above the devcontainer's own announcement, which is
 		// why the launcher must print the run-up and not just the marker.
 		if os.Getenv("FAKERT_GH_HOOKS_FAIL") != "" {
-			fmt.Println("semiont-gateway  | JWT_SECRET is not set. `xynolog start` generates one per knowledge base and injects it; set JWT_SECRET explicitly to override.")
+			fmt.Println("xynolog-gateway  | JWT_SECRET is not set. `xynolog start` generates one per knowledge base and injects it; set JWT_SECRET explicitly to override.")
 			fmt.Println("2026-01-01 00:00:02.000Z: Retry after fixing with:  bash .devcontainer/post-start.sh")
 			fmt.Println("2026-01-01 00:00:02.100Z: postStartCommand from devcontainer.json failed with exit code 1. Skipping any further user-provided commands.")
 			fmt.Println("2026-01-01 00:00:02.200Z: devcontainer process exited with exit code 1")
@@ -610,7 +610,7 @@ func ghCodespace(args []string, joined string) {
 					recordState(args[i+1], "Available")
 				}
 			}
-		case strings.Contains(joined, "SEMIONT_KB_READY"):
+		case strings.Contains(joined, "XYNOLOG_KB_READY"):
 			// The readiness probe that does NOT go through the tunnel — the
 			// only way to ask "is the stack up?" without destroying the
 			// forward while it is still coming up. Each call is tallied so a
@@ -620,17 +620,17 @@ func ghCodespace(args []string, joined string) {
 			// A vanished sentinel is how it detects that ssh itself failed.
 			bumpRemoteProbe()
 			if remoteDown() {
-				fmt.Println("SEMIONT_KB_WAIT")
+				fmt.Println("XYNOLOG_KB_WAIT")
 				return
 			}
 			// The gateway can answer while the codespace's own start is still
 			// bringing up the rest: only its launcher can say the STACK is up.
 			if n, _ := strconv.Atoi(os.Getenv("FAKERT_REMOTE_STACK_READY_AFTER")); n > 0 && bumpCounter("stack-probes") < n {
-				fmt.Println("SEMIONT_KB_WAIT")
+				fmt.Println("XYNOLOG_KB_WAIT")
 				return
 			}
-			fmt.Println("SEMIONT_KB_READY")
-		case strings.Contains(joined, ".semiont/config.yaml"):
+			fmt.Println("XYNOLOG_KB_READY")
+		case strings.Contains(joined, ".xynolog/config.yaml"):
 			fmt.Println(remoteKBConfig())
 		case strings.Contains(joined, "tar czf -"):
 			// `xynolog export --repo`: the codespace's KB, streamed as its tar
@@ -652,9 +652,9 @@ func ghCodespace(args []string, joined string) {
 			}
 			// The real inner start ends with ITS summary — the codespace's own
 			// view, whose ports are wrong from the laptop.
-			fmt.Println("🚀 Semiont stack is up  (70s)")
-			fmt.Println("  Semiont Browser    http://localhost:3000")
-			fmt.Println("  Semiont KB         http://localhost:4000")
+			fmt.Println("🚀 Xynolog stack is up  (70s)")
+			fmt.Println("  Xynolog Browser    http://localhost:3000")
+			fmt.Println("  Xynolog KB         http://localhost:4000")
 		case strings.Contains(joined, "xynolog useradd"):
 			// The remote side is a SHELL, so echo back what the shell would
 			// actually receive — that is what proves quoting works.
@@ -687,8 +687,8 @@ func remoteKBConfig() string {
 // its identity card and an event log, and its .git when withGit.
 func writeRemoteKB(w io.Writer, withGit bool) error {
 	files := [][2]string{
-		{"./.semiont/config.yaml", remoteKBConfig()},
-		{"./.semiont/events/__system__/events-000001.jsonl", `{"type":"frame:entity-type-added"}` + "\n"},
+		{"./.xynolog/config.yaml", remoteKBConfig()},
+		{"./.xynolog/events/__system__/events-000001.jsonl", `{"type":"frame:entity-type-added"}` + "\n"},
 	}
 	if withGit {
 		files = append(files, [2]string{"./.git/HEAD", "ref: refs/heads/main\n"})
@@ -1428,10 +1428,10 @@ func runtimeCmd(base string, args []string) {
 			// docker/podman status form: inspect -f {{.State.Status}} <name>
 			fmt.Println(state)
 		case base == "container":
-			// FAKERT_IMAGE_<name minus semiont-> scripts the image reference
+			// FAKERT_IMAGE_<name minus xynolog-> scripts the image reference
 			// the container reports (the Browser's keep-if-current check
 			// reads it).
-			img := os.Getenv("FAKERT_IMAGE_" + strings.TrimPrefix(name, "semiont-"))
+			img := os.Getenv("FAKERT_IMAGE_" + strings.TrimPrefix(name, "xynolog-"))
 			fmt.Printf(`[{"configuration":{"initProcess":{"environment":[]},"image":{"reference":%q}},"status":%q}]`+"\n", img, state)
 		default:
 			// docker/podman full form: inspect <name>
@@ -1603,7 +1603,7 @@ func run(args []string) {
 		}
 	}
 	// The container identifier the runtime reports — name-derived so tests
-	// can assert id-based stop/status flows ("fid-semiont-gateway").
+	// can assert id-based stop/status flows ("fid-xynolog-gateway").
 	if name != "" {
 		fmt.Println("fid-" + name)
 	} else {
@@ -1656,14 +1656,14 @@ func scriptedAlive(name string) bool {
 }
 
 // stateVar: the variable a test scripts the container named name's state in —
-// FAKERT_STATE_ and the name without its semiont- prefix.
+// FAKERT_STATE_ and the name without its xynolog- prefix.
 func stateVar(name string) string {
-	return "FAKERT_STATE_" + strings.TrimPrefix(name, "semiont-")
+	return "FAKERT_STATE_" + strings.TrimPrefix(name, "xynolog-")
 }
 
 // product: what a container the launcher named runs, the last word of its
-// name — semiont-<product> for the shared ones (semiont-otel-collector runs a
-// collector), semiont-<kb key>-<product> for a knowledge base's.
+// name — xynolog-<product> for the shared ones (xynolog-otel-collector runs a
+// collector), xynolog-<kb key>-<product> for a knowledge base's.
 func product(container string) string {
 	return container[strings.LastIndex(container, "-")+1:]
 }
@@ -2123,7 +2123,7 @@ func busReplyFor(request string, asked map[string]any, correlated bool, heard in
 	return string(op.Result), result, nil
 }
 
-// existingContainers is every semiont-* container that exists here, from BOTH
+// existingContainers is every xynolog-* container that exists here, from BOTH
 // sources — and it must be both, or the fake lies to a teardown:
 //
 //	FAKERT_STATE_<name>  containers the TEST scripted as pre-existing (stateVar)
@@ -2143,7 +2143,7 @@ func existingContainers() []string {
 		if !ok || v == "" || !strings.HasPrefix(k, "FAKERT_STATE_") {
 			continue
 		}
-		seen["semiont-"+strings.TrimPrefix(k, "FAKERT_STATE_")] = true
+		seen["xynolog-"+strings.TrimPrefix(k, "FAKERT_STATE_")] = true
 	}
 	if dir := os.Getenv("FAKERT_DIR"); dir != "" {
 		entries, _ := os.ReadDir(dir)
@@ -2156,7 +2156,7 @@ func existingContainers() []string {
 	}
 	out := make([]string, 0, len(seen))
 	for n := range seen {
-		if strings.HasPrefix(n, "semiont-") {
+		if strings.HasPrefix(n, "xynolog-") {
 			out = append(out, n)
 		}
 	}
@@ -2363,7 +2363,7 @@ func tokenTag(authorization string) string {
 // code under test agrees with it about a wrong route as happily as a right
 // one.
 //
-//   - Semiont's own services: read from the IMAGE, which declares its health
+//   - Xynolog's own services: read from the IMAGE, which declares its health
 //     route as its HEALTHCHECK and its entrypoint's probe. That is the thing
 //     that actually runs.
 //   - Third-party servers: their own facts, which no file in this repo owns.
@@ -2677,7 +2677,7 @@ func serveOn(container string, routes func(string) bool, listeners []net.Listene
 					}
 					w.Header().Set("Content-Type", "text/html")
 					w.WriteHeader(200)
-					_, _ = w.Write([]byte("<html><body>Sign in to semiont</body></html>"))
+					_, _ = w.Write([]byte("<html><body>Sign in to xynolog</body></html>"))
 					return
 				}
 				if inRealm && at == "/protocol/openid-connect/auth/device" {
@@ -2792,9 +2792,9 @@ func serveOn(container string, routes func(string) bool, listeners []net.Listene
 						// client ALSO carries the worker role, mirroring the realm's
 						// grant, by which the dispatcher admits its claims. Held to
 						// the same literal by lint:service-role.
-						roles := []string{"semiont-service"}
-						if client == "semiont-worker-local" {
-							roles = append(roles, "semiont-worker")
+						roles := []string{"xynolog-service"}
+						if client == "xynolog-worker-local" {
+							roles = append(roles, "xynolog-worker")
 						}
 						// Every service's account is an agent's, as the realm
 						// marks it. Held to the launcher's by lint:service-role.

@@ -15,8 +15,8 @@ import (
 	"os"
 	"strings"
 
-	"github.com/Xynoplex/cli/internal/launcher/stack"
-	xynoplex "github.com/Xynoplex/sdk/go"
+	"github.com/xynolog/cli/internal/launcher/stack"
+	xynolog "github.com/xynolog/sdk/go"
 )
 
 // useraddOpts: what the flags mean once parsed. The launcher owns them
@@ -90,10 +90,10 @@ func resolveRealmAdmin(u *UI, root, did string) (realmAdmin, bool) {
 		return realmAdmin{}, false
 	}
 	rp := plan.Roles["identity"]
-	// An issuer Semiont does not administer. The account is created THERE and
+	// An issuer Xynolog does not administer. The account is created THERE and
 	// then signs in here; nothing about this command can reach it.
 	if rp.Driver != "keycloak" {
-		u.Fail("Identity type %q is an issuer Semiont does not administer. Create the account at %s, then it can sign in here.", rp.Driver, rp.Issuer)
+		u.Fail("Identity type %q is an issuer Xynolog does not administer. Create the account at %s, then it can sign in here.", rp.Driver, rp.Issuer)
 		return realmAdmin{}, false
 	}
 	if !mayConfigure(rp) {
@@ -215,7 +215,7 @@ func generatePassword() (string, error) {
 // is the issuer's to fill at sign-in.
 func accountIdentity(a realmAdmin, email, subject string) string {
 	named := func(value string) string {
-		did, err := xynoplex.PersonDid(a.domain, value)
+		did, err := xynolog.PersonDid(a.domain, value)
 		if err != nil {
 			return err.Error()
 		}

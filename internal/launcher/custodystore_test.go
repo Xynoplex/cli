@@ -14,7 +14,7 @@ import (
 	"sync"
 	"testing"
 
-	"github.com/Xynoplex/cli/internal/launcher/harness"
+	"github.com/xynolog/cli/internal/launcher/harness"
 )
 
 // Every custody value is read, written and located through custodyStore, so a
@@ -198,7 +198,7 @@ func withFakeOp(t *testing.T, env ...string) {
 
 func TestOnePasswordCustodyStoreKeepsTheContract(t *testing.T) {
 	withFakeOp(t)
-	custodyStoreContract(t, custodyStore{&opBackend{vault: "Semiont", title: opItemTitle("kb.example")}})
+	custodyStoreContract(t, custodyStore{&opBackend{vault: "Xynolog", title: opItemTitle("kb.example")}})
 }
 
 // One item per root, one concealed field per value: a skill reads a value
@@ -206,7 +206,7 @@ func TestOnePasswordCustodyStoreKeepsTheContract(t *testing.T) {
 func TestOnePasswordCustodyStoreKeepsOneItemPerRoot(t *testing.T) {
 	withFakeOp(t)
 	u := NewUI(false)
-	s := custodyStore{&opBackend{vault: "Semiont", title: opItemTitle("kb.example")}}
+	s := custodyStore{&opBackend{vault: "Xynolog", title: opItemTitle("kb.example")}}
 	captureOutput(t, func() {
 		for _, name := range []string{"jwt-secret", "neo4j-password", "postgres-password"} {
 			if !s.put(u, name, "value-of-"+name) {
@@ -218,7 +218,7 @@ func TestOnePasswordCustodyStoreKeepsOneItemPerRoot(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if n := strings.Count(string(b), `"title": "Semiont — kb.example"`); n != 1 {
+	if n := strings.Count(string(b), `"title": "Xynolog — kb.example"`); n != 1 {
 		t.Errorf("%d items for one root, want one:\n%s", n, b)
 	}
 	if !strings.Contains(string(b), `"category": "SECURE_NOTE"`) || !strings.Contains(string(b), `"type": "CONCEALED"`) {
@@ -237,19 +237,19 @@ func TestOnePasswordCustodyStoreKeepsOneItemPerRoot(t *testing.T) {
 func TestOnePasswordCustodyStoreRefusesWhenOnePasswordDoesNotAnswer(t *testing.T) {
 	withFakeOp(t, "FAKERT_OP_FAIL=1")
 	u := NewUI(false)
-	s := custodyStore{&opBackend{vault: "Semiont", title: opItemTitle("kb.example")}}
+	s := custodyStore{&opBackend{vault: "Xynolog", title: opItemTitle("kb.example")}}
 	var ok bool
 	_, stderr := captureOutput(t, func() { _, ok = s.get(u, "jwt-secret") })
 	if ok {
 		t.Error("a store that did not answer read as one holding nothing")
 	}
-	mustShow(t, stderr, "1Password did not answer", `vault "Semiont"`, "never falls back")
+	mustShow(t, stderr, "1Password did not answer", `vault "Xynolog"`, "never falls back")
 }
 
 func TestOnePasswordCustodyStoreRefusesAMissingVault(t *testing.T) {
 	withFakeOp(t, "FAKERT_OP_VAULTS=Personal")
 	u := NewUI(false)
-	s := custodyStore{&opBackend{vault: "Semiont", title: opItemTitle("kb.example")}}
+	s := custodyStore{&opBackend{vault: "Xynolog", title: opItemTitle("kb.example")}}
 	var ok bool
 	_, stderr := captureOutput(t, func() { ok = s.put(u, "jwt-secret", "v") })
 	if ok {

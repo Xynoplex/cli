@@ -112,10 +112,10 @@ func Import(args []string) int {
 		u.Fail("import failed: %v", err)
 		return 1
 	}
-	// A directory with no .semiont/ is not a KB. Say so rather than leaving
+	// A directory with no .xynolog/ is not a KB. Say so rather than leaving
 	// the operator to discover it at the next start.
-	if fi, statErr := os.Stat(filepath.Join(root, ".semiont")); statErr != nil || !fi.IsDir() {
-		u.Fail("%s has no .semiont/ — that archive is not a Semiont KB.", root)
+	if fi, statErr := os.Stat(filepath.Join(root, ".xynolog")); statErr != nil || !fi.IsDir() {
+		u.Fail("%s has no .xynolog/ — that archive is not a Xynolog KB.", root)
 		return 1
 	}
 

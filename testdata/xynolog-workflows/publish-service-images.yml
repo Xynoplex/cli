@@ -2,7 +2,7 @@ name: Publish Service Container Images
 
 run-name: "Service Images @ ${{ inputs.version }}${{ inputs.dry_run && ' (dry-run)' || '' }}"
 
-# Builds and publishes the seven Semiont service images
+# Builds and publishes the seven Xynolog service images
 # (gateway · worker · smelter · weaver · archivist · librarian · dispatcher).
 # All seven are built from this checkout and report version.json's version:
 # the gateway, the dispatcher and the archivist compiled from images/gateway,
@@ -190,7 +190,7 @@ jobs:
           file: ./${{ matrix.dockerfile }}
           platforms: ${{ matrix.scan }}
           load: true
-          tags: semiont-${{ matrix.service }}:scan
+          tags: xynolog-${{ matrix.service }}:scan
           build-args: ${{ steps.args.outputs.args }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
@@ -201,7 +201,7 @@ jobs:
           TRIVY_SECRET_CONFIG: .github/trivy-secret.yaml
           TRIVY_IGNOREFILE: .github/trivyignore.yaml
         with:
-          image-ref: semiont-${{ matrix.service }}:scan
+          image-ref: xynolog-${{ matrix.service }}:scan
           severity: HIGH,CRITICAL
           exit-code: '1'
           ignore-unfixed: true
@@ -212,7 +212,7 @@ jobs:
       - name: Generate SBOM with Trivy
         uses: aquasecurity/trivy-action@v0.36.0
         with:
-          image-ref: semiont-${{ matrix.service }}:scan
+          image-ref: xynolog-${{ matrix.service }}:scan
           format: spdx-json
           output: sbom.spdx.json
 
@@ -247,7 +247,7 @@ jobs:
       - name: Boot smoke (reaches config resolution)
         run: |
           set +e
-          out=$(docker run --rm semiont-${{ matrix.service }}:scan 2>&1)
+          out=$(docker run --rm xynolog-${{ matrix.service }}:scan 2>&1)
           set -e
           echo "$out"
           # What Python says of a module it cannot load.
@@ -266,20 +266,20 @@ jobs:
       # The gateway image carries no source and starts within its bound.
       - name: Check the gateway image
         if: matrix.service == 'gateway'
-        run: images/scripts/check-gateway-image.sh semiont-${{ matrix.service }}:scan docker
+        run: images/scripts/check-gateway-image.sh xynolog-${{ matrix.service }}:scan docker
 
       # The dispatcher's and the archivist's images carry no source and no
       # Node, and refuse at once without their document.
       - name: Check the image of a service that only reads its document
         if: matrix.service == 'dispatcher' || matrix.service == 'archivist'
-        run: images/scripts/check-document-image.sh ${{ matrix.service }} semiont-${{ matrix.service }}:scan docker
+        run: images/scripts/check-document-image.sh ${{ matrix.service }} xynolog-${{ matrix.service }}:scan docker
 
       # The image of a Python service carries every library it can be
       # configured for, no installer and no Node, and refuses by name without
       # its document. The smelter's reads a scanned page with no network.
       - name: Check the image of a Python service
         if: matrix.service == 'worker' || matrix.service == 'smelter' || matrix.service == 'weaver' || matrix.service == 'librarian'
-        run: images/scripts/check-python-image.sh ${{ matrix.service }} semiont-${{ matrix.service }}:scan docker
+        run: images/scripts/check-python-image.sh ${{ matrix.service }} xynolog-${{ matrix.service }}:scan docker
 
       - name: Build and push Docker image
         id: build-push
@@ -366,7 +366,7 @@ jobs:
       - name: Summary
         run: |
           {
-            echo "## semiont-${{ matrix.service }} Container Image"
+            echo "## xynolog-${{ matrix.service }} Container Image"
             echo ""
             echo "**Version:** ${{ inputs.version }} (built from this commit)"
             echo "**Commit:** ${{ steps.tags.outputs.sha }}"

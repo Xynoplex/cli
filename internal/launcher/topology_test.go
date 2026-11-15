@@ -10,7 +10,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/Xynoplex/cli/internal/launcher/stack"
+	"github.com/xynolog/cli/internal/launcher/stack"
 )
 
 // externalIssuer: st trusting a Keycloak somebody else runs at
@@ -112,13 +112,13 @@ func TestADocumentsExternalIsSomebodyElsesDaemon(t *testing.T) {
 func TestNoAddressTravelsInAnEnvironment(t *testing.T) {
 	const addr = "192.168.64.1"
 	builders := map[string][]string{
-		"gateway":    gatewayArgs("kb", "/stage", exposure{rt: "docker", addr: addr}, "secret", "jwt", "latest", semiontDescriptor("gateway").mem, 4000, nil, nil),
-		"worker":     workerArgs("/state/shared/worker.json", exposure{rt: "docker", addr: addr}, "key", "latest", semiontDescriptor("worker").mem, nil, nil),
-		"smelter":    smelterArgs("kb", "/stage", exposure{rt: "docker", addr: addr}, semiontDescriptor("smelter").ports[0].port, "secret", "latest", semiontDescriptor("smelter").mem, nil, nil, []string{"--env", vectorsTokenVar + "=token"}),
-		"weaver":     weaverArgs("kb", "/stage", exposure{rt: "docker", addr: addr}, semiontDescriptor("weaver").ports[0].port, "secret", "latest", semiontDescriptor("weaver").mem, nil, nil),
-		"archivist":  archivistArgs("kb", "/kb", "/stage", exposure{rt: "docker", addr: addr}, semiontDescriptor("archivist").ports[0].port, "secret", "latest", semiontDescriptor("archivist").mem, nil, nil),
-		"librarian":  librarianArgs("kb", "/stage", exposure{rt: "docker", addr: addr}, semiontDescriptor("librarian").ports[0].port, "secret", "latest", semiontDescriptor("librarian").mem, nil, nil, []string{"--env", vectorsTokenVar + "=token"}),
-		"dispatcher": dispatcherArgs("kb", "/stage", exposure{rt: "docker", addr: addr}, semiontDescriptor("dispatcher").ports[0].port, "secret", "latest", semiontDescriptor("dispatcher").mem, nil, nil),
+		"gateway":    gatewayArgs("kb", "/stage", exposure{rt: "docker", addr: addr}, "secret", "jwt", "latest", xynologDescriptor("gateway").mem, 4000, nil, nil),
+		"worker":     workerArgs("/state/shared/worker.json", exposure{rt: "docker", addr: addr}, "key", "latest", xynologDescriptor("worker").mem, nil, nil),
+		"smelter":    smelterArgs("kb", "/stage", exposure{rt: "docker", addr: addr}, xynologDescriptor("smelter").ports[0].port, "secret", "latest", xynologDescriptor("smelter").mem, nil, nil, []string{"--env", vectorsTokenVar + "=token"}),
+		"weaver":     weaverArgs("kb", "/stage", exposure{rt: "docker", addr: addr}, xynologDescriptor("weaver").ports[0].port, "secret", "latest", xynologDescriptor("weaver").mem, nil, nil),
+		"archivist":  archivistArgs("kb", "/kb", "/stage", exposure{rt: "docker", addr: addr}, xynologDescriptor("archivist").ports[0].port, "secret", "latest", xynologDescriptor("archivist").mem, nil, nil),
+		"librarian":  librarianArgs("kb", "/stage", exposure{rt: "docker", addr: addr}, xynologDescriptor("librarian").ports[0].port, "secret", "latest", xynologDescriptor("librarian").mem, nil, nil, []string{"--env", vectorsTokenVar + "=token"}),
+		"dispatcher": dispatcherArgs("kb", "/stage", exposure{rt: "docker", addr: addr}, xynologDescriptor("dispatcher").ports[0].port, "secret", "latest", xynologDescriptor("dispatcher").mem, nil, nil),
 	}
 	handed := map[string]bool{}
 	for svc, args := range builders {

@@ -15,9 +15,9 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/Xynoplex/sdk/go/api"
+	"github.com/xynolog/sdk/go/api"
 
-	"github.com/Xynoplex/cli/internal/launcher/harness"
+	"github.com/xynolog/cli/internal/launcher/harness"
 )
 
 // gatewayNaming: a gateway whose resource metadata names issuers as the
@@ -59,7 +59,7 @@ func localEntryOf(domain, gateway, keyEnv string) api.WorkerKnowledgeBaseConfig 
 		engine.ApiKeyEnv = &keyEnv
 	}
 	entry := api.WorkerKnowledgeBaseConfig{Domain: domain, GatewayUrl: gateway, Engines: []api.WorkerEngineConfig{engine}}
-	entry.Identity.Issuer, entry.Identity.ClientId = "http://keycloak.localhost:8080/realms/semiont", serviceClientID("worker")
+	entry.Identity.Issuer, entry.Identity.ClientId = "http://keycloak.localhost:8080/realms/xynolog", serviceClientID("worker")
 	return entry
 }
 
@@ -167,9 +167,9 @@ func TestTheListServesEachAddedWithItsLendersEngines(t *testing.T) {
 			localEntryOf("b.example:local", "http://192.168.64.1:14001", "ANTHROPIC_API_KEY"),
 		},
 		Added: []addedKB{
-			addedKBOf("x.example:kb", "https://x.example", "https://id.x/realms/x", "semiont-worker-alice", "b.example:local"),
-			addedKBOf("y.example:kb", "https://y.example", "https://id.y/realms/y", "semiont-worker-alice", "gone.example:local"),
-			addedKBOf("z.example:kb", "https://z.example", "https://id.z/realms/z", "semiont-worker-alice", "a.example:local"),
+			addedKBOf("x.example:kb", "https://x.example", "https://id.x/realms/x", "xynolog-worker-alice", "b.example:local"),
+			addedKBOf("y.example:kb", "https://y.example", "https://id.y/realms/y", "xynolog-worker-alice", "gone.example:local"),
+			addedKBOf("z.example:kb", "https://z.example", "https://id.z/realms/z", "xynolog-worker-alice", "a.example:local"),
 		},
 	}
 	entries, unserved := list.served()
@@ -205,7 +205,7 @@ func TestTheListServesEachAddedWithItsLendersEngines(t *testing.T) {
 // the added ones.
 func TestAStartDisplacesTheLocalKnowledgeBasesOnItsGatewayPort(t *testing.T) {
 	harness.Home(t)
-	added := addedKBOf("x.example:kb", "https://x.example", "https://id.x/realms/x", "semiont-worker-alice", "c.example:local")
+	added := addedKBOf("x.example:kb", "https://x.example", "https://id.x/realms/x", "xynolog-worker-alice", "c.example:local")
 	if err := saveWorkerList(workerList{
 		Local: []api.WorkerKnowledgeBaseConfig{
 			localEntryOf("a.example:local", "http://192.168.64.1:14000", ""),
@@ -241,8 +241,8 @@ func TestAStartDisplacesTheLocalKnowledgeBasesOnItsGatewayPort(t *testing.T) {
 func TestAKnowledgeBaseAddedToItsOwnStartIsRefused(t *testing.T) {
 	harness.Home(t)
 	if err := saveWorkerList(workerList{Added: []addedKB{
-		addedKBOf("a.example:kb", "https://a.example", "https://id.a.example/realms/a", "semiont-worker-alice", "c.example:local"),
-		addedKBOf(exampleKB.Domain, "https://example.github.io", "https://id.example/realms/kb", "semiont-worker-alice", "c.example:local"),
+		addedKBOf("a.example:kb", "https://a.example", "https://id.a.example/realms/a", "xynolog-worker-alice", "c.example:local"),
+		addedKBOf(exampleKB.Domain, "https://example.github.io", "https://id.example/realms/kb", "xynolog-worker-alice", "c.example:local"),
 	}}); err != nil {
 		t.Fatal(err)
 	}
@@ -279,12 +279,12 @@ func TestWorkerKBAddKeepsWhatTheGatewayNames(t *testing.T) {
 	harness.Home(t)
 	lender := insideLocalKB(t)
 	gateway := gatewayNaming(t, "https://id.other.example/realms/kb")
-	code, stdout, stderr := workerOutput(t, "kb", "add", "other.example:kb", "--gateway", gateway, "--client-id", "semiont-worker-alice")
+	code, stdout, stderr := workerOutput(t, "kb", "add", "other.example:kb", "--gateway", gateway, "--client-id", "xynolog-worker-alice")
 	if code != 0 {
 		t.Fatalf("exit %d\nstdout:\n%s\nstderr:\n%s", code, stdout, stderr)
 	}
-	harness.MustContainAll(t, "stdout", stdout, "added other.example:kb", "https://id.other.example/realms/kb", "semiont-worker-alice", "Engines of: "+lender)
-	want := []addedKB{addedKBOf("other.example:kb", gateway, "https://id.other.example/realms/kb", "semiont-worker-alice", lender)}
+	harness.MustContainAll(t, "stdout", stdout, "added other.example:kb", "https://id.other.example/realms/kb", "xynolog-worker-alice", "Engines of: "+lender)
+	want := []addedKB{addedKBOf("other.example:kb", gateway, "https://id.other.example/realms/kb", "xynolog-worker-alice", lender)}
 	if got := keptList(t).Added; !reflect.DeepEqual(got, want) {
 		t.Errorf("kept %+v, want %+v", got, want)
 	}
@@ -306,21 +306,21 @@ func TestWorkerKBAddOfADomainAddedReplacesIt(t *testing.T) {
 	lender := insideLocalKB(t)
 	first, second := gatewayNaming(t, "https://id.one/realms/kb"), gatewayNaming(t, "https://id.two/realms/kb")
 	for _, args := range [][]string{
-		{"kb", "add", "z.example:kb", "--gateway", first, "--client-id", "semiont-worker-alice"},
-		{"kb", "add", "a.example:kb", "--gateway", first, "--client-id", "semiont-worker-alice"},
+		{"kb", "add", "z.example:kb", "--gateway", first, "--client-id", "xynolog-worker-alice"},
+		{"kb", "add", "a.example:kb", "--gateway", first, "--client-id", "xynolog-worker-alice"},
 	} {
 		if code, _, stderr := workerOutput(t, args...); code != 0 {
 			t.Fatalf("%v: exit %d\n%s", args, code, stderr)
 		}
 	}
-	code, stdout, stderr := workerOutput(t, "kb", "add", "z.example:kb", "--gateway", second, "--client-id", "semiont-worker-zed")
+	code, stdout, stderr := workerOutput(t, "kb", "add", "z.example:kb", "--gateway", second, "--client-id", "xynolog-worker-zed")
 	if code != 0 {
 		t.Fatalf("exit %d\n%s", code, stderr)
 	}
 	harness.MustContainAll(t, "stdout", stdout, "replaced z.example:kb, which was added already")
 	want := []addedKB{
-		addedKBOf("a.example:kb", first, "https://id.one/realms/kb", "semiont-worker-alice", lender),
-		addedKBOf("z.example:kb", second, "https://id.two/realms/kb", "semiont-worker-zed", lender),
+		addedKBOf("a.example:kb", first, "https://id.one/realms/kb", "xynolog-worker-alice", lender),
+		addedKBOf("z.example:kb", second, "https://id.two/realms/kb", "xynolog-worker-zed", lender),
 	}
 	if got := keptList(t).Added; !reflect.DeepEqual(got, want) {
 		t.Errorf("kept %+v, want %+v", got, want)
@@ -339,14 +339,14 @@ func TestWorkerKBAddThatFailsKeepsNothing(t *testing.T) {
 		args []string
 		want string
 	}{
-		{[]string{"kb", "add", "other.example:kb", "--gateway", harness.DeadOrigin(t), "--client-id", "semiont-worker-alice"}, "Nothing is added"},
-		{[]string{"kb", "add", "other.example:kb", "--gateway", gatewayNaming(t), "--client-id", "semiont-worker-alice"}, "published no authorization server"},
-		{[]string{"kb", "add", "not a domain", "--gateway", named, "--client-id", "semiont-worker-alice"}, "is not a knowledge base's domain"},
-		{[]string{"kb", "add", "other.example:kb", "--client-id", "semiont-worker-alice"}, "add needs --gateway <url> and --client-id <id>"},
+		{[]string{"kb", "add", "other.example:kb", "--gateway", harness.DeadOrigin(t), "--client-id", "xynolog-worker-alice"}, "Nothing is added"},
+		{[]string{"kb", "add", "other.example:kb", "--gateway", gatewayNaming(t), "--client-id", "xynolog-worker-alice"}, "published no authorization server"},
+		{[]string{"kb", "add", "not a domain", "--gateway", named, "--client-id", "xynolog-worker-alice"}, "is not a knowledge base's domain"},
+		{[]string{"kb", "add", "other.example:kb", "--client-id", "xynolog-worker-alice"}, "add needs --gateway <url> and --client-id <id>"},
 		{[]string{"kb", "add", "other.example:kb", "--gateway", named}, "add needs --gateway <url> and --client-id <id>"},
-		{[]string{"kb", "add", "--gateway", named, "--client-id", "semiont-worker-alice"}, "add takes one domain"},
-		{[]string{"kb", "add", "other.example:kb", "--gateway", named, "--client-id", "semiont-worker-alice", "--issuer", "x"}, "Unknown flag: --issuer"},
-		{[]string{"kb", "add", lender, "--gateway", named, "--client-id", "semiont-worker-alice"}, lender + " is a local knowledge base on the shared worker's list"},
+		{[]string{"kb", "add", "--gateway", named, "--client-id", "xynolog-worker-alice"}, "add takes one domain"},
+		{[]string{"kb", "add", "other.example:kb", "--gateway", named, "--client-id", "xynolog-worker-alice", "--issuer", "x"}, "Unknown flag: --issuer"},
+		{[]string{"kb", "add", lender, "--gateway", named, "--client-id", "xynolog-worker-alice"}, lender + " is a local knowledge base on the shared worker's list"},
 	} {
 		code, _, stderr := workerOutput(t, c.args...)
 		if code != 1 {
@@ -365,7 +365,7 @@ func TestWorkerKBAddThatFailsKeepsNothing(t *testing.T) {
 func TestWorkerKBAddRunsInsideALocalKnowledgeBaseOnTheList(t *testing.T) {
 	harness.Home(t)
 	named := gatewayNaming(t, "https://id.other.example/realms/kb")
-	add := []string{"kb", "add", "other.example:kb", "--gateway", named, "--client-id", "semiont-worker-alice"}
+	add := []string{"kb", "add", "other.example:kb", "--gateway", named, "--client-id", "xynolog-worker-alice"}
 
 	lender := insideLocalKB(t)
 	if err := saveWorkerList(workerList{}); err != nil {
@@ -399,7 +399,7 @@ func TestWorkerKBRemoveTakesOffThatOneAlone(t *testing.T) {
 			localEntryOf("a.example:local", "http://192.168.64.1:14000", ""),
 			localEntryOf("b.example:local", "http://192.168.64.1:14001", ""),
 		},
-		Added: []addedKB{addedKBOf("x.example:kb", "https://x.example", "https://id.x/realms/x", "semiont-worker-alice", "b.example:local")},
+		Added: []addedKB{addedKBOf("x.example:kb", "https://x.example", "https://id.x/realms/x", "xynolog-worker-alice", "b.example:local")},
 	}); err != nil {
 		t.Fatal(err)
 	}
@@ -449,7 +449,7 @@ func TestWorkerKBListPrintsWhatIsKept(t *testing.T) {
 
 	if err := saveWorkerList(workerList{
 		Local: []api.WorkerKnowledgeBaseConfig{localEntryOf("b.example:local", "http://192.168.64.1:14000", "")},
-		Added: []addedKB{addedKBOf("a.example:kb", "https://a.example", "https://id.a/realms/a", "semiont-worker-alice", "b.example:local")},
+		Added: []addedKB{addedKBOf("a.example:kb", "https://a.example", "https://id.a/realms/a", "xynolog-worker-alice", "b.example:local")},
 	}); err != nil {
 		t.Fatal(err)
 	}
@@ -459,12 +459,12 @@ func TestWorkerKBListPrintsWhatIsKept(t *testing.T) {
 	}
 	want := "b.example:local (local)\n" +
 		"  Gateway:    http://192.168.64.1:14000\n" +
-		"  Issuer:     http://keycloak.localhost:8080/realms/semiont\n" +
+		"  Issuer:     http://keycloak.localhost:8080/realms/xynolog\n" +
 		"  Client id:  " + serviceClientID("worker") + "\n" +
 		"a.example:kb (added)\n" +
 		"  Gateway:    https://a.example\n" +
 		"  Issuer:     https://id.a/realms/a\n" +
-		"  Client id:  semiont-worker-alice\n" +
+		"  Client id:  xynolog-worker-alice\n" +
 		"  Engines of: b.example:local\n"
 	if stdout != want {
 		t.Errorf("list printed:\n%s\nwant:\n%s", stdout, want)
@@ -482,7 +482,7 @@ func TestAnUnreadableKeptFileIsRefused(t *testing.T) {
 	for _, args := range [][]string{
 		{"kb", "list"},
 		{"kb", "remove", "a.example:kb"},
-		{"kb", "add", "b.example:kb", "--gateway", gatewayNaming(t, "https://id.b/realms/b"), "--client-id", "semiont-worker-alice"},
+		{"kb", "add", "b.example:kb", "--gateway", gatewayNaming(t, "https://id.b/realms/b"), "--client-id", "xynolog-worker-alice"},
 	} {
 		code, _, stderr := workerOutput(t, args...)
 		if code != 1 {

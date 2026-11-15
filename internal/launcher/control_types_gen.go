@@ -57,13 +57,13 @@ type ControlRootsListParams struct {
 	ApiVersion string `json:"apiVersion"`
 }
 
-// ControlRootsListResult: Every knowledge base this machine knows, as semiont
+// ControlRootsListResult: Every knowledge base this machine knows, as xynolog
 // roots lists them: the local roots first, then the codespace stacks.
 type ControlRootsListResult struct {
 	// Each root.
 	Roots []ControlRoot `json:"roots"`
 
-	// What semiont roots warns of without failing: an invalid SEMIONT_ROOT, a
+	// What xynolog roots warns of without failing: an invalid XYNOLOG_ROOT, a
 	// clone whose project file is refused.
 	Warnings []string `json:"warnings,omitempty"`
 }
@@ -85,7 +85,7 @@ type ControlRoot struct {
 	Present *bool `json:"present,omitempty"`
 
 	// For a local root: how the control server's own directory selects it, when
-	// it does — standing in it (cwd), or SEMIONT_ROOT.
+	// it does — standing in it (cwd), or XYNOLOG_ROOT.
 	Current *string `json:"current,omitempty"`
 
 	// Whether the registry (roots.json) records it.
@@ -97,7 +97,7 @@ type ControlRoot struct {
 	// When a command last used it, in RFC 3339, as the registry records it.
 	LastUsed *string `json:"lastUsed,omitempty"`
 
-	// The KB's did:web identifier, from its committed .semiont/config.yaml —
+	// The KB's did:web identifier, from its committed .xynolog/config.yaml —
 	// "did:web:" + its site.domain, verbatim. REQUIRED: a KB that declares no
 	// domain has no identity to publish, and the launcher refuses to start it
 	// rather than inventing or defaulting one. NOT unique within a document: a
@@ -109,7 +109,7 @@ type ControlRoot struct {
 	// is which, and an identity alone cannot say which copy.
 	Did *string `json:"did,omitempty"`
 
-	// Human-readable site name from the KB's .semiont/config.yaml
+	// Human-readable site name from the KB's .xynolog/config.yaml
 	// (site.siteName), for display
 	SiteName *string `json:"siteName,omitempty"`
 
@@ -147,7 +147,7 @@ type ControlRoot struct {
 }
 
 // ControlRootsInitParams: roots.init's params: the local directory, permanent
-// identity, and optional configuration inputs semiont init takes.
+// identity, and optional configuration inputs xynolog init takes.
 type ControlRootsInitParams struct {
 	// The group and version of the control API. Every request's params state it;
 	// a launcher refuses a version it does not speak with
@@ -192,7 +192,7 @@ type ControlRootsInitParams struct {
 	OllamaRegistry *string `json:"ollamaRegistry,omitempty"`
 }
 
-// ControlRootsInitResult: The local directory where semiont init created and
+// ControlRootsInitResult: The local directory where xynolog init created and
 // registered the knowledge base.
 type ControlRootsInitResult struct {
 	Path string `json:"path"`
@@ -218,7 +218,7 @@ type ControlRootsForgetResult struct {
 	DirectoryMissing bool `json:"directoryMissing"`
 
 	// The key whose persistent stack state remains, when some does and no
-	// surviving root shares its DID: semiont clean --root <key> removes it.
+	// surviving root shares its DID: xynolog clean --root <key> removes it.
 	PersistentState *string `json:"persistentState,omitempty"`
 }
 
@@ -254,7 +254,7 @@ type ControlTarget struct {
 	Repo *string `json:"repo,omitempty"`
 }
 
-// ControlStatusSnapshotResult: What semiont status reports: each knowledge
+// ControlStatusSnapshotResult: What xynolog status reports: each knowledge
 // base with its own services, and each service the knowledge bases share,
 // once, with the knowledge bases it serves.
 type ControlStatusSnapshotResult struct {
@@ -267,7 +267,7 @@ type ControlStatusSnapshotResult struct {
 	Shared []ControlServiceStatus `json:"shared"`
 }
 
-// ControlKnowledgeBaseStatus: One knowledge base's stack as semiont status
+// ControlKnowledgeBaseStatus: One knowledge base's stack as xynolog status
 // reads it: what it is, where it runs, and each of its own services. The
 // services every knowledge base shares are reported once, in the snapshot's
 // shared list.
@@ -295,7 +295,7 @@ type ControlKnowledgeBaseStatus struct {
 	// is the stack's identity
 	Repo *string `json:"repo,omitempty"`
 
-	// The KB's did:web identifier, from its committed .semiont/config.yaml —
+	// The KB's did:web identifier, from its committed .xynolog/config.yaml —
 	// "did:web:" + its site.domain, verbatim. REQUIRED: a KB that declares no
 	// domain has no identity to publish, and the launcher refuses to start it
 	// rather than inventing or defaulting one. NOT unique within a document: a
@@ -307,7 +307,7 @@ type ControlKnowledgeBaseStatus struct {
 	// is which, and an identity alone cannot say which copy.
 	Did *string `json:"did,omitempty"`
 
-	// Human-readable site name from the KB's .semiont/config.yaml
+	// Human-readable site name from the KB's .xynolog/config.yaml
 	// (site.siteName), for display
 	SiteName *string `json:"siteName,omitempty"`
 
@@ -323,7 +323,7 @@ type ControlKnowledgeBaseStatus struct {
 	// The base URL of its gateway, from its record.
 	Gateway *string `json:"gateway,omitempty"`
 
-	// Where the values the launcher generates for it are kept, as semiont
+	// Where the values the launcher generates for it are kept, as xynolog
 	// settings secret-store describes it.
 	SecretStore *string `json:"secretStore,omitempty"`
 
@@ -331,11 +331,11 @@ type ControlKnowledgeBaseStatus struct {
 	// network lan.
 	Lan *string `json:"lan,omitempty"`
 
-	// Whether a semiont start of it holds its start lock: its services are not
+	// Whether a xynolog start of it holds its start lock: its services are not
 	// ready, whatever they report.
 	Starting bool `json:"starting"`
 
-	// The launcher's own stored sign-in for a stack (semiont login), never
+	// The launcher's own stored sign-in for a stack (xynolog login), never
 	// Desktop's. No token is in it.
 	Session *ControlSession `json:"session,omitempty"`
 
@@ -353,11 +353,11 @@ type ControlKnowledgeBaseStatus struct {
 	Workload *ControlWorkloadStatus `json:"workload,omitempty"`
 }
 
-// ControlSession: The launcher's own stored sign-in for a stack (semiont
+// ControlSession: The launcher's own stored sign-in for a stack (xynolog
 // login), never Desktop's. No token is in it.
 type ControlSession struct {
 	// valid: the stack's gateway accepts the stored token. expired: it refuses
-	// it (a refresh, or semiont login, renews it). unverified: the stack did not
+	// it (a refresh, or xynolog login, renews it). unverified: the stack did not
 	// answer. none: nothing is stored.
 	State string `json:"state"`
 
@@ -365,13 +365,13 @@ type ControlSession struct {
 	Email *string `json:"email,omitempty"`
 }
 
-// ControlServiceStatus: One service, as semiont status reads it: where it
+// ControlServiceStatus: One service, as xynolog status reads it: where it
 // runs, its state, and whether it answers. Nothing is reported that the
 // launcher did not observe: an endpoint is named only when the stack's record
 // or the descriptor names one, and a page to open only when the service
 // answers.
 type ControlServiceStatus struct {
-	// The service, as semiont status names it.
+	// The service, as xynolog status names it.
 	Role string `json:"role"`
 
 	// The group it belongs to.
@@ -469,7 +469,7 @@ type ControlWorkloadStatusQueue struct {
 	Failed *int `json:"failed,omitempty"`
 }
 
-// ControlStackStartParams: stack.start's params: what semiont start takes,
+// ControlStackStartParams: stack.start's params: what xynolog start takes,
 // but its help and its narration switches.
 type ControlStackStartParams struct {
 	// The version of the control API the request is written to.
@@ -539,7 +539,7 @@ type ControlStackStartResult struct {
 	Shared []ControlServiceStatus `json:"shared,omitempty"`
 }
 
-// ControlStackStopParams: stack.stop's params: what semiont stop takes, but
+// ControlStackStopParams: stack.stop's params: what xynolog stop takes, but
 // its help.
 type ControlStackStopParams struct {
 	// The version of the control API the request is written to.
@@ -682,7 +682,7 @@ type ControlIdentityUseraddResult struct {
 	// The account's email address.
 	Email string `json:"email"`
 
-	// The identity the account acts under in Semiont.
+	// The identity the account acts under in Xynolog.
 	Identity string `json:"identity"`
 
 	// Whether a new account was created.
@@ -719,7 +719,7 @@ type ControlIdentityUser struct {
 	// The account's sign-in name, normally its email address.
 	Email string `json:"email"`
 
-	// The identity the account acts under in Semiont.
+	// The identity the account acts under in Xynolog.
 	Identity string `json:"identity"`
 
 	// Whether the identity provider currently allows this account to sign in.
@@ -738,7 +738,7 @@ type ControlLogsFollowParams struct {
 	// Keep to the local stacks, as --runtime does.
 	Runtime *string `json:"runtime,omitempty"`
 
-	// Just this service's container, as --service names it. Absent: each Semiont
+	// Just this service's container, as --service names it. Absent: each Xynolog
 	// service the stack runs.
 	Service *string `json:"service,omitempty"`
 }
@@ -774,10 +774,10 @@ type ControlSettingsListResult struct {
 	Settings []ControlSetting `json:"settings"`
 }
 
-// ControlSetting: One setting the launcher keeps, as semiont settings shows
+// ControlSetting: One setting the launcher keeps, as xynolog settings shows
 // it.
 type ControlSetting struct {
-	// Its name, as semiont settings takes it.
+	// Its name, as xynolog settings takes it.
 	Name string `json:"name"`
 
 	// Whether this is the machine-wide form of a knowledge-base setting
@@ -787,7 +787,7 @@ type ControlSetting struct {
 	// What it applies to: every knowledge base on this machine, or one.
 	AppliesTo string `json:"appliesTo"`
 
-	// The values in effect, one per line semiont settings shows.
+	// The values in effect, one per line xynolog settings shows.
 	Values []ControlSettingLine `json:"values"`
 
 	// Whether settings.set and settings.unset change it.
@@ -798,7 +798,7 @@ type ControlSetting struct {
 }
 
 // ControlSettingLine: One value of a setting, and where it came from, as
-// semiont settings shows it. A secret's value is never one: a secret setting
+// xynolog settings shows it. A secret's value is never one: a secret setting
 // shows where the value is kept.
 type ControlSettingLine struct {
 	// The value in effect.
@@ -813,7 +813,7 @@ type ControlSettingsGetParams struct {
 	// The version of the control API the request is written to.
 	ApiVersion string `json:"apiVersion"`
 
-	// The setting, as semiont settings names it.
+	// The setting, as xynolog settings names it.
 	Name string `json:"name"`
 
 	// The machine-wide form of a knowledge-base setting: --default.
@@ -829,7 +829,7 @@ type ControlSettingsSetParams struct {
 	// The version of the control API the request is written to.
 	ApiVersion string `json:"apiVersion"`
 
-	// The setting, as semiont settings names it.
+	// The setting, as xynolog settings names it.
 	Name string `json:"name"`
 
 	// The machine-wide form of a knowledge-base setting: --default.
@@ -848,7 +848,7 @@ type ControlSettingsUnsetParams struct {
 	// The version of the control API the request is written to.
 	ApiVersion string `json:"apiVersion"`
 
-	// The setting, as semiont settings names it.
+	// The setting, as xynolog settings names it.
 	Name string `json:"name"`
 
 	// The machine-wide form of a knowledge-base setting: --default.
@@ -924,7 +924,7 @@ type ControlLogRecord struct {
 	// as the client gave it.
 	RequestId json.RawMessage `json:"requestId"`
 
-	// The role whose container wrote the line, as semiont status names it.
+	// The role whose container wrote the line, as xynolog status names it.
 	Service string `json:"service"`
 
 	// Which of the container's streams the line was on.

@@ -3,7 +3,7 @@ package launcher
 // workerkbs.go — the knowledge bases the one shared worker serves. A
 // local knowledge base's start puts its entry on the list when one of its
 // jobs has an engine, as that start places it, and takes it off when none
-// does (flowWorker). A knowledge base someone else runs is added by `semiont
+// does (flowWorker). A knowledge base someone else runs is added by `xynolog
 // worker kb add`, from what its operator printed on granting this machine's
 // key (`xynolog identity grant`), and is offered the engines of the local
 // knowledge base it was added from. The list is kept shared, beside
@@ -22,7 +22,7 @@ import (
 	"slices"
 	"sort"
 
-	"github.com/Xynoplex/sdk/go/api"
+	"github.com/xynolog/sdk/go/api"
 )
 
 // workerListFile: where the list is kept, under sharedStateDir.

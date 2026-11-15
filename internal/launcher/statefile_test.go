@@ -5,7 +5,7 @@ import (
 	"path/filepath"
 	"testing"
 
-	"github.com/Xynoplex/cli/internal/launcher/harness"
+	"github.com/xynolog/cli/internal/launcher/harness"
 )
 
 // statefile_test.go — the record is either read or refused, never silently
@@ -47,7 +47,7 @@ func TestAbsentRecordIsACleanEmptySet(t *testing.T) {
 // and the reason "no stacks" cannot simply mean "unreadable".
 func TestEmptySetWithABrowserRecordIsReadable(t *testing.T) {
 	p := recordPath(t)
-	body := `{"schema":3,"stacks":{},"shared":{"semiont-browser":{"container":"semiont-browser","id":"bid","endpoint":"http://localhost:3000"}}}`
+	body := `{"schema":3,"stacks":{},"shared":{"xynolog-browser":{"container":"xynolog-browser","id":"bid","endpoint":"http://localhost:3000"}}}`
 	if err := os.WriteFile(p, []byte(body), 0o644); err != nil {
 		t.Fatal(err)
 	}
@@ -55,7 +55,7 @@ func TestEmptySetWithABrowserRecordIsReadable(t *testing.T) {
 	if ss.unreadable != nil {
 		t.Fatalf("a stopped machine's record refused: %v", ss.unreadable)
 	}
-	if b := ss.Shared["semiont-browser"]; b == nil || b.ID != "bid" {
+	if b := ss.Shared["xynolog-browser"]; b == nil || b.ID != "bid" {
 		t.Errorf("browser record lost: %+v", ss.Shared)
 	}
 }

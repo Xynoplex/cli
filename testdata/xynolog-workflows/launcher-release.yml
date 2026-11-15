@@ -6,7 +6,7 @@ name: Launcher Release
 # attestation.
 #
 # Requires the TAP_GITHUB_TOKEN secret: a token with write access to
-# The-AI-Alliance/homebrew-semiont, used by goreleaser to push the formula.
+# xynolog/homebrew-xynolog, used by goreleaser to push the formula.
 
 # Dispatched by release.yml once the tag lands. A `push: tags` trigger cannot be
 # used here: release.yml pushes the tag with GITHUB_TOKEN, and GitHub does not

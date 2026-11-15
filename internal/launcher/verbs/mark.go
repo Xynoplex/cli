@@ -15,9 +15,9 @@ import (
 	"strconv"
 	"strings"
 
-	launcher "github.com/Xynoplex/cli/internal/launcher"
+	launcher "github.com/xynolog/cli/internal/launcher"
 
-	"github.com/Xynoplex/sdk/go/api"
+	"github.com/xynolog/sdk/go/api"
 )
 
 const markIDs = "xynolog mark [options] -- <resourceId>"

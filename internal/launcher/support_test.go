@@ -6,7 +6,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/Xynoplex/cli/internal/launcher/harness"
+	"github.com/xynolog/cli/internal/launcher/harness"
 )
 
 // The health budget is WALL-CLOCK, not a count of attempts. A failing probe
@@ -72,7 +72,7 @@ func TestWaitForContainerHTTPEndsWhenTheContainerStops(t *testing.T) {
 			t.Setenv("PATH", shim)
 
 			t0 := time.Now()
-			_, ok := waitForContainerHTTP(NewUI(true), c.runtime, "Gateway", "semiont-gateway", harness.DeadOrigin(t)+"/api/health", 4)
+			_, ok := waitForContainerHTTP(NewUI(true), c.runtime, "Gateway", "xynolog-gateway", harness.DeadOrigin(t)+"/api/health", 4)
 			elapsed := time.Since(t0)
 			if ok {
 				t.Fatal("nothing answers, so the wait must not report ready")
@@ -95,15 +95,15 @@ func TestCommandLineShowsInjectedValuesAndCarriesNoCredentials(t *testing.T) {
 	const pemValue = "-----BEGIN PRIVATE KEY-----\nMIIEvQ==\n-----END PRIVATE KEY-----\n"
 	argv, env := offCommandLine([]string{"run",
 		"--env", "OTEL_EXPORTER_OTLP_ENDPOINT=http://192.168.64.1:4318",
-		"--env", "SEMIONT_OIDC_CLIENT_ID=semiont-smelter",
-		"--env", "SEMIONT_OIDC_CLIENT_SECRET=s3cret",
-		"--env", "SEMIONT_OIDC_CLIENT_KEY=" + pemValue,
+		"--env", "XYNOLOG_OIDC_CLIENT_ID=xynolog-smelter",
+		"--env", "XYNOLOG_OIDC_CLIENT_SECRET=s3cret",
+		"--env", "XYNOLOG_OIDC_CLIENT_KEY=" + pemValue,
 		"--env", "JWT_SECRET=jwt-value",
 		"--env", "ANTHROPIC_API_KEY=sk-value",
 		"-e", "POSTGRES_PASSWORD=pg-value",
 	})
 	got := strings.Join(argv, " ")
-	for _, shown := range []string{"OTEL_EXPORTER_OTLP_ENDPOINT=http://192.168.64.1:4318", "SEMIONT_OIDC_CLIENT_ID=semiont-smelter"} {
+	for _, shown := range []string{"OTEL_EXPORTER_OTLP_ENDPOINT=http://192.168.64.1:4318", "XYNOLOG_OIDC_CLIENT_ID=xynolog-smelter"} {
 		if !strings.Contains(got, shown) {
 			t.Errorf("%s was hidden:\n%s", shown, got)
 		}
@@ -114,7 +114,7 @@ func TestCommandLineShowsInjectedValuesAndCarriesNoCredentials(t *testing.T) {
 		}
 	}
 	// The key is a PEM, lines and padding and all: it crosses whole.
-	want := []string{"SEMIONT_OIDC_CLIENT_SECRET=s3cret", "SEMIONT_OIDC_CLIENT_KEY=" + pemValue, "JWT_SECRET=jwt-value", "ANTHROPIC_API_KEY=sk-value", "POSTGRES_PASSWORD=pg-value"}
+	want := []string{"XYNOLOG_OIDC_CLIENT_SECRET=s3cret", "XYNOLOG_OIDC_CLIENT_KEY=" + pemValue, "JWT_SECRET=jwt-value", "ANTHROPIC_API_KEY=sk-value", "POSTGRES_PASSWORD=pg-value"}
 	if strings.Join(env, " ") != strings.Join(want, " ") {
 		t.Errorf("the runtime's environment carries %v, want %v", env, want)
 	}

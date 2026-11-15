@@ -4,7 +4,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/Xynoplex/cli/internal/launcher/harness"
+	"github.com/xynolog/cli/internal/launcher/harness"
 )
 
 // powershellKey: the PowerShell that ends in 32 random bytes as hex.
@@ -22,11 +22,11 @@ func TestHintsAreTheSystemsOwnCommands(t *testing.T) {
 		{"ending processes", "windows", stopProcessesHint("windows", []string{"12", "34"}), "taskkill /PID 12 /PID 34"},
 
 		{"setting a file aside", "macos",
-			setAsideHint("macos", "/Users/a/Library/Application Support/semiont/stack.json", "/Users/a/Library/Application Support/semiont/stack.json.unreadable"),
-			`mv "/Users/a/Library/Application Support/semiont/stack.json" "/Users/a/Library/Application Support/semiont/stack.json.unreadable"`},
+			setAsideHint("macos", "/Users/a/Library/Application Support/xynolog/stack.json", "/Users/a/Library/Application Support/xynolog/stack.json.unreadable"),
+			`mv "/Users/a/Library/Application Support/xynolog/stack.json" "/Users/a/Library/Application Support/xynolog/stack.json.unreadable"`},
 		{"setting a file aside", "windows",
-			setAsideHint("windows", `C:\Users\a b\AppData\Local\semiont\stack.json`, `C:\Users\a b\AppData\Local\semiont\stack.json.unreadable`),
-			`move "C:\Users\a b\AppData\Local\semiont\stack.json" "C:\Users\a b\AppData\Local\semiont\stack.json.unreadable"`},
+			setAsideHint("windows", `C:\Users\a b\AppData\Local\xynolog\stack.json`, `C:\Users\a b\AppData\Local\xynolog\stack.json.unreadable`),
+			`move "C:\Users\a b\AppData\Local\xynolog\stack.json" "C:\Users\a b\AppData\Local\xynolog\stack.json.unreadable"`},
 
 		{"setting a variable", "linux", setVarHint("linux", "ANTHROPIC_API_KEY", "<your-key>"), "export ANTHROPIC_API_KEY=<your-key>"},
 		{"setting a variable", "windows", setVarHint("windows", "ANTHROPIC_API_KEY", "<your-key>"), `$env:ANTHROPIC_API_KEY = "<your-key>"`},
@@ -63,7 +63,7 @@ func TestAnUnreachableStoreNamesTheVariableToSet(t *testing.T) {
 	t.Setenv("JWT_SECRET", "")
 	t.Setenv("KC_BOOTSTRAP_ADMIN_PASSWORD", "")
 	key := rootKey("", t.TempDir())
-	if err := saveStoreSetting(key, secretRef{Provider: "op", Path: "Semiont"}, true); err != nil {
+	if err := saveStoreSetting(key, secretRef{Provider: "op", Path: "Xynolog"}, true); err != nil {
 		t.Fatal(err)
 	}
 	u := NewUI(true)

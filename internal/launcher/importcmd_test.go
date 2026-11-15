@@ -17,7 +17,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/Xynoplex/cli/internal/launcher/harness"
+	"github.com/xynolog/cli/internal/launcher/harness"
 )
 
 // ── the round trip ──────────────────────────────────────────────────────
@@ -38,9 +38,9 @@ func TestExportImportRoundTrips(t *testing.T) {
 
 	// The KB came back: identity, the event log, and content — byte-identical.
 	for rel, want := range map[string]string{
-		".semiont/config.yaml":                           "testkb",
-		".semiont/events/res-1/events-000001.jsonl":      `{"type":"yield:created"}`,
-		".semiont/events/__system__/events-000001.jsonl": `{"type":"frame:entity-type-added"}`,
+		".xynolog/config.yaml":                           "testkb",
+		".xynolog/events/res-1/events-000001.jsonl":      `{"type":"yield:created"}`,
+		".xynolog/events/__system__/events-000001.jsonl": `{"type":"frame:entity-type-added"}`,
 		"docs/overview.md":                               "# Overview",
 		"notes/thesis.md":                                "# Thesis",
 	} {
@@ -107,7 +107,7 @@ func TestImportRefusesANonEmptyRoot(t *testing.T) {
 	})
 	harness.MustContainAll(t, "refusal", errOut, "not empty", "merge two KBs")
 	// The refusal must not have written anything first.
-	if _, err := os.Stat(filepath.Join(dest, ".semiont")); err == nil {
+	if _, err := os.Stat(filepath.Join(dest, ".xynolog")); err == nil {
 		t.Error("a refused import still unpacked into the directory")
 	}
 	if b, _ := os.ReadFile(filepath.Join(dest, "someone-elses.md")); string(b) != "MINE" {
@@ -129,7 +129,7 @@ func TestImportRefusesPathTraversal(t *testing.T) {
 	archive := filepath.Join(dir, "evil.tar.gz")
 	writeTarGzFixture(t, archive, map[string]string{
 		"../escaped.md":        "should never be written",
-		".semiont/config.yaml": "project:\n  name: x\n",
+		".xynolog/config.yaml": "project:\n  name: x\n",
 	})
 	dest := filepath.Join(dir, "root")
 
@@ -154,10 +154,10 @@ func TestImportRefusesANonKBArchive(t *testing.T) {
 
 	_, errOut := harness.CaptureOutput(t, func() {
 		if code := Import([]string{archive, "--root", filepath.Join(dir, "root")}); code == 0 {
-			t.Error("must refuse an archive with no .semiont/")
+			t.Error("must refuse an archive with no .xynolog/")
 		}
 	})
-	harness.MustContainAll(t, "refusal", errOut, "not a Semiont KB")
+	harness.MustContainAll(t, "refusal", errOut, "not a Xynolog KB")
 }
 
 func TestImportRefusals(t *testing.T) {

@@ -1,19 +1,19 @@
-apiVersion: semiont.the-ai-alliance.github.io/v1alpha1
+apiVersion: xynolog.org/v1alpha1
 kind: KnowledgeBase
 metadata:
   name: knowledge-base
 spec:
   logLevel: info
   gateway:
-    image: ghcr.io/the-ai-alliance/semiont-gateway:latest
+    image: ghcr.io/xynolog/xynolog-gateway:latest
     resources: { limits: { memory: 2G } }
     port: 4000
     publicURL: http://localhost:4000
   dispatcher:
-    image: ghcr.io/the-ai-alliance/semiont-dispatcher:latest
+    image: ghcr.io/xynolog/xynolog-dispatcher:latest
     resources: { limits: { memory: 2G } }
   archivist:
-    image: ghcr.io/the-ai-alliance/semiont-archivist:latest
+    image: ghcr.io/xynolog/xynolog-archivist:latest
     resources: { limits: { memory: 2G } }
   messaging:
     jobs: { type: jetstream }

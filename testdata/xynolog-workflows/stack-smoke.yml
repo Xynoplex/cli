@@ -134,7 +134,7 @@ jobs:
           node-version-file: .node-version
 
       - name: Build the packages the e2e suite links to
-        # images/e2e's @semiont/core and @semiont/sdk are this checkout's
+        # images/e2e's @xynolog/core and @xynolog/sdk are this checkout's
         # packages/, built; local-build.sh above builds them for a run of
         # :local images.
         if: env.IMAGES != 'local'

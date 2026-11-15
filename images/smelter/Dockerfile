@@ -48,7 +48,7 @@ ENV UV_PROJECT_ENVIRONMENT=/opt/venv \
 # tools out, and --no-editable installs the four packages above as built
 # wheels, so the environment is whole without this stage's tree.
 #
-# No extra is named, since semiont-smelter has none: the vector index and the
+# No extra is named, since xynolog-smelter has none: the vector index and the
 # embedding providers are asked over HTTP, with what every install has.
 #
 # PDFium, which reads a PDF, comes in the wheel of its binding (pypdfium2),
@@ -63,7 +63,7 @@ FROM python:${PYTHON_FLOOR}-alpine
 #
 #   tesseract-ocr           the `tesseract` program, which the Smelter runs
 #                           once for each image of a page that has no text of
-#                           its own (semiont_smelter.tesseract). It is found
+#                           its own (xynolog_smelter.tesseract). It is found
 #                           on the path.
 #   tesseract-ocr-data-eng  the English data the program is run with. The
 #                           program finds it where Alpine installs it, and
@@ -75,19 +75,19 @@ RUN pip uninstall --yes --root-user-action=ignore pip
 
 # The uid every service image runs as. The Smelter mounts nothing: the
 # anchored-text store is the Archivist's, kept over its HTTP surface.
-RUN addgroup --system --gid 1001 semiont && \
-    adduser --system --uid 1001 --ingroup semiont --home /home/semiont semiont
+RUN addgroup --system --gid 1001 xynolog && \
+    adduser --system --uid 1001 --ingroup xynolog --home /home/xynolog xynolog
 
 COPY --from=builder /opt/venv /opt/venv
 
-COPY LICENSE images/smelter/NOTICE /home/semiont/
+COPY LICENSE images/smelter/NOTICE /home/xynolog/
 COPY images/shared/supervise.sh /usr/local/bin/supervise.sh
 COPY images/shared/boot.sh /usr/local/bin/boot.sh
 
 WORKDIR /kb
-RUN chown semiont:semiont /kb
+RUN chown xynolog:xynolog /kb
 
-USER semiont
+USER xynolog
 
 # `python` is the environment's.
 ENV PATH=/opt/venv/bin:$PATH
@@ -103,4 +103,4 @@ ENTRYPOINT ["/sbin/tini", "--", "/usr/local/bin/boot.sh"]
 # launcher's census (TestConfigDocumentsAreWhereTheImagesLook) reads it here.
 # `-P` keeps the working directory off the import path: a file in /kb is never
 # a module the service imports.
-CMD ["python", "-P", "-m", "semiont_smelter", "--config", "/etc/semiont/smelter.json"]
+CMD ["python", "-P", "-m", "xynolog_smelter", "--config", "/etc/xynolog/smelter.json"]

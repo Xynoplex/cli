@@ -9,7 +9,7 @@ import (
 )
 
 // Dir: where a knowledge base commits its stack's documents, below its root.
-const Dir = ".semiont/stack"
+const Dir = ".xynolog/stack"
 
 // The documents' fixed names (D17), and the directory of the Inference
 // documents a machine chooses one of.

@@ -39,10 +39,10 @@ Write a KB's durable state to a .tar.gz — the content files and the event log.
 Nothing derived: projections, jobs, anchored text and the databases all rebuild
 from the log, and they live outside the KB root anyway.
 
-The archive is the KB directory itself, so it needs no Semiont to read:
+The archive is the KB directory itself, so it needs no Xynolog to read:
 
   tar -xzf kb.tar.gz          # a working KB directory
-  cat .semiont/events/*.jsonl # the history, one JSON object per line
+  cat .xynolog/events/*.jsonl # the history, one JSON object per line
 
 Options:
   --root <path|name>    KB to export (default: the root containing the cwd)
@@ -56,12 +56,12 @@ Options:
 Needs no running stack: both directions are file operations.
 `
 
-// exportMarker is written to .semiont/export.json inside the archive so a file
+// exportMarker is written to .xynolog/export.json inside the archive so a file
 // found on a drive years later can say what it is.
 //
 // ADVISORY ONLY. Nothing reads it back for correctness — the moment a restore
 // depends on it, it is a format contract by the back door, the very thing
-// having no archive format rules out. It rides inside .semiont/ rather than
+// having no archive format rules out. It rides inside .xynolog/ rather than
 // at the archive root so it cannot collide with a KB's own content.
 type exportMarker struct {
 	KB         string `json:"kb,omitempty"`
@@ -299,7 +299,7 @@ func writeArchive(root, out string, id *kbIdentity, withGit bool) (count int, to
 		// .git is the one judgement call in here.
 		//
 		// Default off, because a KB has two histories and the event log is
-		// Semiont's: a restore is complete without git. Available on, because
+		// Xynolog's: a restore is complete without git. Available on, because
 		// they are not interchangeable — for a git-synced KB the commits are
 		// the log's integrity chain ("integrity is provided by git at the
 		// commit level", event-storage.ts) and .git/config remembers where the
@@ -434,7 +434,7 @@ func writeArchive(root, out string, id *kbIdentity, withGit bool) (count int, to
 	}
 	blob, _ := json.MarshalIndent(m, "", "  ")
 	if err := tw.WriteHeader(&tar.Header{
-		Name: ".semiont/export.json", Mode: 0o644,
+		Name: ".xynolog/export.json", Mode: 0o644,
 		Size: int64(len(blob)), ModTime: time.Now(), Typeflag: tar.TypeReg,
 	}); err != nil {
 		return 0, 0, nil, err

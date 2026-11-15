@@ -9,9 +9,9 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/Xynoplex/sdk/go/api"
+	"github.com/xynolog/sdk/go/api"
 
-	"github.com/Xynoplex/cli/internal/launcher/stack"
+	"github.com/xynolog/cli/internal/launcher/stack"
 )
 
 // voyageEmbedding: st with its vectors made by Voyage's voyage-3, at Voyage's
@@ -79,7 +79,7 @@ func TestSmelterDocumentStatesWhatThePlacementDecides(t *testing.T) {
 	if doc.Identity.Issuer != "http://192.168.64.1:8080/realms/example.github.io-test-kb" {
 		t.Errorf("identity.issuer = %q", doc.Identity.Issuer)
 	}
-	if doc.Archivist.Host != "192.168.64.1" || doc.Archivist.Port != semiontDescriptor("archivist").ports[0].port {
+	if doc.Archivist.Host != "192.168.64.1" || doc.Archivist.Port != xynologDescriptor("archivist").ports[0].port {
 		t.Errorf("archivist = %+v, want where this start places the Archivist", doc.Archivist)
 	}
 	wantEmbedding := api.OllamaEmbeddingConfig{
@@ -101,13 +101,13 @@ func TestSmelterDocumentStatesWhatThePlacementDecides(t *testing.T) {
 	if store := stateStores["anchored-text"]; store.owner != "archivist" || !store.unstamped {
 		t.Errorf("the anchored-text store is owned by %q (unstamped %v), want the Archivist's, with no image stamp", store.owner, store.unstamped)
 	}
-	if doc.Port != semiontDescriptor("smelter").ports[0].port {
+	if doc.Port != xynologDescriptor("smelter").ports[0].port {
 		t.Errorf("port = %d, want the descriptor's", doc.Port)
 	}
 	if doc.PdfsAtOnce != 1 {
 		t.Errorf("pdfsAtOnce = %d, want the KnowledgeIndex's 1", doc.PdfsAtOnce)
 	}
-	if doc.CursorsPath != "/tmp/semiont/smelter-cursors.json" {
+	if doc.CursorsPath != "/tmp/xynolog/smelter-cursors.json" {
 		t.Errorf("cursorsPath = %q, want the Smelter's file of the container's own disk", doc.CursorsPath)
 	}
 	if doc.LogLevel != api.LogLevelDebug || doc.LogFormat != api.LogFormatJson {
@@ -229,7 +229,7 @@ func TestSmelterDocumentIsWhereTheImageLooks(t *testing.T) {
 	}
 	doc := smelterDocumentOf(t, placed(t, fixtureStack(t, "ollama-gemma")))
 
-	args := strings.Join(smelterArgs("kb", "/stage", exposure{rt: "container", addr: "1.2.3.4"}, semiontDescriptor("smelter").ports[0].port, "client-secret", "v", semiontDescriptor("smelter").mem, []string{"--env", "VOYAGE_API_KEY"}, nil, nil), " ")
+	args := strings.Join(smelterArgs("kb", "/stage", exposure{rt: "container", addr: "1.2.3.4"}, xynologDescriptor("smelter").ports[0].port, "client-secret", "v", xynologDescriptor("smelter").mem, []string{"--env", "VOYAGE_API_KEY"}, nil, nil), " ")
 	if want := "/stage/" + smelterDocumentFile + ":" + smelterDocumentTarget + ":ro"; !strings.Contains(args, want) {
 		t.Errorf("the Smelter's document is not mounted onto %s:\n%s", smelterDocumentTarget, args)
 	}
@@ -238,7 +238,7 @@ func TestSmelterDocumentIsWhereTheImageLooks(t *testing.T) {
 			t.Errorf("the Smelter is handed %s, which it does not read:\n%s", unread, args)
 		}
 	}
-	for _, handed := range []string{"SEMIONT_OIDC_CLIENT_ID=" + serviceClientID("smelter"), "SEMIONT_OIDC_CLIENT_SECRET=client-secret", "--env VOYAGE_API_KEY"} {
+	for _, handed := range []string{"XYNOLOG_OIDC_CLIENT_ID=" + serviceClientID("smelter"), "XYNOLOG_OIDC_CLIENT_SECRET=client-secret", "--env VOYAGE_API_KEY"} {
 		if !strings.Contains(args, handed) {
 			t.Errorf("the Smelter is not handed %s:\n%s", handed, args)
 		}

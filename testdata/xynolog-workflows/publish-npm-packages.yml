@@ -50,7 +50,7 @@ jobs:
         run: ./packages/typescript/scripts/build.sh
 
       - name: Verify NodeNext resolution
-        # Pre-publish gate: every @semiont/* package's dist must
+        # Pre-publish gate: every @xynolog/* package's dist must
         # resolve cleanly under `tsc --moduleResolution NodeNext` from
         # an external consumer's perspective. Catches an asymmetric
         # dist (bundled .js with per-file .d.ts shards) before it

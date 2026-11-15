@@ -12,7 +12,7 @@ import (
 	"reflect"
 	"strings"
 
-	"github.com/Xynoplex/sdk/go/api"
+	"github.com/xynolog/sdk/go/api"
 )
 
 // archivistDocumentFile: the Archivist is configured by a document, not a
@@ -22,7 +22,7 @@ const archivistDocumentFile = "archivist.json"
 // archivistDocumentTarget: where the Archivist reads that document — the path
 // its image passes to `--config`. TestConfigDocumentsAreWhereTheImagesLook
 // holds the two together.
-const archivistDocumentTarget = "/etc/semiont/archivist.json"
+const archivistDocumentTarget = "/etc/xynolog/archivist.json"
 
 // anchoredTextTarget: where the anchored-text store is mounted in the
 // Archivist, the one container that holds it.
@@ -31,7 +31,7 @@ const anchoredTextTarget = "/anchored-text"
 // stateHomeTarget: where the Archivist's state volume is mounted, and where
 // the gateway and the Librarian each mount a store of their own: supervise.sh
 // keeps a supervisor's events log under it. The Archivist's document names it.
-const stateHomeTarget = "/semiont-state"
+const stateHomeTarget = "/xynolog-state"
 
 // archivistStaging: how far a deployed Archivist's staging may run behind the
 // working tree. The launcher is the one decider: the Archivist defaults
@@ -119,7 +119,7 @@ func archivistDocument(p placement) ([]byte, error) {
 	doc.StateHome = stateHomeTarget
 	doc.AnchoredTextDir = anchoredTextTarget
 	doc.Engines = p.st.Inference.Spec.Engines
-	doc.Port = semiontDescriptor("archivist").ports[0].port
+	doc.Port = xynologDescriptor("archivist").ports[0].port
 	doc.SkipRebuild = false
 	doc.Staging.FlushMs = archivistStaging.flushMs
 	doc.Staging.MaxWaitMs = archivistStaging.maxWaitMs

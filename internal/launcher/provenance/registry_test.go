@@ -22,11 +22,11 @@ import (
 func serveSaved(t *testing.T, tamper func(path string, body []byte) []byte) (*httptest.Server, string) {
 	t.Helper()
 	dir := filepath.Join("testdata", "gateway-0.7.0")
-	repo := "/v2/the-ai-alliance/semiont-gateway"
+	repo := "/v2/xynolog/xynolog-gateway"
 	var srv *httptest.Server
 	srv = httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if r.URL.Path == "/token" {
-			if r.URL.Query().Get("scope") != "repository:the-ai-alliance/semiont-gateway:pull" {
+			if r.URL.Query().Get("scope") != "repository:xynolog/xynolog-gateway:pull" {
 				http.Error(w, "wrong scope", http.StatusBadRequest)
 				return
 			}
@@ -60,7 +60,7 @@ func serveSaved(t *testing.T, tamper func(path string, body []byte) []byte) (*ht
 		w.Write(body)
 	}))
 	t.Cleanup(srv.Close)
-	return srv, strings.TrimPrefix(srv.URL, "http://") + "/the-ai-alliance/semiont-gateway:latest"
+	return srv, strings.TrimPrefix(srv.URL, "http://") + "/xynolog/xynolog-gateway:latest"
 }
 
 // rooted: the registry, checked against the saved trusted root.
@@ -72,7 +72,7 @@ func (rooted) trustedMaterial() (root.TrustedMaterial, []verify.VerifierOption, 
 
 func TestTheRegistryServesWhatVerifies(t *testing.T) {
 	srv, image := serveSaved(t, nil)
-	digest, err := sigstoreVerifier{rooted{registry{client: srv.Client()}}}.Verify(image, semiont("publish-service-images.yml"))
+	digest, err := sigstoreVerifier{rooted{registry{client: srv.Client()}}}.Verify(image, xynolog("publish-service-images.yml"))
 	if err != nil {
 		t.Fatalf("refused: %v", err)
 	}
@@ -103,7 +103,7 @@ func TestTheRegistryIsNotTakenAtItsWord(t *testing.T) {
 				}
 				return body
 			})
-			if digest, err := (sigstoreVerifier{rooted{registry{client: srv.Client()}}}).Verify(image, semiont("publish-service-images.yml")); err == nil {
+			if digest, err := (sigstoreVerifier{rooted{registry{client: srv.Client()}}}).Verify(image, xynolog("publish-service-images.yml")); err == nil {
 				t.Fatalf("verified %s", digest)
 			} else if !strings.Contains(err.Error(), c.want) {
 				t.Errorf("want a refusal saying %q, got %v", c.want, err)
@@ -122,7 +122,7 @@ func TestAnImageWithNoAttestationsTagHasNone(t *testing.T) {
 
 func TestADigestInTheImageIsTheDigest(t *testing.T) {
 	r := registry{client: &http.Client{Transport: noNetwork{}}}
-	digest, err := r.digest("ghcr.io/the-ai-alliance/semiont-gateway:latest@" + gatewayDigest)
+	digest, err := r.digest("ghcr.io/xynolog/xynolog-gateway:latest@" + gatewayDigest)
 	if err != nil || digest != gatewayDigest {
 		t.Fatalf("got %q, %v: an image pinned by its digest needs no registry to name it", digest, err)
 	}
@@ -136,12 +136,12 @@ func (noNetwork) RoundTrip(r *http.Request) (*http.Response, error) {
 
 func TestAReferenceNamesItsRegistry(t *testing.T) {
 	for _, c := range []struct{ image, base, tag, digest string }{
-		{"ghcr.io/the-ai-alliance/semiont-gateway:latest", "https://ghcr.io/v2/the-ai-alliance/semiont-gateway", "latest", ""},
+		{"ghcr.io/xynolog/xynolog-gateway:latest", "https://ghcr.io/v2/xynolog/xynolog-gateway", "latest", ""},
 		{"busybox:1.38.0", "https://registry-1.docker.io/v2/library/busybox", "1.38.0", ""},
 		{"qdrant/qdrant:v1.19.1", "https://registry-1.docker.io/v2/qdrant/qdrant", "v1.19.1", ""},
 		{"quay.io/keycloak/keycloak:26.7.4@sha256:" + strings.Repeat("1", 64), "https://quay.io/v2/keycloak/keycloak", "26.7.4", "sha256:" + strings.Repeat("1", 64)},
-		{"localhost:5000/semiont-gateway:local", "http://localhost:5000/v2/semiont-gateway", "local", ""},
-		{"registry.localhost/semiont-gateway:x", "http://registry.localhost/v2/semiont-gateway", "x", ""},
+		{"localhost:5000/xynolog-gateway:local", "http://localhost:5000/v2/xynolog-gateway", "local", ""},
+		{"registry.localhost/xynolog-gateway:x", "http://registry.localhost/v2/xynolog-gateway", "x", ""},
 		{"127.0.0.1:5000/a/b:c", "http://127.0.0.1:5000/v2/a/b", "c", ""},
 	} {
 		ref, err := parseReference(c.image)
@@ -153,7 +153,7 @@ func TestAReferenceNamesItsRegistry(t *testing.T) {
 			t.Errorf("%s: %s, tag %q, digest %q; want %s, %q, %q", c.image, ref.base(), ref.tag, ref.digest, c.base, c.tag, c.digest)
 		}
 	}
-	if _, err := parseReference("ghcr.io/the-ai-alliance/semiont-gateway"); err == nil {
+	if _, err := parseReference("ghcr.io/xynolog/xynolog-gateway"); err == nil {
 		t.Error("an image with neither tag nor digest was read as one")
 	}
 }

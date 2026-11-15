@@ -20,18 +20,18 @@ import (
 // config selects an external OIDC issuer, which launches nothing. Here a row
 // is a (role, driver) pair, so that assertion is not a row anybody can write.
 //
-// Semiont's own services are roles with exactly one driver — themselves. They
+// Xynolog's own services are roles with exactly one driver — themselves. They
 // carry no image: theirs is built from the registry and the version at start.
 //
 // Every image this table names is pinned by digest, behind the tag a reader
-// goes by: a tag can be moved to other bytes, and a digest cannot. `semiont
+// goes by: a tag can be moved to other bytes, and a digest cannot. `xynolog
 // init` writes the daemons' into a knowledge base's documents from here.
 //
 // Every list of container names derives from this table (the two sweeps,
 // the status roster, the realm's client list, the `--service` usage string),
 // gated by descriptor_census_test.go.
 
-const driverSemiont = "semiont"
+const driverXynolog = "xynolog"
 
 // probeImage: the image of every one-shot container the launcher runs to look
 // from a container's side (an address, a port, a route) or to clear a store.
@@ -92,7 +92,7 @@ type serviceDescriptor struct {
 	// structural fact the rest of the launcher reads as "no start, no stop, no
 	// logs" — never a missing value.
 	name  string
-	image string // "" for Semiont's own services: registry + version, at start
+	image string // "" for Xynolog's own services: registry + version, at start
 
 	// mem is the container's memory CEILING (--memory). On Apple container it
 	// sizes the per-container VM (≈ a commitment); on docker/podman it is a
@@ -146,42 +146,42 @@ type serviceDescriptor struct {
 
 // Port policy: (1) contract-standard ports keep the standard (4318 OTLP);
 // (2) third-party products keep their product ports (5432, 7474/7687, 6333,
-// 11434, 16686); (3) user-facing Semiont stays memorable (3000 Browser,
-// 4000 Gateway); (4) Semiont-internal services listen in 241xx — nobody's
+// 11434, 16686); (3) user-facing Xynolog stays memorable (3000 Browser,
+// 4000 Gateway); (4) Xynolog-internal services listen in 241xx — nobody's
 // default, below both ephemeral floors (Linux 32768, macOS 49152). The
 // 909x block is Prometheus/Pushgateway/Kafka/Alertmanager territory.
 //
-// Order is the reading order: Semiont's own services, then the
+// Order is the reading order: Xynolog's own services, then the
 // infrastructure they run on, then the model providers, then observability.
 var serviceDescriptors = []serviceDescriptor{
 	// The gateway waits for the issuer whose keys it verifies tokens against
 	// and the broker its signal plane dials; it dials no graph, vector,
 	// embedding or database client of its own. The collector precedes it
 	// because the gateway is the first process to export to it.
-	{role: "gateway", driver: driverSemiont, name: "gateway", mem: "2G", ports: []portNeed{{4000, "Gateway"}},
+	{role: "gateway", driver: driverXynolog, name: "gateway", mem: "2G", ports: []portNeed{{4000, "Gateway"}},
 		needs:  []string{"collector", "identity", "messaging"},
 		health: healthProbe{path: "/api/health"}},
 	// The worker, the Smelter and the Weaver open with boot-time bus requests the
 	// Archivist answers (the smelter's reconcile opens with browse:resources),
 	// and its /health only turns on after its bus pumps attach — so this edge
 	// is what closes the startup race.
-	{role: "worker", driver: driverSemiont, name: "worker", mem: "2G", ports: []portNeed{{24100, "Worker"}},
+	{role: "worker", driver: driverXynolog, name: "worker", mem: "2G", ports: []portNeed{{24100, "Worker"}},
 		display: "Worker", needs: []string{"gateway", "archivist"}, health: healthProbe{path: "/health"}},
-	{role: "smelter", driver: driverSemiont, name: "smelter", mem: "2G", ports: []portNeed{{24101, "Smelter"}},
+	{role: "smelter", driver: driverXynolog, name: "smelter", mem: "2G", ports: []portNeed{{24101, "Smelter"}},
 		needs: []string{"gateway", "archivist"}, health: healthProbe{path: "/health"}},
-	{role: "weaver", driver: driverSemiont, name: "weaver", mem: "2G", ports: []portNeed{{24102, "Weaver"}},
+	{role: "weaver", driver: driverXynolog, name: "weaver", mem: "2G", ports: []portNeed{{24102, "Weaver"}},
 		needs: []string{"gateway", "archivist"}, health: healthProbe{path: "/health"}},
 	// The Archivist dials the bus and nothing else.
-	{role: "archivist", driver: driverSemiont, name: "archivist", mem: "2G", ports: []portNeed{{24103, "Archivist"}},
+	{role: "archivist", driver: driverXynolog, name: "archivist", mem: "2G", ports: []portNeed{{24103, "Archivist"}},
 		needs: []string{"gateway"}, health: healthProbe{path: "/health"}},
 	// The Librarian owns discovery, so the stores it dials are its preconditions:
 	// each of them gates it, and none of them gates the gateway above.
-	{role: "librarian", driver: driverSemiont, name: "librarian", mem: "2G", ports: []portNeed{{24104, "Librarian"}},
+	{role: "librarian", driver: driverXynolog, name: "librarian", mem: "2G", ports: []portNeed{{24104, "Librarian"}},
 		needs:  []string{"gateway", "graph", "vectors", "inference", "embedding"},
 		health: healthProbe{path: "/health"}},
 	// The dispatcher's JetStream queue dials the same broker the signal plane
 	// does.
-	{role: "dispatcher", driver: driverSemiont, name: "dispatcher", mem: "2G", ports: []portNeed{{24105, "Dispatcher"}},
+	{role: "dispatcher", driver: driverXynolog, name: "dispatcher", mem: "2G", ports: []portNeed{{24105, "Dispatcher"}},
 		needs:  []string{"gateway", "messaging"},
 		health: healthProbe{path: "/health"}},
 	// browser: the catalog its document is written from (browserdoc.go) — its
@@ -189,7 +189,7 @@ var serviceDescriptors = []serviceDescriptor{
 	// its container. What runs is the document's. An empty ports list keeps
 	// the Browser's port out of every stack-level claim and sweep: flowBrowser
 	// claims the one its document names, and status reports it from its record.
-	{role: "browser", driver: driverSemiont, name: "browser", mem: "1G", defaultPort: 3000, page: "/"},
+	{role: "browser", driver: driverXynolog, name: "browser", mem: "1G", defaultPort: 3000, page: "/"},
 
 	{role: "identity-store", driver: "postgres", name: "postgres", image: "postgres:15.18-alpine@sha256:3d0f7584ed7d04e27fa050d6683a74746608faf21f202be78460d679cc56461f", mem: "1G",
 		ports: []portNeed{{5432, "PostgreSQL"}}, display: "PostgreSQL", defaultPort: 5432, portLabel: "PostgreSQL",
@@ -404,10 +404,10 @@ func descriptorFor(role, driver string) serviceDescriptor {
 	return descriptorIndex[role][driver]
 }
 
-// semiontDescriptor: the row for one of Semiont's own services, whose only
+// xynologDescriptor: the row for one of Xynolog's own services, whose only
 // driver is itself.
-func semiontDescriptor(role string) serviceDescriptor {
-	return descriptorIndex[role][driverSemiont]
+func xynologDescriptor(role string) serviceDescriptor {
+	return descriptorIndex[role][driverXynolog]
 }
 
 // descriptorsForRole: every driver's row for a role, in table order. The
@@ -438,7 +438,7 @@ func driversFor(role string) []string {
 // containerName: the container d's driver runs for the knowledge base whose
 // state is keyed key (rootKey). A shared role's is the machine's
 // (machineContainer), serving every knowledge base here; a stack role's is
-// semiont-<key>-<name>, so each knowledge base's stack runs under names of its
+// xynolog-<key>-<name>, so each knowledge base's stack runs under names of its
 // own. "" when the driver runs none.
 func (d serviceDescriptor) containerName(key string) string {
 	switch {
@@ -449,14 +449,14 @@ func (d serviceDescriptor) containerName(key string) string {
 	case key == "":
 		panic("the " + d.role + " container is named for a knowledge base, and none was named")
 	}
-	return "semiont-" + key + "-" + d.name
+	return "xynolog-" + key + "-" + d.name
 }
 
 // machineContainer: the container d's driver runs once for every knowledge
-// base here, semiont-<name>: a shared role's, or the vector store's for the
+// base here, xynolog-<name>: a shared role's, or the vector store's for the
 // knowledge bases that name it shared (machineServedRoles).
 func (d serviceDescriptor) machineContainer() string {
-	return "semiont-" + d.name
+	return "xynolog-" + d.name
 }
 
 // containersForRole: every container a driver of role could run for the
@@ -622,7 +622,7 @@ func probeDriver(role string) string {
 	return ""
 }
 
-// stackServices: Semiont's own services, in start order, minus the shared ones:
+// stackServices: Xynolog's own services, in start order, minus the shared ones:
 // the worker and the Browser.
 //
 // ONE list for three jobs that coincide on it, and coincide for one reason —
@@ -639,7 +639,7 @@ var stackServices = func() []string {
 		if role == "browser" || role == "worker" {
 			continue
 		}
-		if _, ours := lookupDescriptor(role, driverSemiont); ours {
+		if _, ours := lookupDescriptor(role, driverXynolog); ours {
 			out = append(out, role)
 		}
 	}

@@ -13,8 +13,8 @@ import (
 )
 
 const (
-	controlInitHelperEnv = "SEMIONT_CONTROL_INIT_HELPER"
-	controlInitRecordEnv = "SEMIONT_CONTROL_INIT_RECORD"
+	controlInitHelperEnv = "XYNOLOG_CONTROL_INIT_HELPER"
+	controlInitRecordEnv = "XYNOLOG_CONTROL_INIT_RECORD"
 )
 
 type controlInitHelperRecord struct {
@@ -45,7 +45,7 @@ func TestControlInitHelper(t *testing.T) {
 	}
 	record := controlInitHelperRecord{
 		Args: args, Directory: directory,
-		RootEnv: os.Getenv("SEMIONT_ROOT"), Preserved: os.Getenv("CONTROL_INIT_TEST_ENV"),
+		RootEnv: os.Getenv("XYNOLOG_ROOT"), Preserved: os.Getenv("CONTROL_INIT_TEST_ENV"),
 	}
 	encoded, err := json.Marshal(record)
 	if err != nil {
@@ -91,7 +91,7 @@ func controlInitCommand(t *testing.T) (func(context.Context, string, ...string) 
 	t.Setenv(controlInitHelperEnv, "1")
 	t.Setenv(controlInitRecordEnv, recordPath)
 	t.Setenv("CONTROL_INIT_TEST_ENV", "preserved")
-	t.Setenv("SEMIONT_ROOT", "must-not-be-inherited")
+	t.Setenv("XYNOLOG_ROOT", "must-not-be-inherited")
 	return func(ctx context.Context, _ string, args ...string) *exec.Cmd {
 		helperArgs := append([]string{"-test.run=^TestControlInitHelper$", "--"}, args...)
 		return exec.CommandContext(ctx, os.Args[0], helperArgs...)
@@ -267,7 +267,7 @@ func TestControlRootsInitCancellationAndOutputHelpers(t *testing.T) {
 		t.Fatalf("logged lines = %#v", *lines)
 	}
 
-	if got := withoutSemiontRoot([]string{"A=1", "SEMIONT_ROOT=/wrong", "B=2", "SEMIONT_ROOT="}); !reflect.DeepEqual(got, []string{"A=1", "B=2"}) {
+	if got := withoutXynologRoot([]string{"A=1", "XYNOLOG_ROOT=/wrong", "B=2", "XYNOLOG_ROOT="}); !reflect.DeepEqual(got, []string{"A=1", "B=2"}) {
 		t.Fatalf("filtered environment = %#v", got)
 	}
 }

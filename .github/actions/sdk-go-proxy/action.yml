@@ -14,4 +14,4 @@ runs:
       run: |
         proxy="$(node -e 'const { pathToFileURL } = require("node:url"); const { join } = require("node:path"); process.stdout.write(pathToFileURL(join(process.argv[1], "go", "go-proxy")).href)' "$SDK_ARTIFACTS")"
         echo "GOPROXY=$proxy,https://proxy.golang.org" >> "$GITHUB_ENV"
-        echo 'GONOSUMDB=github.com/Xynoplex/sdk/go' >> "$GITHUB_ENV"
+        echo 'GONOSUMDB=github.com/xynolog/sdk/go' >> "$GITHUB_ENV"

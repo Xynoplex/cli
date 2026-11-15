@@ -5,9 +5,9 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/Xynoplex/sdk/go/api"
+	"github.com/xynolog/sdk/go/api"
 
-	"github.com/Xynoplex/cli/internal/launcher/stack"
+	"github.com/xynolog/cli/internal/launcher/stack"
 )
 
 // externalBroker: st with a broker somebody else runs at nats.internal, its
@@ -61,7 +61,7 @@ func TestGatewayDocumentStatesWhatThePlacementDecides(t *testing.T) {
 	if doc.Identity.Issuer != "http://192.168.64.1:8080/realms/example.github.io-test-kb" || doc.Identity.SubjectClaim != "sub" {
 		t.Errorf("identity = %+v", doc.Identity)
 	}
-	if doc.Archivist.Host != "192.168.64.1" || doc.Archivist.Port != semiontDescriptor("archivist").ports[0].port {
+	if doc.Archivist.Host != "192.168.64.1" || doc.Archivist.Port != xynologDescriptor("archivist").ports[0].port {
 		t.Errorf("archivist = %+v, want the launcher's address and the descriptor's port", doc.Archivist)
 	}
 	if doc.Signal.Type != "nats" || doc.Signal.Servers == nil || *doc.Signal.Servers != "192.168.64.1:4222" {

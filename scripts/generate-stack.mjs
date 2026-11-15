@@ -28,7 +28,7 @@ const PROJECT = 'protocol/specs/src/kb-identity/ProjectConfig.json';
 const COMPONENTS = 'protocol/specs/src/components/schemas/';
 const GO_OUT = 'internal/launcher/stack';
 // The SDK's package of the spec's components. A wrong path fails the build.
-const SDK_API = 'github.com/Xynoplex/sdk/go/api';
+const SDK_API = 'github.com/xynolog/sdk/go/api';
 
 /** The keywords a type is made from, and those that are rules the validator enforces. */
 const SHAPE = new Set(['title', 'type', 'description', 'properties', 'required', 'additionalProperties', 'propertyNames', '$ref']);

@@ -21,14 +21,14 @@ import (
 // only the provenance: the bill of materials beside it is half a megabyte,
 // and says nothing about who built the image.
 const (
-	gatewayImage  = "ghcr.io/the-ai-alliance/semiont-gateway:latest"
+	gatewayImage  = "ghcr.io/xynolog/xynolog-gateway:latest"
 	gatewayDigest = "sha256:853cf2b37c0df8065a405479f08451af84dd3a732194abebfeb6adced3d87cd3"
 	gatewayBundle = "testdata/gateway-0.7.0/blobs/sha256-2b81794cc31526b95d6869b5e667f64ab17f20ddd8b06dfd9005533c2ad2c688"
 )
 
-// semiont: a release of Semiont's, by workflow.
-func semiont(workflow string) Release {
-	return Release{Repository: "The-AI-Alliance/semiont", Workflow: workflow}
+// xynolog: a release of Xynolog's, by workflow.
+func xynolog(workflow string) Release {
+	return Release{Repository: "xynolog/images", Workflow: workflow}
 }
 
 // saved: a source that is what the registry and TUF served, read from
@@ -72,8 +72,8 @@ func savedRoot() (root.TrustedMaterial, []verify.VerifierOption, error) {
 
 func released() Verifier { return sigstoreVerifier{saved{gatewayDigest, []string{gatewayBundle}}} }
 
-func TestTheReleasedGatewayIsASemiontRelease(t *testing.T) {
-	digest, err := released().Verify(gatewayImage, semiont("publish-service-images.yml"))
+func TestTheReleasedGatewayIsAXynologRelease(t *testing.T) {
+	digest, err := released().Verify(gatewayImage, xynolog("publish-service-images.yml"))
 	if err != nil {
 		t.Fatalf("the gateway 0.7.0 released is refused: %v", err)
 	}
@@ -84,14 +84,14 @@ func TestTheReleasedGatewayIsASemiontRelease(t *testing.T) {
 
 // The same real attestation, held to what it does not say.
 func TestTheReleasedGatewayIsRefusedForWhatItIsNot(t *testing.T) {
-	release := signerOf(semiont("publish-service-images.yml"))
+	release := signerOf(xynolog("publish-service-images.yml"))
 	for _, c := range []struct {
 		name   string
 		digest string
 		signer signer
 	}{
-		{"another workflow's release", gatewayDigest, signerOf(semiont("publish-browser.yml"))},
-		{"another repository's release", gatewayDigest, signerOf(Release{Repository: "someone/semiont", Workflow: "publish-service-images.yml"})},
+		{"another workflow's release", gatewayDigest, signerOf(xynolog("publish-browser.yml"))},
+		{"another repository's release", gatewayDigest, signerOf(Release{Repository: "someone/xynolog", Workflow: "publish-service-images.yml"})},
 		{"another image's digest", "sha256:" + strings.Repeat("0", 64), release},
 		{"another issuer", gatewayDigest, signer{issuer: "https://accounts.google.com", identity: release.identity, what: "Google's"}},
 	} {
@@ -109,11 +109,11 @@ func TestTheReleasedGatewayIsRefusedForWhatItIsNot(t *testing.T) {
 // built; the Refuser refuses a release's too.
 func TestNoVerifierAcceptsWhatNoReleaseBuilt(t *testing.T) {
 	for name, v := range map[string]Verifier{"sigstore": released(), "refuser": Refuser{}} {
-		if digest, err := v.Verify(gatewayImage, semiont("publish-browser.yml")); err == nil {
+		if digest, err := v.Verify(gatewayImage, xynolog("publish-browser.yml")); err == nil {
 			t.Errorf("%s verified the services' image as the Browser's release: %s", name, digest)
 		}
 	}
-	if _, err := (Refuser{}).Verify(gatewayImage, semiont("publish-service-images.yml")); !errors.Is(err, ErrUnverifiable) {
+	if _, err := (Refuser{}).Verify(gatewayImage, xynolog("publish-service-images.yml")); !errors.Is(err, ErrUnverifiable) {
 		t.Errorf("the Refuser said %v of a release's image, want ErrUnverifiable", err)
 	}
 }
@@ -162,7 +162,7 @@ func (a *authority) trustedMaterial() (root.TrustedMaterial, []verify.VerifierOp
 	return a.ca, []verify.VerifierOption{verify.WithTransparencyLog(1), verify.WithObserverTimestamps(1)}, nil
 }
 
-const servicesWorkflow = "https://github.com/The-AI-Alliance/semiont/.github/workflows/publish-service-images.yml"
+const servicesWorkflow = "https://github.com/xynolog/images/.github/workflows/publish-service-images.yml"
 
 func TestAReleaseIsSignedAtAReleaseTag(t *testing.T) {
 	for _, c := range []struct {
@@ -173,12 +173,12 @@ func TestAReleaseIsSignedAtAReleaseTag(t *testing.T) {
 		{"from main", servicesWorkflow + "@refs/heads/main", false},
 		{"from a branch named like a tag", servicesWorkflow + "@refs/heads/refs/tags/v0.7.0", false},
 		{"at a tag that is not a release", servicesWorkflow + "@refs/tags/nightly", false},
-		{"from a fork", "https://github.com/someone/semiont/.github/workflows/publish-service-images.yml@refs/tags/v0.7.0", false},
+		{"from a fork", "https://github.com/someone/xynolog/.github/workflows/publish-service-images.yml@refs/tags/v0.7.0", false},
 	} {
 		t.Run(c.name, func(t *testing.T) {
 			a := newAuthority(t)
 			a.attest(t, c.identity, buildProvenance, a.digestOf)
-			digest, err := sigstoreVerifier{a}.Verify(gatewayImage, semiont("publish-service-images.yml"))
+			digest, err := sigstoreVerifier{a}.Verify(gatewayImage, xynolog("publish-service-images.yml"))
 			if c.accepted && (err != nil || digest != a.digestOf) {
 				t.Fatalf("refused: %v", err)
 			}
@@ -192,7 +192,7 @@ func TestAReleaseIsSignedAtAReleaseTag(t *testing.T) {
 func TestOnlyBuildProvenanceOfTheDigestVerifies(t *testing.T) {
 	release := servicesWorkflow + "@refs/tags/v0.7.0"
 	check := func(a *authority) error {
-		_, err := sigstoreVerifier{a}.Verify(gatewayImage, semiont("publish-service-images.yml"))
+		_, err := sigstoreVerifier{a}.Verify(gatewayImage, xynolog("publish-service-images.yml"))
 		return err
 	}
 	t.Run("a bill of materials is not provenance", func(t *testing.T) {

@@ -21,7 +21,7 @@ func useraddHint(repo string) string {
 
 const useraddUsage = `Usage: xynolog useradd --email <email> [--generate-password] [options]
 
-Create or update a user in a Semiont stack, local or codespace. The ISSUER holds
+Create or update a user in a Xynolog stack, local or codespace. The ISSUER holds
 the account, the profile and the password; this decides which realm is meant and
 speaks to it. A local realm is administered from here; a codespace's by its own
 launcher, over ssh, so that machine's admin credential never crosses the wire.
@@ -46,7 +46,7 @@ Options:
 Creating an account prints the identity it acts under. On a terminal, it then
 says how the person signs in.
 
-There are no role flags. No Semiont route grants access on the basis of a role,
+There are no role flags. No Xynolog route grants access on the basis of a role,
 so there is nothing here to grant. There is no display name either: the realm
 requires a first and last name, and asks the person for their own at first
 sign-in rather than have an administrator guess how to split one string.
@@ -74,7 +74,7 @@ Examples:
   xynolog useradd --email admin@example.com
 
   # A second user on a codespace KB
-  xynolog useradd --repo The-AI-Alliance/my-kb --email alice@example.com --generate-password
+  xynolog useradd --repo your-org/my-kb --email alice@example.com --generate-password
 `
 
 // Useradd implements `xynolog useradd`. The ISSUER owns the account, the

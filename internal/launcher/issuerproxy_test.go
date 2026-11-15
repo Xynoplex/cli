@@ -8,7 +8,7 @@ import (
 	"net/url"
 	"testing"
 
-	"github.com/Xynoplex/cli/internal/launcher/harness"
+	"github.com/xynolog/cli/internal/launcher/harness"
 )
 
 // The proxy passes the paths of the realms it serves and Keycloak's assets,
@@ -76,7 +76,7 @@ func TestIssuerProxyKeepsTheHostItWasAskedAndPassesNothingElse(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	proxy := httptest.NewServer(issuerProxyHandler(target, []string{"semiont"}))
+	proxy := httptest.NewServer(issuerProxyHandler(target, []string{"xynolog"}))
 	defer proxy.Close()
 
 	ask := func(path string) *http.Response {
@@ -94,18 +94,18 @@ func TestIssuerProxyKeepsTheHostItWasAskedAndPassesNothingElse(t *testing.T) {
 		return resp
 	}
 
-	if resp := ask("/realms/semiont/.well-known/openid-configuration"); resp.StatusCode != http.StatusOK {
+	if resp := ask("/realms/xynolog/.well-known/openid-configuration"); resp.StatusCode != http.StatusOK {
 		t.Fatalf("discovery through the proxy answered %d", resp.StatusCode)
 	}
 	if gotHost != lanAddr+":8080" {
 		t.Errorf("Keycloak was asked with Host %q, want the one the caller asked, %s:8080", gotHost, lanAddr)
 	}
-	if gotPath != "/realms/semiont/.well-known/openid-configuration" {
+	if gotPath != "/realms/xynolog/.well-known/openid-configuration" {
 		t.Errorf("Keycloak was asked for %q", gotPath)
 	}
 
 	before := calls
-	for _, path := range []string{"/admin/master/console/", "/realms/master/protocol/openid-connect/token", "/realms/semiont%2F..%2Fmaster/protocol/openid-connect/token"} {
+	for _, path := range []string{"/admin/master/console/", "/realms/master/protocol/openid-connect/token", "/realms/xynolog%2F..%2Fmaster/protocol/openid-connect/token"} {
 		if resp := ask(path); resp.StatusCode != http.StatusNotFound {
 			t.Errorf("%s through the proxy answered %d, want 404", path, resp.StatusCode)
 		}
@@ -122,10 +122,10 @@ func TestIssuerProxyRefusesArgumentsItCannotServeWith(t *testing.T) {
 		name string
 		args []string
 	}{
-		{"an unknown flag", []string{"--realm", "semiont", "--port", "8080"}},
+		{"an unknown flag", []string{"--realm", "xynolog", "--port", "8080"}},
 		{"a flag without a value", []string{"--listen"}},
 		{"a required flag missing", []string{"--listen", "127.0.0.1:8080", "--upstream", "127.0.0.1:18080"}},
-		{"a --listen that is not host:port", []string{"--listen", "8080", "--upstream", "127.0.0.1:18080", "--realm", "semiont"}},
+		{"a --listen that is not host:port", []string{"--listen", "8080", "--upstream", "127.0.0.1:18080", "--realm", "xynolog"}},
 	} {
 		t.Run(c.name, func(t *testing.T) {
 			_, stderr := harness.CaptureOutput(t, func() {
@@ -146,7 +146,7 @@ func TestIssuerProxyEndsOnAPortItCannotTake(t *testing.T) {
 	}
 	defer held.Close()
 	_, stderr := harness.CaptureOutput(t, func() {
-		if code := IssuerProxy([]string{"--listen", held.Addr().String(), "--upstream", "127.0.0.1:18080", "--realm", "semiont"}); code != 1 {
+		if code := IssuerProxy([]string{"--listen", held.Addr().String(), "--upstream", "127.0.0.1:18080", "--realm", "xynolog"}); code != 1 {
 			t.Errorf("exit %d, want 1", code)
 		}
 	})

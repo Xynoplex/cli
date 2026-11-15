@@ -108,7 +108,7 @@ jobs:
           file: ./images/${{ matrix.service }}/Dockerfile
           target: builder
           load: true
-          tags: semiont-${{ matrix.service }}:licences
+          tags: xynolog-${{ matrix.service }}:licences
           build-args: PYTHON_FLOOR=${{ steps.args.outputs.floor }}
           cache-from: type=gha
 
@@ -117,7 +117,7 @@ jobs:
       - name: Generate SBOM with Trivy
         uses: aquasecurity/trivy-action@v0.36.0
         with:
-          image-ref: semiont-${{ matrix.service }}:licences
+          image-ref: xynolog-${{ matrix.service }}:licences
           format: spdx-json
           output: sbom.spdx.json
 

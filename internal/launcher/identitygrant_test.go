@@ -45,17 +45,17 @@ func grantedRep(label string, k registeredKey) map[string]any {
 // worker, and nothing else in the realm touched.
 func TestAGrantCreatesOneClientAsTheRealmRendersAWorker(t *testing.T) {
 	k := anotherWorkerKey(t)
-	s := newStubAdmin(t, "semiont", allServiceClientReps())
+	s := newStubAdmin(t, "xynolog", allServiceClientReps())
 
-	rep, err := grantWorker(s.srv.URL, "semiont", "admin", "pw", "semiont-gateway", "alice", k)
+	rep, err := grantWorker(s.srv.URL, "xynolog", "admin", "pw", "xynolog-gateway", "alice", k)
 	if err != nil {
 		t.Fatalf("grant: %v", err)
 	}
-	if !slices.Equal(rep.created, []string{"semiont-worker-alice"}) || len(s.created) != 1 {
-		t.Fatalf("created = %v (POSTed %d), want semiont-worker-alice alone", rep.created, len(s.created))
+	if !slices.Equal(rep.created, []string{"xynolog-worker-alice"}) || len(s.created) != 1 {
+		t.Fatalf("created = %v (POSTed %d), want xynolog-worker-alice alone", rep.created, len(s.created))
 	}
 	got, _ := json.Marshal(s.created[0])
-	want, _ := json.Marshal(workerClient("alice", k, "semiont-gateway"))
+	want, _ := json.Marshal(workerClient("alice", k, "xynolog-gateway"))
 	if string(got) != string(want) {
 		t.Errorf("the granted client is not the one the realm renders for a worker:\n got: %s\nwant: %s", got, want)
 	}
@@ -68,13 +68,13 @@ func TestAGrantCreatesOneClientAsTheRealmRendersAWorker(t *testing.T) {
 // confirm it.
 func TestAGrantOfTheSameKeyAgainChangesNothing(t *testing.T) {
 	k := anotherWorkerKey(t)
-	s := newStubAdmin(t, "semiont", append(allServiceClientReps(), grantedRep("alice", k)))
+	s := newStubAdmin(t, "xynolog", append(allServiceClientReps(), grantedRep("alice", k)))
 
-	rep, err := grantWorker(s.srv.URL, "semiont", "admin", "pw", "semiont-gateway", "alice", k)
+	rep, err := grantWorker(s.srv.URL, "xynolog", "admin", "pw", "xynolog-gateway", "alice", k)
 	if err != nil {
 		t.Fatalf("grant: %v", err)
 	}
-	if !slices.Equal(rep.present, []string{"semiont-worker-alice"}) || len(rep.created)+len(rep.updated) != 0 {
+	if !slices.Equal(rep.present, []string{"xynolog-worker-alice"}) || len(rep.created)+len(rep.updated) != 0 {
 		t.Errorf("report = %+v, want the grant present and nothing changed", rep)
 	}
 	if len(s.created)+len(s.updated)+len(s.mappers)+len(s.deleted) != 0 {
@@ -87,13 +87,13 @@ func TestAGrantOfTheSameKeyAgainChangesNothing(t *testing.T) {
 // updated, never deleted and made again.
 func TestAGrantOfANewKeyReplacesTheOldOnTheSameClient(t *testing.T) {
 	old, k := anotherWorkerKey(t), anotherWorkerKey(t)
-	s := newStubAdmin(t, "semiont", append(allServiceClientReps(), grantedRep("alice", old)))
+	s := newStubAdmin(t, "xynolog", append(allServiceClientReps(), grantedRep("alice", old)))
 
-	rep, err := grantWorker(s.srv.URL, "semiont", "admin", "pw", "semiont-gateway", "alice", k)
+	rep, err := grantWorker(s.srv.URL, "xynolog", "admin", "pw", "xynolog-gateway", "alice", k)
 	if err != nil {
 		t.Fatalf("grant: %v", err)
 	}
-	patch, ok := s.updated["semiont-worker-alice"]
+	patch, ok := s.updated["xynolog-worker-alice"]
 	if !ok {
 		t.Fatalf("the client kept the old key; PUTs: %v", s.updated)
 	}
@@ -112,15 +112,15 @@ func TestAGrantOfANewKeyReplacesTheOldOnTheSameClient(t *testing.T) {
 // A revoke deletes the client granted under that label, and no other: not
 // another grant, not the shared worker, not a service's.
 func TestARevokeDeletesThatClientAndNoOther(t *testing.T) {
-	s := newStubAdmin(t, "semiont", append(allServiceClientReps(),
+	s := newStubAdmin(t, "xynolog", append(allServiceClientReps(),
 		grantedRep("alice", anotherWorkerKey(t)), grantedRep("bob", anotherWorkerKey(t))))
 
-	revoked, _, err := revokeWorker(s.srv.URL, "semiont", "admin", "pw", "alice")
+	revoked, _, err := revokeWorker(s.srv.URL, "xynolog", "admin", "pw", "alice")
 	if err != nil {
 		t.Fatalf("revoke: %v", err)
 	}
-	if !revoked || !slices.Equal(s.deleted, []string{"semiont-worker-alice"}) {
-		t.Fatalf("revoked=%v, deleted %v, want semiont-worker-alice alone", revoked, s.deleted)
+	if !revoked || !slices.Equal(s.deleted, []string{"xynolog-worker-alice"}) {
+		t.Fatalf("revoked=%v, deleted %v, want xynolog-worker-alice alone", revoked, s.deleted)
 	}
 	if len(s.created)+len(s.updated)+len(s.mappers) != 0 {
 		t.Errorf("a revoke wrote to the realm: POST %v, PUT %v, mappers %v", s.created, s.updated, s.mappers)
@@ -131,9 +131,9 @@ func TestARevokeDeletesThatClientAndNoOther(t *testing.T) {
 // labels that are granted — the shared worker not among them — so a
 // mistyped label says so rather than passing for a revocation.
 func TestARevokeOfNoGrantDeletesNothing(t *testing.T) {
-	s := newStubAdmin(t, "semiont", append(allServiceClientReps(), grantedRep("bob", anotherWorkerKey(t))))
+	s := newStubAdmin(t, "xynolog", append(allServiceClientReps(), grantedRep("bob", anotherWorkerKey(t))))
 
-	revoked, granted, err := revokeWorker(s.srv.URL, "semiont", "admin", "pw", "alice")
+	revoked, granted, err := revokeWorker(s.srv.URL, "xynolog", "admin", "pw", "alice")
 	if err != nil {
 		t.Fatalf("revoke: %v", err)
 	}
@@ -148,11 +148,11 @@ func TestARevokeOfNoGrantDeletesNothing(t *testing.T) {
 // Neither reaches an account: a grant makes a client, a revoke deletes one,
 // and Keycloak keeps a client's own account with it.
 func TestGrantAndRevokeTouchNoUsersEndpoint(t *testing.T) {
-	s := newStubAdmin(t, "semiont", allServiceClientReps())
-	if _, err := grantWorker(s.srv.URL, "semiont", "admin", "pw", "semiont-gateway", "alice", anotherWorkerKey(t)); err != nil {
+	s := newStubAdmin(t, "xynolog", allServiceClientReps())
+	if _, err := grantWorker(s.srv.URL, "xynolog", "admin", "pw", "xynolog-gateway", "alice", anotherWorkerKey(t)); err != nil {
 		t.Fatal(err)
 	}
-	if _, _, err := revokeWorker(s.srv.URL, "semiont", "admin", "pw", "alice"); err != nil {
+	if _, _, err := revokeWorker(s.srv.URL, "xynolog", "admin", "pw", "alice"); err != nil {
 		t.Fatal(err)
 	}
 	if s.touched("/users") {
@@ -255,12 +255,12 @@ func TestAGrantLabelIsChecked(t *testing.T) {
 // The bootstrap admin's login refused: a grant and a revoke each say so, and
 // change nothing.
 func TestGrantAndRevokeReportARefusedAdminLogin(t *testing.T) {
-	s := newStubAdmin(t, "semiont", append(allServiceClientReps(), grantedRep("alice", anotherWorkerKey(t))))
+	s := newStubAdmin(t, "xynolog", append(allServiceClientReps(), grantedRep("alice", anotherWorkerKey(t))))
 	s.badLogin = true
-	if _, err := grantWorker(s.srv.URL, "semiont", "admin", "wrong", "semiont-gateway", "bob", anotherWorkerKey(t)); err == nil || !strings.Contains(err.Error(), "admin") {
+	if _, err := grantWorker(s.srv.URL, "xynolog", "admin", "wrong", "xynolog-gateway", "bob", anotherWorkerKey(t)); err == nil || !strings.Contains(err.Error(), "admin") {
 		t.Errorf("grant: err = %v, want the admin login named", err)
 	}
-	if revoked, _, err := revokeWorker(s.srv.URL, "semiont", "admin", "wrong", "alice"); revoked || err == nil || !strings.Contains(err.Error(), "admin") {
+	if revoked, _, err := revokeWorker(s.srv.URL, "xynolog", "admin", "wrong", "alice"); revoked || err == nil || !strings.Contains(err.Error(), "admin") {
 		t.Errorf("revoke: revoked=%v, err = %v, want the admin login named", revoked, err)
 	}
 	if len(s.created)+len(s.updated)+len(s.deleted) != 0 {
@@ -272,7 +272,7 @@ func TestGrantAndRevokeReportARefusedAdminLogin(t *testing.T) {
 // client and the answer, and never report it made. A revoke that reported a
 // worker revoked when it still signs in would be the worst answer it has.
 func TestGrantAndRevokeReportARefusedChange(t *testing.T) {
-	s := newStubAdmin(t, "semiont", append(allServiceClientReps(), grantedRep("alice", anotherWorkerKey(t))))
+	s := newStubAdmin(t, "xynolog", append(allServiceClientReps(), grantedRep("alice", anotherWorkerKey(t))))
 	s.refuseWrites = true
 	for _, c := range []struct {
 		what string
@@ -280,20 +280,20 @@ func TestGrantAndRevokeReportARefusedChange(t *testing.T) {
 		want string
 	}{
 		{"a new grant", func() error {
-			_, err := grantWorker(s.srv.URL, "semiont", "admin", "pw", "semiont-gateway", "bob", anotherWorkerKey(t))
+			_, err := grantWorker(s.srv.URL, "xynolog", "admin", "pw", "xynolog-gateway", "bob", anotherWorkerKey(t))
 			return err
-		}, "creating semiont-worker-bob: HTTP 403"},
+		}, "creating xynolog-worker-bob: HTTP 403"},
 		{"a new key", func() error {
-			_, err := grantWorker(s.srv.URL, "semiont", "admin", "pw", "semiont-gateway", "alice", anotherWorkerKey(t))
+			_, err := grantWorker(s.srv.URL, "xynolog", "admin", "pw", "xynolog-gateway", "alice", anotherWorkerKey(t))
 			return err
-		}, "updating semiont-worker-alice: HTTP 403"},
+		}, "updating xynolog-worker-alice: HTTP 403"},
 		{"a revoke", func() error {
-			revoked, _, err := revokeWorker(s.srv.URL, "semiont", "admin", "pw", "alice")
+			revoked, _, err := revokeWorker(s.srv.URL, "xynolog", "admin", "pw", "alice")
 			if revoked {
 				t.Error("a refused revoke reported the worker revoked")
 			}
 			return err
-		}, "deleting semiont-worker-alice: HTTP 403"},
+		}, "deleting xynolog-worker-alice: HTTP 403"},
 	} {
 		if err := c.err(); err == nil || !strings.Contains(err.Error(), c.want) {
 			t.Errorf("%s: err = %v, want %q", c.what, err, c.want)

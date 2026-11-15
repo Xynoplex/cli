@@ -1,15 +1,15 @@
-module github.com/Xynoplex/cli
+module github.com/xynolog/cli
 
 go 1.27.0
 
 toolchain go1.27.4
 
 require (
-	github.com/Xynoplex/sdk/go v0.7.3
 	github.com/modelcontextprotocol/go-sdk v1.8.0
 	github.com/nats-io/nats-server/v2 v2.15.2
 	github.com/santhosh-tekuri/jsonschema/v6 v6.0.3
 	github.com/sigstore/sigstore-go v1.4.0
+	github.com/xynolog/sdk/go v0.7.3
 	go.yaml.in/yaml/v3 v3.0.6
 	golang.org/x/sys v0.50.0
 	golang.org/x/term v0.48.0
@@ -57,7 +57,7 @@ require (
 	github.com/in-toto/in-toto-golang v0.11.0 // indirect
 	github.com/inconshreveable/mousetrap v1.1.0 // indirect
 	github.com/jedisct1/go-minisign v0.0.0-20211028175153-1c139d1cc84b // indirect
-	github.com/oapi-codegen/runtime v1.8.0 // indirect
+	github.com/oapi-codegen/runtime v1.9.0 // indirect
 	github.com/oklog/ulid/v2 v2.1.2 // indirect
 	github.com/opencontainers/go-digest v1.0.0 // indirect
 	github.com/pkg/errors v0.9.1 // indirect

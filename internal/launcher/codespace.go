@@ -309,9 +309,9 @@ func startCodespace(u *UI, opts startOptions, browser browserDocument) int {
 	reconcileDid(u, newSt, false)
 
 	fmt.Println()
-	fmt.Printf("%s  %s\n", u.Wrap(AnsiBold+AnsiGreen, "🚀 Semiont KB is up in codespace "+name), u.Dim("("+took(d)+" to healthy)"))
+	fmt.Printf("%s  %s\n", u.Wrap(AnsiBold+AnsiGreen, "🚀 Xynolog KB is up in codespace "+name), u.Dim("("+took(d)+" to healthy)"))
 	fmt.Println()
-	fmt.Printf("  Semiont KB         %s %s\n", u.Bold(fmt.Sprintf("http://localhost:%d", kbPort)),
+	fmt.Printf("  Xynolog KB         %s %s\n", u.Bold(fmt.Sprintf("http://localhost:%d", kbPort)),
 		u.Dim("(add Host localhost, Port "+fmt.Sprintf("%d", kbPort)+" in the browser's Knowledge Bases panel)"))
 	if n := newSt.Codespace.KeycloakPort; n != 0 {
 		fmt.Printf("  Issuer             %s %s\n", fmt.Sprintf("http://keycloak.localhost:%d", n), u.Dim("(forwarded — sign-in goes here)"))
@@ -333,9 +333,9 @@ func startCodespace(u *UI, opts startOptions, browser browserDocument) int {
 		}
 	}
 	if httpOK(browser.endpoint()) {
-		fmt.Printf("  Semiont Browser    %s %s\n", u.Bold(browser.endpoint()), u.Dim("(discovery-synced — this KB appears in its panel)"))
+		fmt.Printf("  Xynolog Browser    %s %s\n", u.Bold(browser.endpoint()), u.Dim("(discovery-synced — this KB appears in its panel)"))
 	} else {
-		fmt.Printf("  Semiont Browser    %s %s\n", u.Bold("xynolog start --service browser"),
+		fmt.Printf("  Xynolog Browser    %s %s\n", u.Bold("xynolog start --service browser"),
 			u.Dim("(no local container runtime found — install one, or browse from another machine)"))
 	}
 	fmt.Println()
@@ -362,8 +362,8 @@ func startCodespace(u *UI, opts startOptions, browser browserDocument) int {
 	return 0
 }
 
-// cwdKBRoot: the KB root the working directory resolves to (SEMIONT_ROOT,
-// else the .semiont/ walk) — the zero kbRoot when not inside a clone. The cwd
+// cwdKBRoot: the KB root the working directory resolves to (XYNOLOG_ROOT,
+// else the .xynolog/ walk) — the zero kbRoot when not inside a clone. The cwd
 // is context every command may consult: standing in a clone says which stack
 // is meant. A clone whose config.yaml does not hold is refused, never read as
 // no clone; one that holds comes with its identity.
@@ -439,7 +439,7 @@ func repoFromRoot(u *UI, opts startOptions) (slug string, did string, code int) 
 		return "", "", 1
 	}
 	// This clone IS the repo we are about to launch, so its committed
-	// .semiont/config.yaml carries that KB's real did:web. Captured here and
+	// .xynolog/config.yaml carries that KB's real did:web. Captured here and
 	// recorded, so status never has to guess an identity from a filename.
 	did = ident.didWeb()
 	// Pushed-state honesty: locally an uncommitted config edit is live via
@@ -1056,7 +1056,7 @@ func startDetached(name string, args ...string) (int, <-chan struct{}, error) {
 }
 
 // reconcileDid keeps a codespace stack's recorded did:web honest against the
-// KB actually running there, by reading .semiont/config.yaml over ssh.
+// KB actually running there, by reading .xynolog/config.yaml over ssh.
 //
 // It reaches out in exactly two situations, because an ssh WAKES a stopped
 // codespace — which costs money and ~20 seconds, and no reporting command may
@@ -1093,18 +1093,18 @@ func reconcileDid(u *UI, st *StackState, force bool) {
 		fmt.Fprintf(os.Stderr, "    recorded: %s\n", st.KBDid)
 		fmt.Fprintf(os.Stderr, "    running:  %s\n", remote)
 		fmt.Fprintln(os.Stderr, "    The codespace is running a different KB than when the record was made")
-		fmt.Fprintln(os.Stderr, "    (a re-created codespace, or an edited .semiont/config.yaml). Nothing was")
+		fmt.Fprintln(os.Stderr, "    (a re-created codespace, or an edited .xynolog/config.yaml). Nothing was")
 		fmt.Fprintln(os.Stderr, "    changed here — delete that codespace and its record with: xynolog stop --repo "+st.Codespace.Repo+" --delete")
 	}
 }
 
 // fetchRemoteDid reads the codespace's committed identity card, its
-// .semiont/config.yaml. Note the ABSOLUTE globbed path: `gh codespace ssh`
+// .xynolog/config.yaml. Note the ABSOLUTE globbed path: `gh codespace ssh`
 // lands in /home/vscode, not the workspace, so a relative path silently fails
 // with "No such file or directory". The glob expands remotely and does not
 // depend on the workspace directory's name.
 func fetchRemoteDid(u *UI, name string) (string, bool) {
-	const path = "/workspaces/*/.semiont/" + projectFileYAML
+	const path = "/workspaces/*/.xynolog/" + projectFileYAML
 	u.Log("Reading KB identity %s", u.Dim("(gh codespace ssh -c "+name+" -- cat "+path+")"))
 	out, err := capture("gh", "codespace", "ssh", "-c", name, "--", "cat", path)
 	if err != nil {
@@ -1142,7 +1142,7 @@ func renderCodespacePlan(opts startOptions, repo, recorded string) {
 	}
 	fmt.Println("gh codespace ports forward 4000:<kb-port> -c <codespace>   # <codespacePort>:<localPort>; detached; pid + port recorded")
 	fmt.Println("# wait: http://localhost:<kb-port>/api/health (600s)")
-	fmt.Println("gh codespace ssh -c <codespace> -- cat /workspaces/*/.semiont/config.yaml   # KB identity, when the record lacks one")
+	fmt.Println("gh codespace ssh -c <codespace> -- cat /workspaces/*/.xynolog/config.yaml   # KB identity, when the record lacks one")
 }
 
 // stopCodespace: `xynolog stop` for a codespace stack. Stop halts billing
@@ -1749,7 +1749,7 @@ const (
 // is among the first services a start brings up, so a gateway-only probe says
 // "ready" while post-start is starting the rest, and the issuer move's rerun
 // would collide with it. Before post-start has installed the launcher,
-// `semiont` is not found and the answer is "wait".
+// `xynolog` is not found and the answer is "wait".
 func askRemoteKB(name string) remoteReadiness {
 	probe := fmt.Sprintf(
 		"cd /workspaces/* && xynolog status --root . >/dev/null 2>&1 && echo %s || echo %s",
@@ -1766,8 +1766,8 @@ func askRemoteKB(name string) remoteReadiness {
 }
 
 const (
-	readySentinel    = "SEMIONT_KB_READY"
-	notReadySentinel = "SEMIONT_KB_WAIT"
+	readySentinel    = "XYNOLOG_KB_READY"
+	notReadySentinel = "XYNOLOG_KB_WAIT"
 )
 
 // --- forward stderr, kept so a death can be explained ---

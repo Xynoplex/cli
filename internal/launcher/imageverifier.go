@@ -7,10 +7,10 @@ import (
 	"path/filepath"
 	"time"
 
-	"github.com/Xynoplex/cli/internal/launcher/provenance"
+	"github.com/xynolog/cli/internal/launcher/provenance"
 )
 
-// imageVerifier: what decides whether an image of Semiont's is a release's —
+// imageVerifier: what decides whether an image of Xynolog's is a release's —
 // the image's own registry, and Sigstore's public trusted root, kept under
 // the launcher's data directory until its metadata expires.
 func imageVerifier() provenance.Verifier {

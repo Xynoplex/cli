@@ -6,9 +6,9 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/Xynoplex/sdk/go/api"
+	"github.com/xynolog/sdk/go/api"
 
-	"github.com/Xynoplex/cli/internal/launcher/stack"
+	"github.com/xynolog/cli/internal/launcher/stack"
 )
 
 func archivistDocumentFrom(t *testing.T, b []byte) api.ArchivistConfig {
@@ -48,7 +48,7 @@ func TestArchivistDocumentStatesWhatThePlacementDecides(t *testing.T) {
 	if doc.Root != kbMountTarget || doc.AnchoredTextDir != stateStores["anchored-text"].mounts[0].target || doc.StateHome != stateStores["state"].mounts[0].target {
 		t.Errorf("root = %q, anchoredTextDir = %q, stateHome = %q: want the paths the launcher mounts onto", doc.Root, doc.AnchoredTextDir, doc.StateHome)
 	}
-	if doc.Port != semiontDescriptor("archivist").ports[0].port {
+	if doc.Port != xynologDescriptor("archivist").ports[0].port {
 		t.Errorf("port = %d, want the descriptor's", doc.Port)
 	}
 	if doc.SkipRebuild {
@@ -71,7 +71,7 @@ func TestArchivistDocumentStatesWhatThePlacementDecides(t *testing.T) {
 // and hands the Archivist no address by environment: the document carries
 // them.
 func TestArchivistDocumentIsMountedAndNoHostVariableIsPassed(t *testing.T) {
-	args := strings.Join(archivistArgs("kb", "/host/kb", "/stage", exposure{rt: "container", addr: "1.2.3.4"}, semiontDescriptor("archivist").ports[0].port, "client-secret", "v", semiontDescriptor("archivist").mem, nil, nil), " ")
+	args := strings.Join(archivistArgs("kb", "/host/kb", "/stage", exposure{rt: "container", addr: "1.2.3.4"}, xynologDescriptor("archivist").ports[0].port, "client-secret", "v", xynologDescriptor("archivist").mem, nil, nil), " ")
 	if want := "/stage/" + archivistDocumentFile + ":" + archivistDocumentTarget + ":ro"; !strings.Contains(args, want) {
 		t.Errorf("the Archivist's document is not mounted (%s):\n%s", want, args)
 	}

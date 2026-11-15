@@ -22,10 +22,10 @@ stack here, else the lone recorded codespace; with several, say which.
 --root targets a knowledge base's stack, --repo a codespace stack; --runtime
 targets a local runtime.
 
-Follow the Semiont service logs, one [svc]-prefixed stream per service.
+Follow the Xynolog service logs, one [svc]-prefixed stream per service.
 Ctrl+C stops *following* — it does not stop the stack (that's xynolog stop).
 
-By default follows Semiont's own services (%s). With
+By default follows Xynolog's own services (%s). With
 --service <name>, follow any ONE service including the infrastructure roles:
 %s.
 
@@ -34,13 +34,13 @@ present (--runtime overrides); otherwise the stack is discovered by
 name-scan.
 `, strings.Join(logServices, ", "), listWrapped(roleList, 78, ""))
 
-// logServices: the default follow set — Semiont's own services, the ones
-// whose logs are ours to read. Derived, so a new Semiont service is followed
+// logServices: the default follow set — Xynolog's own services, the ones
+// whose logs are ours to read. Derived, so a new Xynolog service is followed
 // the day it exists rather than the day somebody remembers this list.
 var logServices = func() []string {
 	var out []string
 	for _, d := range serviceDescriptors {
-		if d.driver == driverSemiont {
+		if d.driver == driverXynolog {
 			out = append(out, d.role)
 		}
 	}
@@ -126,7 +126,7 @@ func (src logSource) command(service string) *exec.Cmd {
 	return exec.Command(src.runtime, "logs", "--follow", src.handles[service])
 }
 
-// logSources: the containers a follow of service (every Semiont service the
+// logSources: the containers a follow of service (every Xynolog service the
 // stack runs, when "") reads, of the stack runtime, repo and root name as
 // xynolog logs takes them. ok=false: refused, and said.
 func logSources(u *UI, runtime, service, repoFlag, rootFlag string) (logSource, bool) {
@@ -227,7 +227,7 @@ func logSources(u *UI, runtime, service, repoFlag, rootFlag string) (logSource, 
 		return logSource{}, false
 	}
 	if rt == "" && csName == "" {
-		u.RefusePlain(controlCodeStackNotRunning, "No running Semiont stack found in any runtime (container/docker/podman).")
+		u.RefusePlain(controlCodeStackNotRunning, "No running Xynolog stack found in any runtime (container/docker/podman).")
 		fmt.Fprintln(os.Stderr, "Start one with xynolog start, or pass --runtime explicitly.")
 		return logSource{}, false
 	}
@@ -392,7 +392,7 @@ func askedLocalStack(u *UI, verb string, ss *StackSet, root string, repo bool) (
 
 // stackRuntime finds the runtime actually running the stack of the knowledge
 // base keyed key: following via the wrong one shows nothing. It anchors on
-// that stack's gateway by NAME — matching any "semiont-" would false-positive
+// that stack's gateway by NAME — matching any "xynolog-" would false-positive
 // on unrelated containers (e.g. a local verdaccio).
 func stackRuntime(key string) string {
 	gateway := roleContainer("gateway", key)
