@@ -681,7 +681,7 @@ xynaut stop
   0/1 on that service alone.
 - **The images are the documents'**: each service runs the `image` its
   document names, and `xynaut init` names `:latest`. An image tagged
-  `:local`, built on this machine by `make local-build`, is never
+  `:local`, built on this machine by the images repository's `make build`, is never
   pulled; a KB runs one by naming it. The Browser, which no KB owns, runs
   the image its own document names, `ghcr.io/the-ai-alliance/semiont-browser:latest`
   as the launcher writes it.
