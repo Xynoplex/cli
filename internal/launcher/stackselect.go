@@ -120,10 +120,10 @@ func refuseRoot(u *UI, err error) {
 // carried (stop's --delete) that the choices must repeat.
 func printStackMenu(verb, flag string, locals, cs []*StackState) {
 	for _, st := range locals {
-		fmt.Fprintf(os.Stderr, "    semiont %s --root %s%s ...\n", verb, st.KBRoot, flag)
+		fmt.Fprintf(os.Stderr, "    xynaut %s --root %s%s ...\n", verb, st.KBRoot, flag)
 	}
 	for _, c := range cs {
-		fmt.Fprintf(os.Stderr, "    semiont %s --repo %s%s ...\n", verb, c.Codespace.Repo, flag)
+		fmt.Fprintf(os.Stderr, "    xynaut %s --repo %s%s ...\n", verb, c.Codespace.Repo, flag)
 	}
 }
 

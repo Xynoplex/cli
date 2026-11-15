@@ -1,0 +1,4 @@
+# Every text file is checked out with LF line endings, on every system.
+# Git for Windows otherwise rewrites them to CRLF on checkout, and the test
+# goldens and fixtures are compared, parsed and digested byte for byte.
+* text=auto eol=lf

@@ -66,10 +66,19 @@ jobs:
 
   test:
     needs: sdk
+    # An explicit budget: the suite drives a fake runtime through real
+    # start/stop lifecycles, serially, and runs near Go's undeclared ten-minute
+    # default on Linux, past it on macOS, and longest on Windows.
     strategy:
       fail-fast: false
       matrix:
-        os: [macos-latest, ubuntu-latest, windows-latest]
+        include:
+          - os: macos-latest
+            budget: 30m
+          - os: ubuntu-latest
+            budget: 30m
+          - os: windows-latest
+            budget: 50m
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v4
@@ -101,10 +110,10 @@ jobs:
       - run: go vet ./...
       - name: Test with coverage
         if: matrix.os == 'ubuntu-latest'
-        run: go test -coverprofile=coverage.out ./...
+        run: go test -timeout ${{ matrix.budget }} -coverprofile=coverage.out ./...
       - name: Test
         if: matrix.os != 'ubuntu-latest'
-        run: go test ./...
+        run: go test -timeout ${{ matrix.budget }} ./...
       - name: Upload Go coverage to Codecov
         if: matrix.os == 'ubuntu-latest'
         uses: codecov/codecov-action@v7.1.1

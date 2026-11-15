@@ -125,7 +125,7 @@ func TestKeycloakRealmJSON(t *testing.T) {
 		realmAccounts{secrets: map[string]string{"archivist": "archivist-secret", "weaver": "weaver-secret"}}))
 	for _, want := range []string{
 		`"realm": "semiont"`,
-		`"clientId": "semiont-browser"`,
+		`"clientId": "` + xynoplex.BrowserClientID + `"`,
 		`"publicClient": true`,
 		`"pkce.code.challenge.method": "S256"`,
 		// Loopback carries NO port, which lets the Browser's document name
@@ -135,7 +135,7 @@ func TestKeycloakRealmJSON(t *testing.T) {
 		`"http://localhost/*"`,
 		`"http://127.0.0.1/*"`,
 		`"included.custom.audience": "https://example.github.io/my-kb"`,
-		`"clientId": "semiont-cli"`,
+		`"clientId": "` + xynoplex.ScriptClientID + `"`,
 		`"oauth2.device.authorization.grant.enabled": "true"`,
 		// The revocation window for every person on this knowledge base: Semiont
 		// keeps no admission flag of its own, so a disabled account's token stays

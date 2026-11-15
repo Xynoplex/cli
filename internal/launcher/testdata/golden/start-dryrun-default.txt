@@ -134,7 +134,7 @@ container rm semiont-keycloak
 container run -d --name semiont-keycloak --memory 1G -p <host-addr>:8080:8080 -e KC_DB_URL=jdbc:postgresql://<host-addr>:5432/keycloak -e KC_HOSTNAME=http://<host-addr>:8080 --env KC_BOOTSTRAP_ADMIN_PASSWORD -e KC_DB=postgres -e KC_DB_USERNAME=postgres -e KC_BOOTSTRAP_ADMIN_USERNAME=admin -e KC_DB_PASSWORD quay.io/keycloak/keycloak:26.7.4@sha256:82a77884f3af238beab1e7afd63b5f530e1b5c0590bd7aa60b40a40463e29b2c start --http-enabled=true --hostname-backchannel-dynamic=true --cache=local
 # wait: http://<host-addr>:8080/realms/master (90s)
 # open Keycloak's admin to this machine over HTTP: container exec --env KC_CLI_PASSWORD semiont-keycloak /opt/keycloak/bin/kcadm.sh update realms/master -s sslRequired=NONE --no-config --server http://localhost:8080 --realm master --user admin
-# ask http://<host-addr>:8080/realms/example.github.io-test-kb, and where Keycloak does not hold it, create realm "example.github.io-test-kb": POST http://<host-addr>:8080/admin/realms as admin (clients: semiont-browser, semiont-cli, semiont-archivist, semiont-dispatcher, semiont-gateway, semiont-librarian, semiont-smelter, semiont-weaver, semiont-worker-local)
+# ask http://<host-addr>:8080/realms/example.github.io-test-kb, and where Keycloak does not hold it, create realm "example.github.io-test-kb": POST http://<host-addr>:8080/admin/realms as admin (clients: xynoplex-browser, xynoplex-cli, semiont-archivist, semiont-dispatcher, semiont-gateway, semiont-librarian, semiont-smelter, semiont-weaver, semiont-worker-local)
 # client-credentials grant at http://<host-addr>:8080/realms/example.github.io-test-kb as semiont-archivist — require flat `roles` containing "semiont-service" and `aud` containing https://example.github.io/test-kb
 # client-credentials grant at http://<host-addr>:8080/realms/example.github.io-test-kb as semiont-dispatcher — require flat `roles` containing "semiont-service" and `aud` containing https://example.github.io/test-kb
 # client-credentials grant at http://<host-addr>:8080/realms/example.github.io-test-kb as semiont-gateway — require flat `roles` containing "semiont-service" and `aud` containing https://example.github.io/test-kb
@@ -142,10 +142,10 @@ container run -d --name semiont-keycloak --memory 1G -p <host-addr>:8080:8080 -e
 # client-credentials grant at http://<host-addr>:8080/realms/example.github.io-test-kb as semiont-smelter — require flat `roles` containing "semiont-service" and `aud` containing https://example.github.io/test-kb
 # client-credentials grant at http://<host-addr>:8080/realms/example.github.io-test-kb as semiont-weaver — require flat `roles` containing "semiont-service" and `aud` containing https://example.github.io/test-kb
 # client-credentials grant at http://<host-addr>:8080/realms/example.github.io-test-kb as semiont-worker-local, by an assertion signed with the shared worker key (<worker-key-thumbprint>) — require flat `roles` containing "semiont-service" and "semiont-worker", and `aud` containing https://example.github.io/test-kb
-# device authorization at http://<host-addr>:8080/realms/example.github.io-test-kb as semiont-cli — require the grant to be enabled for it
-# authorization request at http://<host-addr>:8080/realms/example.github.io-test-kb as semiont-browser — require a redirect to http://localhost:3000/en/auth/callback
+# device authorization at http://<host-addr>:8080/realms/example.github.io-test-kb as xynoplex-cli — require the grant to be enabled for it
+# authorization request at http://<host-addr>:8080/realms/example.github.io-test-kb as xynoplex-browser — require a redirect to http://localhost:3000/en/auth/callback
 # the same request carrying NO code challenge — require it to be refused, so PKCE is enforced rather than merely offered
-# password grant at http://<host-addr>:8080/realms/example.github.io-test-kb as semiont-browser and semiont-cli, sending no credential — require both to refuse it
+# password grant at http://<host-addr>:8080/realms/example.github.io-test-kb as xynoplex-browser and xynoplex-cli, sending no credential — require both to refuse it
 # compare `exp - iat` on those tokens against the configured 300s — warn if the realm was created with another
 # messaging state: <data-home>/roots/example.github.io-test-kb/nats (created if absent; reused across restarts)
 # stage the broker's authorization block (no credential in it — the daemon interpolates $NATS_USER/$NATS_PASSWORD from its own environment)

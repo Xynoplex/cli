@@ -526,7 +526,7 @@ func TestPublicClientsRefuseWhenTheBrowserClientIsMissing(t *testing.T) {
 	srv := stubPublicIssuer(t, publicStub{missingClient: xynoplex.BrowserClientID})
 	f, ok := findingFor(verifyPublicClients(srv.URL, catalogBrowser().Spec.Port), xynoplex.BrowserClientID)
 	if !ok {
-		t.Fatal("a realm with no semiont-browser client passed")
+		t.Fatal("a realm with no " + xynoplex.BrowserClientID + " client passed")
 	}
 	if f.warnOnly {
 		t.Error("a missing sign-in client must stop the start, not warn")
@@ -545,7 +545,7 @@ func TestPublicClientsRefuseWhenTheCliClientIsMissing(t *testing.T) {
 	srv := stubPublicIssuer(t, publicStub{missingClient: xynoplex.ScriptClientID})
 	f, ok := findingFor(verifyPublicClients(srv.URL, catalogBrowser().Spec.Port), xynoplex.ScriptClientID)
 	if !ok {
-		t.Fatal("a realm with no semiont-cli client passed")
+		t.Fatal("a realm with no " + xynoplex.ScriptClientID + " client passed")
 	}
 	if !strings.Contains(f.reason, "no such client") {
 		t.Errorf("reason does not name the cause: %q", f.reason)

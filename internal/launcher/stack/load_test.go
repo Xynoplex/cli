@@ -14,7 +14,7 @@ import (
 // the test may change.
 func fixtureCopy(t *testing.T) string {
 	t.Helper()
-	from := filepath.Join(repository, "packages", "go", "launcher", "testdata", "kb")
+	from := filepath.Join(repository, "internal", "launcher", "testdata", "kb")
 	root := t.TempDir()
 	err := filepath.WalkDir(filepath.Join(from, Dir), func(path string, d fs.DirEntry, err error) error {
 		if err != nil {
@@ -107,7 +107,7 @@ func TestLoadRefusesANameThatDoesNotHold(t *testing.T) {
 // Issuer document of its own, whichever issuer it names, is refused by the
 // file's name, and told where the machine keeps one.
 func TestLoadRefusesAnIssuerDocumentOfItsOwn(t *testing.T) {
-	issuer, err := os.ReadFile(filepath.Join(repository, "packages", "go", "launcher", "testdata", IssuerFile))
+	issuer, err := os.ReadFile(filepath.Join(repository, "internal", "launcher", "testdata", IssuerFile))
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -146,7 +146,7 @@ func TestMarshalWritesADocumentThatReadsBack(t *testing.T) {
 	if st.KnowledgeBase.ApiVersion != APIVersion {
 		t.Errorf("the fixture states apiVersion %q, and APIVersion is %q", st.KnowledgeBase.ApiVersion, APIVersion)
 	}
-	issuer, err := Read[Issuer](filepath.Join(repository, "packages", "go", "launcher", "testdata", IssuerFile), "Issuer")
+	issuer, err := Read[Issuer](filepath.Join(repository, "internal", "launcher", "testdata", IssuerFile), "Issuer")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -181,7 +181,7 @@ func TestMarshalWritesADocumentThatReadsBack(t *testing.T) {
 // they wrote them. A field the document does not have, or one that is not a
 // single value, is refused.
 func TestSetScalarChangesOneFieldAndKeepsComments(t *testing.T) {
-	path := filepath.Join(repository, "packages", "go", "launcher", "testdata", IssuerFile)
+	path := filepath.Join(repository, "internal", "launcher", "testdata", IssuerFile)
 	text, err := os.ReadFile(path)
 	if err != nil {
 		t.Fatal(err)

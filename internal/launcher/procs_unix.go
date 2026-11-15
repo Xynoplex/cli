@@ -5,6 +5,7 @@ package launcher
 import (
 	"fmt"
 	"os/exec"
+	"path/filepath"
 	"strings"
 )
 
@@ -34,13 +35,14 @@ func listenersOn(port int) []string {
 	return pids
 }
 
-// processName: the command a process runs, or "" when it cannot be read.
+// processName: the name of the program a process runs, or "" when it cannot
+// be read. macOS's ps reports the program's path, Linux's its name.
 func processName(pid string) string {
 	comm, err := capture("ps", "-p", pid, "-o", "comm=")
-	if err != nil {
+	if err != nil || comm == "" {
 		return ""
 	}
-	return comm
+	return filepath.Base(comm)
 }
 
 // ollamaOnHost: which Ollama runs on this machine — the Desktop app, the

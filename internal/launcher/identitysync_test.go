@@ -488,7 +488,7 @@ func TestIdentitySyncReconcilesTheWorkersRolesMapper(t *testing.T) {
 	}
 	// PUT back as the mapper it already is — same id, same name: an update,
 	// not a second mapper stamping a second `roles` claim beside the first.
-	if mapper["id"] != "mapper-worker-semiont-service-role" || mapper["name"] != "xynaut service role" {
+	if mapper["id"] != "mapper-worker-"+strings.ReplaceAll(serviceRoleMapperName, " ", "-") || mapper["name"] != serviceRoleMapperName {
 		t.Errorf("mapper identity changed: id=%v name=%v", mapper["id"], mapper["name"])
 	}
 	if len(s.mappers) != 1 {
@@ -579,7 +579,7 @@ func TestIdentitySyncReconcilesAKindMapperThatSaysOtherwise(t *testing.T) {
 		t.Fatalf("mapper PUTs %v, POSTs %v; want the weaver's kind mapper updated alone", s.mappers, s.added)
 	}
 	cfg, _ := mapper["config"].(map[string]any)
-	if mapper["id"] != "mapper-weaver-semiont-agent-kind" || cfg["claim.value"] != agentKind {
+	if mapper["id"] != "mapper-weaver-"+strings.ReplaceAll(agentKindMapperName, " ", "-") || cfg["claim.value"] != agentKind {
 		t.Errorf("the mapper was not brought back in place: %v", mapper)
 	}
 	if len(rep.updated) != 1 || !strings.Contains(rep.updated[0], serviceClientID("weaver")) {

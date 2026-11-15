@@ -152,7 +152,7 @@ func TestArchivistRunsUnderTheSupervisor(t *testing.T) {
 	s := string(sup)
 	for what, want := range map[string]string{
 		"a durable log on the state mount":     "/semiont-state/",
-		"a TERM trap (xynaut stop wins)":      "trap",
+		"a TERM trap (xynaut stop wins)":       "trap",
 		"a rapid-failure cap (fail-fast boot)": "MAX_RAPID",
 		"the env-driven health self-probe":     "SUPERVISE_PROBE",
 	} {

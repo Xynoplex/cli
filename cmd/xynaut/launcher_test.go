@@ -691,6 +691,31 @@ func asThisSystemRuns(golden string) string {
 	return golden
 }
 
+// asThisSystemPrints: printed commands as this system's launcher prints them.
+// Beyond asThisSystemRuns, macOS's data home has a space in its path, so a
+// printed command quotes each argument beneath it, as renderCmd does. The
+// runtime's own argv is not quoted.
+func asThisSystemPrints(golden string) string {
+	golden = asThisSystemRuns(golden)
+	if !strings.ContainsAny(dataHomeFor(""), " \t") {
+		return golden
+	}
+	lines := strings.Split(golden, "\n")
+	for i, line := range lines {
+		if strings.HasPrefix(strings.TrimSpace(line), "#") {
+			continue
+		}
+		words := strings.Split(line, " ")
+		for j, word := range words {
+			if strings.Contains(word, "<data-home>") {
+				words[j] = `"` + word + `"`
+			}
+		}
+		lines[i] = strings.Join(words, " ")
+	}
+	return strings.Join(lines, "\n")
+}
+
 var (
 	lsofLine = regexp.MustCompile(`(?m)^lsof -nP -iTCP:\d+ -sTCP:LISTEN$`)
 	psLine   = regexp.MustCompile(`(?m)^ps -p (\d+) -o comm=$`)
@@ -717,7 +742,13 @@ func checkGolden(t *testing.T, name, got string) {
 	if err != nil {
 		t.Fatalf("missing golden %s (run with -update-goldens after adjudicating): %v", name, err)
 	}
-	if want := asThisSystemRuns(string(written)); want != got {
+	// A .txt golden is what the launcher printed; an .argv golden, what the
+	// runtime was given.
+	want := asThisSystemRuns(string(written))
+	if strings.HasSuffix(name, ".txt") {
+		want = asThisSystemPrints(string(written))
+	}
+	if want != got {
 		t.Errorf("golden mismatch for %s\n--- want ---\n%s\n--- got ---\n%s", name, want, got)
 	}
 }
@@ -4661,7 +4692,7 @@ func TestLoginDeviceGrantStoresTokens(t *testing.T) {
 	if err != nil {
 		t.Fatalf("device authorization request not recorded: %v", err)
 	}
-	mustContain(t, "device authorization", string(da), "client_id=semiont-cli", "offline_access")
+	mustContain(t, "device authorization", string(da), "client_id="+xynoplex.ScriptClientID, "offline_access")
 	signIn, ok := storedSignIn(t, s.home, localKey)
 	if !ok || tagOf(signIn.Token) != "fake-jwt-token" || signIn.RefreshToken != "fake-refresh-token" ||
 		signIn.Issuer != "http://localhost:4000/realms/fake-kb" || signIn.TokenEndpoint == "" || signIn.Email != "admin@example.com" {
@@ -4872,7 +4903,7 @@ func TestLogoutForgetsSession(t *testing.T) {
 	if err != nil {
 		t.Fatalf("no revocation reached the issuer: %v", err)
 	}
-	mustContain(t, "revocation", string(rv), "token=fake-refresh-token", "client_id=semiont-cli")
+	mustContain(t, "revocation", string(rv), "token=fake-refresh-token", "client_id="+xynoplex.ScriptClientID)
 	// A second logout is a benign no-op, said plainly.
 	stdout, _, code = s.run(t, "logout")
 	if code != 0 {
@@ -6501,7 +6532,7 @@ func TestUseraddCodespace(t *testing.T) {
 	remote = remote[:strings.IndexByte(remote, '\n')]
 	mustContain(t, "remote command", remote,
 		"cd /workspaces/* &&", // the KB clone; the remote shell expands the glob
-		"xynaut useradd",     // the codespace's OWN launcher, not a container
+		"xynaut useradd",      // the codespace's OWN launcher, not a container
 		"'alice$NAME@example.com'", "'--upsert'", "'--password-stdin'")
 	if strings.Contains(remote, "rm -rf") {
 		t.Fatalf("the password reached the remote COMMAND LINE:\n%s", remote)
@@ -10528,7 +10559,7 @@ func TestStartServiceDryRunWorker(t *testing.T) {
 		"container stop semiont-worker",
 		"container image pull ghcr.io/the-ai-alliance/semiont-worker:latest",
 		"# write <data-home>/shared/worker-knowledge-bases.json: the worker's list, example.github.io:test-kb (local)",
-		asThisSystemRuns("--volume <state-home>/shared/worker.json:/etc/semiont/worker.json:ro"),
+		asThisSystemPrints("--volume <state-home>/shared/worker.json:/etc/semiont/worker.json:ro"),
 		"wait: http://<host-addr>:24100/health (30s)",
 	)
 	if strings.Contains(stdout, "semiont-example.github.io-test-kb-neo4j") {
@@ -13984,8 +14015,8 @@ func TestStartDryRunExternalIssuerIsPreflighted(t *testing.T) {
 		"client-credentials grant at "+iss+" as semiont-gateway",
 		"client-credentials grant at "+iss+" as semiont-worker-local, by an assertion signed with the shared worker key",
 		// and the two clients people sign in through
-		"device authorization at "+iss+" as semiont-cli",
-		"authorization request at "+iss+" as semiont-browser",
+		"device authorization at "+iss+" as "+xynoplex.ScriptClientID,
+		"authorization request at "+iss+" as "+xynoplex.BrowserClientID,
 		"PKCE is enforced rather than merely offered",
 		"sending no credential — require both to refuse it",
 	)

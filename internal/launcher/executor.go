@@ -1478,7 +1478,7 @@ func (x *planExec) recorded(string) ServiceState { return ServiceState{} }
 func (x *planExec) dumpLogs(string, string) {}
 
 func (x *planExec) issuerProxy(listen, upstream string, realms []string) bool {
-	x.c("keep the issuer proxy if it runs as asked, else run detached: semiont %s — the issuer at the network address, passing the paths of this realm and of every other a recorded stack is served (recorded; the last stack's stop ends it)",
+	x.c("keep the issuer proxy if it runs as asked, else run detached: xynaut %s — the issuer at the network address, passing the paths of this realm and of every other a recorded stack is served (recorded; the last stack's stop ends it)",
 		strings.Join(issuerProxyArgs(listen, upstream, realms), " "))
 	return true
 }

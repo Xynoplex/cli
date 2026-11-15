@@ -140,8 +140,14 @@ func TestControlRootsInitRunsLauncherInitWithConfiguredFlags(t *testing.T) {
 	if !reflect.DeepEqual(record.Args, wantArgs) {
 		t.Fatalf("launcher args = %#v, want %#v", record.Args, wantArgs)
 	}
-	if record.Directory != root || record.RootEnv != "" || record.Preserved != "preserved" {
-		t.Fatalf("launcher environment = %+v", record)
+	// The child reads its working directory with symbolic links resolved:
+	// macOS's temporary directory is under /var, a link to /private/var.
+	resolved, err := filepath.EvalSymlinks(root)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if record.Directory != resolved || record.RootEnv != "" || record.Preserved != "preserved" {
+		t.Fatalf("launcher environment = %+v, want the directory %s", record, resolved)
 	}
 	if !strings.Contains(strings.Join(*lines, "\n"), "Creating local knowledge base") {
 		t.Fatalf("progress did not include the initial message: %v", *lines)

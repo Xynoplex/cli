@@ -303,7 +303,7 @@ func tokenOriginProbe(tokenEndpoint, clientID, origin string) (string, error) {
 // verifyPublicClients proves the two clients PEOPLE authenticate through.
 //
 // verifyServiceAccounts covers the six machine identities and says nothing about
-// whether anyone can log in: a realm missing `semiont-browser` passes it and
+// whether anyone can log in: a realm missing `xynoplex-browser` passes it and
 // starts a stack nobody can reach. These clients are public — no secret, so no
 // client-credentials grant to run — and are instead probed on the very endpoints
 // a real sign-in uses, with no credential involved.
@@ -325,7 +325,7 @@ func verifyPublicClients(issuerBase string, browserPort int) []publicClientFindi
 
 	var findings []publicClientFinding
 
-	// `semiont-cli` — the device grant, which is how a script or the launcher
+	// `xynoplex-cli` — the device grant, which is how a script or the launcher
 	// itself signs a person in. 200 is the only passing answer: it means the
 	// client exists AND may use the grant.
 	if eps.device == "" {
@@ -355,7 +355,7 @@ func verifyPublicClients(issuerBase string, browserPort int) []publicClientFindi
 		}
 	}
 
-	// `semiont-browser` — existence first, so a missing client is not reported
+	// `xynoplex-browser` — existence first, so a missing client is not reported
 	// as a redirect problem.
 	browserExists := true
 	if eps.device != "" {
