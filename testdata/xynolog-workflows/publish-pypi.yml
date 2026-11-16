@@ -2,7 +2,7 @@ name: Publish Python package
 
 run-name: "PyPI: ${{ inputs.stable_release && 'stable' || 'dev' }}${{ inputs.dry_run && ' (dry run)' || '' }}"
 
-# Publishes the Python SDK to PyPI as `semiont`.
+# Publishes the Python SDK to PyPI as `xynolog`.
 #
 # PyPI trusts this workflow by name: the project's settings name this
 # repository and this file ("Trusted Publishing"), with no environment, so no
@@ -13,7 +13,7 @@ run-name: "PyPI: ${{ inputs.stable_release && 'stable' || 'dev' }}${{ inputs.dry
 # development release of that version, `<version>.dev<run number>`, as the npm
 # packages go out as `<version>-build.<run number>` under their `dev` tag. An
 # installer takes a development release only when asked for one
-# (`pip install --pre semiont`), or when the project has no other.
+# (`pip install --pre xynolog`), or when the project has no other.
 #
 # A `push: tags` trigger cannot be used here: release.yml pushes the tag with
 # GITHUB_TOKEN, and GitHub does not raise workflow-triggering events for

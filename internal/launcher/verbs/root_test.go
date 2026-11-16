@@ -6,8 +6,8 @@ import (
 	"strings"
 	"testing"
 
-	launcher "github.com/Xynoplex/cli/internal/launcher"
-	"github.com/Xynoplex/cli/internal/launcher/harness"
+	launcher "github.com/xynolog/cli/internal/launcher"
+	"github.com/xynolog/cli/internal/launcher/harness"
 )
 
 // Every verb takes --root, the knowledge base whose stack it acts on. With two
@@ -21,14 +21,14 @@ func TestEveryVerbActsOnTheStackItsRootNames(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if err := os.MkdirAll(filepath.Join(root, ".semiont"), 0o755); err != nil {
+	if err := os.MkdirAll(filepath.Join(root, ".xynolog"), 0o755); err != nil {
 		t.Fatal(err)
 	}
 	project := "project:\n  name: kb\ngit:\n  sync: false\nsite:\n  domain: example.org:kb\n  siteName: KB\n"
-	if err := os.WriteFile(filepath.Join(root, ".semiont", "config.yaml"), []byte(project), 0o644); err != nil {
+	if err := os.WriteFile(filepath.Join(root, ".xynolog", "config.yaml"), []byte(project), 0o644); err != nil {
 		t.Fatal(err)
 	}
-	named := localStack(launcher.ServiceState{Container: "semiont-example.org-kb-gateway"})
+	named := localStack(launcher.ServiceState{Container: "xynolog-example.org-kb-gateway"})
 	named.KBRoot = root
 	other := &launcher.StackState{Runtime: "container", KBDid: "did:web:example.org:other", KBRoot: "/other",
 		Services: map[string]launcher.ServiceState{"gateway": {Endpoint: "http://localhost:4010/api/health"}}}

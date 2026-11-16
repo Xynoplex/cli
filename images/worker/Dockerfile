@@ -48,7 +48,7 @@ ENV UV_PROJECT_ENVIRONMENT=/opt/venv \
 # tools out, and --no-editable installs the four packages above as built
 # wheels, so the environment is whole without this stage's tree.
 #
-# --all-extras is every provider's library: each extra of semiont-worker
+# --all-extras is every provider's library: each extra of xynolog-worker
 # brings the inference drivers' extra of the same name, and with it the
 # library that provider is asked through. An image for one provider names
 # that provider's extra in its place (`--extra anthropic`), and one for Ollama
@@ -64,8 +64,8 @@ RUN apk upgrade --no-cache && apk add --no-cache tini
 RUN pip uninstall --yes --root-user-action=ignore pip
 
 # The uid the launcher's state mount is written as, as in every service image.
-RUN addgroup --system --gid 1001 semiont && \
-    adduser --system --uid 1001 --ingroup semiont --home /home/semiont semiont
+RUN addgroup --system --gid 1001 xynolog && \
+    adduser --system --uid 1001 --ingroup xynolog --home /home/xynolog xynolog
 
 COPY --from=builder /opt/venv /opt/venv
 
@@ -83,7 +83,7 @@ COPY --from=builder /opt/venv /opt/venv
 # same diff as this tag.
 COPY --from=ghcr.io/typst/typst:0.15.1 /bin/typst /usr/local/bin/typst
 
-COPY LICENSE images/worker/NOTICE /home/semiont/
+COPY LICENSE images/worker/NOTICE /home/xynolog/
 
 # The model catalogue: what models.dev says each model of Google, OpenAI and
 # Together can take, which those providers' own APIs do not say. A model of one
@@ -92,15 +92,15 @@ COPY LICENSE images/worker/NOTICE /home/semiont/
 # packages/python/inference/scripts/generate-model-catalogue.mjs from the npm package
 # package.json pins, and held to that pin by CI's drift job. Nothing is fetched
 # to build it here. Its licence notice goes with it.
-COPY packages/python/inference/tests/catalogue/model-catalogue.json /usr/share/semiont/model-catalogue.json
-COPY packages/python/inference/tests/catalogue/model-catalogue.LICENSE /usr/share/semiont/model-catalogue.LICENSE
+COPY packages/python/inference/tests/catalogue/model-catalogue.json /usr/share/xynolog/model-catalogue.json
+COPY packages/python/inference/tests/catalogue/model-catalogue.LICENSE /usr/share/xynolog/model-catalogue.LICENSE
 COPY images/shared/supervise.sh /usr/local/bin/supervise.sh
 COPY images/shared/boot.sh /usr/local/bin/boot.sh
 
 WORKDIR /kb
-RUN chown semiont:semiont /kb
+RUN chown xynolog:xynolog /kb
 
-USER semiont
+USER xynolog
 
 # `python` is the environment's.
 ENV PATH=/opt/venv/bin:$PATH
@@ -116,4 +116,4 @@ ENTRYPOINT ["/sbin/tini", "--", "/usr/local/bin/boot.sh"]
 # launcher's census (TestConfigDocumentsAreWhereTheImagesLook) reads it here.
 # `-P` keeps the working directory off the import path: a file in /kb is never
 # a module the service imports.
-CMD ["python", "-P", "-m", "semiont_worker", "--config", "/etc/semiont/worker.json"]
+CMD ["python", "-P", "-m", "xynolog_worker", "--config", "/etc/xynolog/worker.json"]

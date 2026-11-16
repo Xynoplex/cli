@@ -3,7 +3,7 @@
 .PHONY: help build test vet clean
 
 # `make help` prints the `##` lines below, in order (build-tools/make-help.awk).
-##@ Xynoplex CLI (xynolog): make [target] [VARIABLE=value ...]
+##@ Xynolog CLI (xynolog): make [target] [VARIABLE=value ...]
 ##@ Variables
 ## CONTAINER_RUNTIME=name: container|docker|podman; else the first to respond
 CONTAINER_RUNTIME ?=

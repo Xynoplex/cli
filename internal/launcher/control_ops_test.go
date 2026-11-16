@@ -8,7 +8,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/Xynoplex/cli/internal/launcher/harness"
+	"github.com/xynolog/cli/internal/launcher/harness"
 )
 
 // onBareMachine: a machine with no launcher state, no settings and nothing on
@@ -19,7 +19,7 @@ func onBareMachine(t *testing.T) string {
 	home := harness.Home(t)
 	t.Setenv("XDG_STATE_HOME", filepath.Join(home, "state"))
 	t.Setenv("XDG_CONFIG_HOME", filepath.Join(home, "config"))
-	t.Setenv("SEMIONT_ROOT", "")
+	t.Setenv("XYNOLOG_ROOT", "")
 	t.Setenv("PATH", t.TempDir())
 	t.Chdir(t.TempDir())
 	return home
@@ -303,7 +303,7 @@ func TestControlIdentityUseraddForTarget(t *testing.T) {
 
 func TestControlIdentityUsersListForTarget(t *testing.T) {
 	target := &StackState{KBRoot: "/kb", KBDid: "did:web:kb.example"}
-	admin := realmAdmin{base: "http://issuer", realm: "semiont", token: "admin", domain: "kb.example", subjectClaim: "sub"}
+	admin := realmAdmin{base: "http://issuer", realm: "xynolog", token: "admin", domain: "kb.example", subjectClaim: "sub"}
 	resolve := func(_ *UI, root, did string) (realmAdmin, bool) {
 		if root != target.KBRoot || did != target.KBDid {
 			t.Fatalf("resolve arguments = %q, %q", root, did)

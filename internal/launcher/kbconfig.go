@@ -1,7 +1,7 @@
 package launcher
 
 // kbconfig.go — the read-side of a knowledge base's project file, its
-// committed identity card: `.semiont/config.yaml` (ProjectConfig, in
+// committed identity card: `.xynolog/config.yaml` (ProjectConfig, in
 // protocol/specs/src/kb-identity). Its project name and version, git sync, and site —
 // whose `domain` is the permanent did:web identity everything the KB mints is
 // stamped with (a committed literal naming the repo, never a machine address;
@@ -17,19 +17,19 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/Xynoplex/cli/internal/launcher/stack"
-	xynoplex "github.com/Xynoplex/sdk/go"
-	"github.com/Xynoplex/sdk/go/api"
+	"github.com/xynolog/cli/internal/launcher/stack"
+	xynolog "github.com/xynolog/sdk/go"
+	"github.com/xynolog/sdk/go/api"
 )
 
-// projectFileYAML: the project file's name, below .semiont.
+// projectFileYAML: the project file's name, below .xynolog.
 const projectFileYAML = "config.yaml"
 
 type kbIdentity struct {
 	Name     string // project.name
 	SiteName string // site.siteName
 	Domain   string // site.domain — did:web colon-path form
-	// did is the DID Domain names (semiont.KbDid), read with it.
+	// did is the DID Domain names (xynolog.KbDid), read with it.
 	did api.UserId
 }
 
@@ -72,7 +72,7 @@ func (k *kbIdentity) domain() string {
 	return k.Domain
 }
 
-// resource is the KB's resource identifier (semiont.KbResource), "" when
+// resource is the KB's resource identifier (xynolog.KbResource), "" when
 // there is no project file — the audience half of domain. It is the single value a
 // token's `aud` must carry, derived from the KB's committed domain and never
 // configured: it goes into the realm's audience mapper, and the gateway checks
@@ -81,7 +81,7 @@ func (k *kbIdentity) resource() string {
 	if k == nil {
 		return ""
 	}
-	return xynoplex.KbResource(k.Domain)
+	return xynolog.KbResource(k.Domain)
 }
 
 // name is the name the Archivist computes for the knowledge base at root: the
@@ -102,7 +102,7 @@ func (k *kbIdentity) name(root string) string {
 func (r kbRoot) served() (api.KbIdentity, error) {
 	domain := r.ident.domain()
 	if domain == "" {
-		return api.KbIdentity{}, fmt.Errorf("the knowledge base declares no site.domain in its .semiont/config.yaml: its services have no identity to run under")
+		return api.KbIdentity{}, fmt.Errorf("the knowledge base declares no site.domain in its .xynolog/config.yaml: its services have no identity to run under")
 	}
 	return api.KbIdentity{Name: r.ident.name(r.dir), Domain: domain}, nil
 }
@@ -112,7 +112,7 @@ func (r kbRoot) served() (api.KbIdentity, error) {
 // It is the one reader of the file: a command reads it once, when it resolves
 // its root, and carries what it read.
 func readKBIdentity(root string) (*kbIdentity, error) {
-	path := filepath.Join(root, ".semiont", projectFileYAML)
+	path := filepath.Join(root, ".xynolog", projectFileYAML)
 	text, err := os.ReadFile(path)
 	if errors.Is(err, fs.ErrNotExist) {
 		return nil, nil
@@ -156,7 +156,7 @@ func yamlKBIdentity(where string, text []byte) (*kbIdentity, error) {
 	if err != nil {
 		return nil, err
 	}
-	did, err := xynoplex.KbDid(project.Site.Domain)
+	did, err := xynolog.KbDid(project.Site.Domain)
 	if err != nil {
 		return nil, fmt.Errorf("%s: site.domain %q names no DID: %w", where, project.Site.Domain, err)
 	}

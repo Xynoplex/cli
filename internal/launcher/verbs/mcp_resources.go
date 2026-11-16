@@ -2,7 +2,7 @@ package verbs
 
 // mcp_resources.go — a knowledge base's resources, as MCP resources. Each is
 // named by the knowledge base's key and its id
-// (semiont://kb/<key>/resources/<id>, the key escaped as a URI template
+// (xynolog://kb/<key>/resources/<id>, the key escaped as a URI template
 // escapes it), read through browse.resourceContent, and listed through
 // browse.resources: the first page of each knowledge base this machine is
 // signed in to. What a knowledge base holds is the signed-in person's, so a
@@ -17,14 +17,14 @@ import (
 
 	"github.com/modelcontextprotocol/go-sdk/mcp"
 
-	launcher "github.com/Xynoplex/cli/internal/launcher"
+	launcher "github.com/xynolog/cli/internal/launcher"
 
-	xynoplex "github.com/Xynoplex/sdk/go"
-	"github.com/Xynoplex/sdk/go/api"
+	xynolog "github.com/xynolog/sdk/go"
+	"github.com/xynolog/sdk/go/api"
 )
 
 const (
-	mcpResourcePrefix   = "semiont://kb/"
+	mcpResourcePrefix   = "xynolog://kb/"
 	mcpResourceTemplate = mcpResourcePrefix + "{kb}/resources/{resourceId}"
 )
 
@@ -120,7 +120,7 @@ func listMCPResources(ctx context.Context, sessions *launcher.Sessions) (*mcp.Li
 			continue
 		}
 		c := session.Client()
-		page, err := c.Browse.Resources(xynoplex.ResourceFilters{}).Fresh(ctx)
+		page, err := c.Browse.Resources(xynolog.ResourceFilters{}).Fresh(ctx)
 		if err != nil {
 			fmt.Fprintf(os.Stderr, "xynolog mcp: %s's resources are not listed: %v\n", kb.Key, c.Refusal(err))
 			continue

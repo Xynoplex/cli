@@ -18,10 +18,10 @@ import (
 	"strconv"
 	"strings"
 
-	launcher "github.com/Xynoplex/cli/internal/launcher"
+	launcher "github.com/xynolog/cli/internal/launcher"
 
-	xynoplex "github.com/Xynoplex/sdk/go"
-	"github.com/Xynoplex/sdk/go/api"
+	xynolog "github.com/xynolog/sdk/go"
+	"github.com/xynolog/sdk/go/api"
 )
 
 const matchIDs = "xynolog match [options] -- <resourceId> <annotationId>"
@@ -177,7 +177,7 @@ options:
 		if limit == 0 {
 			limit = 20
 		}
-		filters := xynoplex.ResourceFilters{Limit: limit}
+		filters := xynolog.ResourceFilters{Limit: limit}
 		if entityType != "" {
 			filters.EntityType = &entityType
 		}
@@ -205,7 +205,7 @@ options:
 
 	// Step 2: the scored search, grounded by that context.
 	semantic := !noSemantic
-	results, err := c.Match.Search(rid, aid, gathered.Response, xynoplex.MatchSearchOptions{Limit: limit, UseSemanticScoring: &semantic}).Wait(c.Context())
+	results, err := c.Match.Search(rid, aid, gathered.Response, xynolog.MatchSearchOptions{Limit: limit, UseSemanticScoring: &semantic}).Wait(c.Context())
 	if err != nil {
 		return busFail(u, "match", c.Refusal(err))
 	}

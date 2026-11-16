@@ -48,7 +48,7 @@ ENV UV_PROJECT_ENVIRONMENT=/opt/venv \
 # tools out, and --no-editable installs the four packages above as built
 # wheels, so the environment is whole without this stage's tree.
 #
-# --all-extras is every graph database's client: each extra of semiont-weaver
+# --all-extras is every graph database's client: each extra of xynolog-weaver
 # brings the graph stores' extra of the same name, and with it the client
 # that database is asked through. An image for one database names that
 # database's extra in its place (`--extra neo4j`).
@@ -63,19 +63,19 @@ RUN apk upgrade --no-cache && apk add --no-cache tini
 RUN pip uninstall --yes --root-user-action=ignore pip
 
 # The uid every service image runs as.
-RUN addgroup --system --gid 1001 semiont && \
-    adduser --system --uid 1001 --ingroup semiont --home /home/semiont semiont
+RUN addgroup --system --gid 1001 xynolog && \
+    adduser --system --uid 1001 --ingroup xynolog --home /home/xynolog xynolog
 
 COPY --from=builder /opt/venv /opt/venv
 
-COPY LICENSE images/weaver/NOTICE /home/semiont/
+COPY LICENSE images/weaver/NOTICE /home/xynolog/
 COPY images/shared/supervise.sh /usr/local/bin/supervise.sh
 COPY images/shared/boot.sh /usr/local/bin/boot.sh
 
 WORKDIR /kb
-RUN chown semiont:semiont /kb
+RUN chown xynolog:xynolog /kb
 
-USER semiont
+USER xynolog
 
 # `python` is the environment's.
 ENV PATH=/opt/venv/bin:$PATH
@@ -91,4 +91,4 @@ ENTRYPOINT ["/sbin/tini", "--", "/usr/local/bin/boot.sh"]
 # launcher's census (TestConfigDocumentsAreWhereTheImagesLook) reads it here.
 # `-P` keeps the working directory off the import path: a file in /kb is never
 # a module the service imports.
-CMD ["python", "-P", "-m", "semiont_weaver", "--config", "/etc/semiont/weaver.json"]
+CMD ["python", "-P", "-m", "xynolog_weaver", "--config", "/etc/xynolog/weaver.json"]

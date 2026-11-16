@@ -1,5 +1,5 @@
 import Ajv2020, { type ErrorObject, type ValidateFunction } from 'ajv/dist/2020';
-import { isObject, isString } from '@semiont/core';
+import { isObject, isString } from '@xynolog/core';
 import {
   CONTROL_API_VERSION,
   CONTROL_ERROR_DATA_SCHEMA,

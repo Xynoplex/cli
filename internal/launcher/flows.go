@@ -11,8 +11,8 @@ import (
 	"slices"
 	"strings"
 
-	"github.com/Xynoplex/cli/internal/launcher/stack"
-	"github.com/Xynoplex/sdk/go/api"
+	"github.com/xynolog/cli/internal/launcher/stack"
+	"github.com/xynolog/sdk/go/api"
 )
 
 type flowCtx struct {
@@ -386,7 +386,7 @@ func flowBrowser(x executor, addr string, doc browserDocument, forceRestart bool
 			x.stopRm(sharedContainer("browser"))
 			e := x.exposure(addr)
 			browser := portNeed{doc.spec.Port, "Browser"}
-			needs := append([]portNeed{browser}, e.containersSideNeed("browser", browser, semiontDescriptor("browser").defaultPort)...)
+			needs := append([]portNeed{browser}, e.containersSideNeed("browser", browser, xynologDescriptor("browser").defaultPort)...)
 			x.settle(portNumbers(needs)...)
 			for _, need := range needs {
 				if !x.portCheck(need) {
@@ -429,7 +429,7 @@ type sharedRun struct {
 	// image: what it runs. memory: the ceiling it runs with, kept in its
 	// record; none for the telemetry, which runs with no ceiling of ours.
 	image, memory string
-	// pull: pulled as it (re)starts, as a Semiont image is, so it runs what
+	// pull: pulled as it (re)starts, as a Xynolog image is, so it runs what
 	// was verified.
 	pull bool
 	// file and config: the launcher's own config for it, written to file
@@ -619,7 +619,7 @@ func flowWorker(x executor, fc flowCtx, addr string, otel []string) int {
 		domains = append(domains, entry.Domain)
 	}
 	return flowShared(x, fc, sharedRun{
-		role: "worker", driver: driverSemiont, image: image, memory: memory, pull: true,
+		role: "worker", driver: driverXynolog, image: image, memory: memory, pull: true,
 		ready: "serves " + strings.Join(domains, ", "),
 		file:  workerDocumentFile, config: string(doc),
 		args: func(e exposure, path string) []string {
@@ -849,7 +849,7 @@ func flowInferenceRole(x executor, fc flowCtx, addr string) int {
 // with the model cache --ollama-cache asks for (any, when it asks none), and
 // it runs the image this start would. `start --service` restarts it, as
 // `--service browser` restarts the Browser. Otherwise: host-Ollama reuse when
-// serving and reachable from containers; else the semiont-ollama container
+// serving and reachable from containers; else the xynolog-ollama container
 // with the model-cache choice. role names the role this stack records it
 // under — "inference" when the engines run through Ollama, "embedding" when
 // Ollama exists solely to serve embeddings (all-remote engines).
@@ -877,7 +877,7 @@ func flowOllama(x executor, fc flowCtx, role string, rp rolePlan, addr string) i
 		},
 		func() int {
 			// The shared container goes BEFORE the probe: a
-			// semiont-ollama left running publishes the same port and answers
+			// xynolog-ollama left running publishes the same port and answers
 			// the same /api/version, so probing first would take it for a
 			// host install. It goes wherever it runs — its record may name
 			// another runtime — and with no record, by name under this one.
@@ -904,7 +904,7 @@ func flowOllama(x executor, fc flowCtx, role string, rp rolePlan, addr string) i
 						return 1
 					}
 					volume := x.ollamaVolume(fc.opts)
-					// The container is semiont-ollama whichever role this
+					// The container is xynolog-ollama whichever role this
 					// stack records it under — the process is the same.
 					args := ollamaRunArgs(x.exposure(addr), rp, "-v", volume+":/root/.ollama")
 					id, ok := x.runDetached(args)
@@ -973,7 +973,7 @@ func flowGateway(x executor, fc flowCtx, addr, stage string, otel []string) int 
 		return 1
 	}
 	x.say(sayLog, "Waiting for gateway health...")
-	d, ok := x.waitHTTP("Gateway", roleContainer("gateway", fc.kb.key()), healthEndpoint("gateway", driverSemiont, fc.plan, x.exposure(addr)), 120)
+	d, ok := x.waitHTTP("Gateway", roleContainer("gateway", fc.kb.key()), healthEndpoint("gateway", driverXynolog, fc.plan, x.exposure(addr)), 120)
 	if !ok {
 		x.dumpLogs(roleContainer("gateway", fc.kb.key()), "gateway")
 		return 1
@@ -982,12 +982,12 @@ func flowGateway(x executor, fc flowCtx, addr, stage string, otel []string) int 
 	if !x.gatewayReachable(addr, x.exposure(addr).containersPort("gateway", port, port)) {
 		return 1
 	}
-	x.record("gateway", id, fc.plan.Images["gateway"], providedLauncher, healthEndpoint("gateway", driverSemiont, fc.plan, x.exposure(addr)), driverSemiont)
+	x.record("gateway", id, fc.plan.Images["gateway"], providedLauncher, healthEndpoint("gateway", driverXynolog, fc.plan, x.exposure(addr)), driverXynolog)
 	return 0
 }
 
 func flowSidecar(x executor, fc flowCtx, sc sidecarSpec, addr, stage string, otel []string) int {
-	spec := semiontDescriptor(sc.svc)
+	spec := xynologDescriptor(sc.svc)
 	x.banner(startBanner(fc, sc.noun))
 	// No sidecar mounts a store: the Smelter keeps its anchored text on the
 	// Archivist's surface, and the Weaver keeps nothing. Each reads its own
@@ -1018,13 +1018,13 @@ func flowSidecar(x executor, fc flowCtx, sc sidecarSpec, addr, stage string, ote
 		x.say(sayFail, "%s failed to start.", sc.label)
 		return 1
 	}
-	d, ok := x.waitHTTP(sc.label, spec.containerName(fc.kb.key()), healthEndpoint(sc.svc, driverSemiont, fc.plan, x.exposure(addr)), 30)
+	d, ok := x.waitHTTP(sc.label, spec.containerName(fc.kb.key()), healthEndpoint(sc.svc, driverXynolog, fc.plan, x.exposure(addr)), 30)
 	if !ok {
 		x.dumpLogs(spec.containerName(fc.kb.key()), sc.svc)
 		return 1
 	}
 	x.say(sayOK, "%s healthy (http://%s:%d) %s", sc.label, x.exposure(addr).probeHost(sc.svc, spec.ports[0].port), fc.plan.servicePort(sc.svc), x.dim("("+took(d)+")"))
-	x.record(sc.svc, id, fc.plan.Images[sc.svc], providedLauncher, healthEndpoint(sc.svc, driverSemiont, fc.plan, x.exposure(addr)), driverSemiont)
+	x.record(sc.svc, id, fc.plan.Images[sc.svc], providedLauncher, healthEndpoint(sc.svc, driverXynolog, fc.plan, x.exposure(addr)), driverXynolog)
 	return 0
 }
 
@@ -1056,13 +1056,13 @@ func flowArchivist(x executor, fc flowCtx, addr, stage string, otel []string) in
 		x.say(sayFail, "Archivist failed to start.")
 		return 1
 	}
-	d, ok := x.waitHTTP("Archivist", roleContainer("archivist", fc.kb.key()), healthEndpoint("archivist", driverSemiont, fc.plan, x.exposure(addr)), 30)
+	d, ok := x.waitHTTP("Archivist", roleContainer("archivist", fc.kb.key()), healthEndpoint("archivist", driverXynolog, fc.plan, x.exposure(addr)), 30)
 	if !ok {
 		x.dumpLogs(roleContainer("archivist", fc.kb.key()), "archivist")
 		return 1
 	}
-	x.say(sayOK, "Archivist healthy (http://%s:%d) %s", x.exposure(addr).probeHost("archivist", semiontDescriptor("archivist").ports[0].port), fc.plan.servicePort("archivist"), x.dim("("+took(d)+")"))
-	x.record("archivist", id, fc.plan.Images["archivist"], providedLauncher, healthEndpoint("archivist", driverSemiont, fc.plan, x.exposure(addr)), driverSemiont)
+	x.say(sayOK, "Archivist healthy (http://%s:%d) %s", x.exposure(addr).probeHost("archivist", xynologDescriptor("archivist").ports[0].port), fc.plan.servicePort("archivist"), x.dim("("+took(d)+")"))
+	x.record("archivist", id, fc.plan.Images["archivist"], providedLauncher, healthEndpoint("archivist", driverXynolog, fc.plan, x.exposure(addr)), driverXynolog)
 	return 0
 }
 
@@ -1094,13 +1094,13 @@ func flowLibrarian(x executor, fc flowCtx, addr, stage string, otel []string) in
 		x.say(sayFail, "Librarian failed to start.")
 		return 1
 	}
-	d, ok := x.waitHTTP("Librarian", roleContainer("librarian", fc.kb.key()), healthEndpoint("librarian", driverSemiont, fc.plan, x.exposure(addr)), 30)
+	d, ok := x.waitHTTP("Librarian", roleContainer("librarian", fc.kb.key()), healthEndpoint("librarian", driverXynolog, fc.plan, x.exposure(addr)), 30)
 	if !ok {
 		x.dumpLogs(roleContainer("librarian", fc.kb.key()), "librarian")
 		return 1
 	}
-	x.say(sayOK, "Librarian healthy (http://%s:%d) %s", x.exposure(addr).probeHost("librarian", semiontDescriptor("librarian").ports[0].port), fc.plan.servicePort("librarian"), x.dim("("+took(d)+")"))
-	x.record("librarian", id, fc.plan.Images["librarian"], providedLauncher, healthEndpoint("librarian", driverSemiont, fc.plan, x.exposure(addr)), driverSemiont)
+	x.say(sayOK, "Librarian healthy (http://%s:%d) %s", x.exposure(addr).probeHost("librarian", xynologDescriptor("librarian").ports[0].port), fc.plan.servicePort("librarian"), x.dim("("+took(d)+")"))
+	x.record("librarian", id, fc.plan.Images["librarian"], providedLauncher, healthEndpoint("librarian", driverXynolog, fc.plan, x.exposure(addr)), driverXynolog)
 	return 0
 }
 
@@ -1124,13 +1124,13 @@ func flowDispatcher(x executor, fc flowCtx, addr, stage string, otel []string) i
 		x.say(sayFail, "Dispatcher failed to start.")
 		return 1
 	}
-	d, ok := x.waitHTTP("Dispatcher", roleContainer("dispatcher", fc.kb.key()), healthEndpoint("dispatcher", driverSemiont, fc.plan, x.exposure(addr)), 30)
+	d, ok := x.waitHTTP("Dispatcher", roleContainer("dispatcher", fc.kb.key()), healthEndpoint("dispatcher", driverXynolog, fc.plan, x.exposure(addr)), 30)
 	if !ok {
 		x.dumpLogs(roleContainer("dispatcher", fc.kb.key()), "dispatcher")
 		return 1
 	}
-	x.say(sayOK, "Dispatcher healthy (http://%s:%d) %s", x.exposure(addr).probeHost("dispatcher", semiontDescriptor("dispatcher").ports[0].port), fc.plan.servicePort("dispatcher"), x.dim("("+took(d)+")"))
-	x.record("dispatcher", id, fc.plan.Images["dispatcher"], providedLauncher, healthEndpoint("dispatcher", driverSemiont, fc.plan, x.exposure(addr)), driverSemiont)
+	x.say(sayOK, "Dispatcher healthy (http://%s:%d) %s", x.exposure(addr).probeHost("dispatcher", xynologDescriptor("dispatcher").ports[0].port), fc.plan.servicePort("dispatcher"), x.dim("("+took(d)+")"))
+	x.record("dispatcher", id, fc.plan.Images["dispatcher"], providedLauncher, healthEndpoint("dispatcher", driverXynolog, fc.plan, x.exposure(addr)), driverXynolog)
 	return 0
 }
 
@@ -1154,7 +1154,7 @@ func flowServices(x executor, fc flowCtx) int {
 			images = append(images, m.role)
 		}
 	}
-	// An image of Semiont's, a stack service's or the worker's, is verified
+	// An image of Xynolog's, a stack service's or the worker's, is verified
 	// before its container is touched, so a refusal leaves the running one as
 	// it was.
 	if len(images) > 0 && !verifyStackImages(x, fc, images) {
@@ -1329,7 +1329,7 @@ func flowService(x executor, fc flowCtx, m groupMember) int {
 
 // nothingToLaunch: whether `start --service svc` is a no-op — a dependency the
 // documents hand to somebody else, or do not reference. ONE decider for the
-// flow's gate and the summary that follows it. Never one of Semiont's own
+// flow's gate and the summary that follows it. Never one of Xynolog's own
 // services: a worker asked for when no job has an engine is refused before
 // anything runs (flowServices), not passed over.
 func nothingToLaunch(plan *launchPlan, svc string) (rolePlan, bool) {
@@ -1337,7 +1337,7 @@ func nothingToLaunch(plan *launchPlan, svc string) (rolePlan, bool) {
 		return rolePlan{}, false
 	}
 	rp, planned := plan.Roles[svc]
-	if !planned || rp.Driver == driverSemiont {
+	if !planned || rp.Driver == driverXynolog {
 		return rolePlan{}, false
 	}
 	return rp, rp.Presence == presenceExternal || rp.Presence == presenceAbsent
@@ -1353,7 +1353,7 @@ func servicePortNeeds(svc string, plan *launchPlan, browser browserDocument, e e
 	switch {
 	case svc == "browser":
 		need := portNeed{browser.spec.Port, "Browser"}
-		ports = append([]portNeed{need}, e.containersSideNeed("browser", need, semiontDescriptor("browser").defaultPort)...)
+		ports = append([]portNeed{need}, e.containersSideNeed("browser", need, xynologDescriptor("browser").defaultPort)...)
 	case svc == "gateway" && plan != nil:
 		gateway := portNeed{plan.GatewayPort, "Gateway"}
 		ports = append([]portNeed{gateway}, e.containersSideNeed("gateway", gateway, plan.GatewayPort)...)

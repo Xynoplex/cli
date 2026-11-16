@@ -10,8 +10,8 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/Xynoplex/cli/internal/launcher/harness"
-	"github.com/Xynoplex/cli/internal/launcher/stack"
+	"github.com/xynolog/cli/internal/launcher/harness"
+	"github.com/xynolog/cli/internal/launcher/stack"
 )
 
 // keepBlocks writes a registry of one row per path, each keeping the block
@@ -167,7 +167,7 @@ func TestNoBlockBelow101MeetsAnotherOrAMachineContainersPort(t *testing.T) {
 	machine[catalogVectorStore().Spec.Port] = "vectors"
 	placedBy := map[int]int{}
 	for block := range 101 {
-		st.KnowledgeBase.Spec.Gateway.Port = blockPort(semiontDescriptor("gateway").ports[0].port, block)
+		st.KnowledgeBase.Spec.Gateway.Port = blockPort(xynologDescriptor("gateway").ports[0].port, block)
 		plan, err := derivePlan(st, issuerFor(t, st), nil, fixtureKB(t).key(), block)
 		if err != nil {
 			t.Fatal(err)
@@ -230,11 +230,11 @@ func TestInitWritesAGatewayPortNoKnownRootCommits(t *testing.T) {
 	harness.Home(t)
 	committing := func(port string) string {
 		root := t.TempDir()
-		dir := filepath.Join(root, ".semiont", "stack")
+		dir := filepath.Join(root, ".xynolog", "stack")
 		if err := os.MkdirAll(dir, 0o755); err != nil {
 			t.Fatal(err)
 		}
-		b, err := os.ReadFile(filepath.Join(fixtureRoot, ".semiont", "stack", "knowledge-base.yaml"))
+		b, err := os.ReadFile(filepath.Join(fixtureRoot, ".xynolog", "stack", "knowledge-base.yaml"))
 		if err != nil {
 			t.Fatal(err)
 		}

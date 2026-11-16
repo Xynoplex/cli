@@ -16,37 +16,37 @@ const (
 // bases' services export, shortened by dropping unrelated metrics. The label
 // sets, their spelling and their order are the collector's — 0.137.0's, as
 // collectorConfig renders it, which carries each resource attribute as a label
-// (`semiont.kb` as `semiont_kb`, `service.name` as `service_name`) and sorts a
+// (`xynolog.kb` as `xynolog_kb`, `service.name` as `service_name`) and sorts a
 // series' labels by name. The job outcome counter's are its row of
 // protocol/specs/src/service-telemetry/telemetry.json (`job.type`, and `job.motivation`
-// on a mark job only), with `semiont_kb` on each point.
-const sampleReadout = `# HELP semiont_job_queue_size Job queue size by status
-# TYPE semiont_job_queue_size gauge
-semiont_job_queue_size{job="semiont-dispatcher",job_status="cancelled",otel_scope_name="semiont",otel_scope_schema_url="",otel_scope_version="",semiont_kb="did:web:example.github.io%3A8443:a,b=c",service_name="semiont-dispatcher",service_version="0.6.13"} 0
-semiont_job_queue_size{job="semiont-dispatcher",job_status="cancelled",otel_scope_name="semiont",otel_scope_schema_url="",otel_scope_version="",semiont_kb="did:web:example.github.io:test-kb",service_name="semiont-dispatcher",service_version="0.6.13"} 5
-semiont_job_queue_size{job="semiont-dispatcher",job_status="complete",otel_scope_name="semiont",otel_scope_schema_url="",otel_scope_version="",semiont_kb="did:web:example.github.io%3A8443:a,b=c",service_name="semiont-dispatcher",service_version="0.6.13"} 40
-semiont_job_queue_size{job="semiont-dispatcher",job_status="complete",otel_scope_name="semiont",otel_scope_schema_url="",otel_scope_version="",semiont_kb="did:web:example.github.io:test-kb",service_name="semiont-dispatcher",service_version="0.6.13"} 133
-semiont_job_queue_size{job="semiont-dispatcher",job_status="failed",otel_scope_name="semiont",otel_scope_schema_url="",otel_scope_version="",semiont_kb="did:web:example.github.io%3A8443:a,b=c",service_name="semiont-dispatcher",service_version="0.6.13"} 0
-semiont_job_queue_size{job="semiont-dispatcher",job_status="failed",otel_scope_name="semiont",otel_scope_schema_url="",otel_scope_version="",semiont_kb="did:web:example.github.io:test-kb",service_name="semiont-dispatcher",service_version="0.6.13"} 1
-semiont_job_queue_size{job="semiont-dispatcher",job_status="pending",otel_scope_name="semiont",otel_scope_schema_url="",otel_scope_version="",semiont_kb="did:web:example.github.io%3A8443:a,b=c",service_name="semiont-dispatcher",service_version="0.6.13"} 9
-semiont_job_queue_size{job="semiont-dispatcher",job_status="pending",otel_scope_name="semiont",otel_scope_schema_url="",otel_scope_version="",semiont_kb="did:web:example.github.io:test-kb",service_name="semiont-dispatcher",service_version="0.6.13"} 3
-semiont_job_queue_size{job="semiont-dispatcher",job_status="running",otel_scope_name="semiont",otel_scope_schema_url="",otel_scope_version="",semiont_kb="did:web:example.github.io%3A8443:a,b=c",service_name="semiont-dispatcher",service_version="0.6.13"} 1
-semiont_job_queue_size{job="semiont-dispatcher",job_status="running",otel_scope_name="semiont",otel_scope_schema_url="",otel_scope_version="",semiont_kb="did:web:example.github.io:test-kb",service_name="semiont-dispatcher",service_version="0.6.13"} 2
-# HELP semiont_bus_correlation_size Correlation registry occupancy
-# TYPE semiont_bus_correlation_size gauge
-semiont_bus_correlation_size{correlation_kind="claims",job="semiont-gateway",otel_scope_name="semiont",otel_scope_schema_url="",otel_scope_version="",semiont_kb="did:web:example.github.io%3A8443:a,b=c",service_name="semiont-gateway",service_version="0.6.13"} 1
-semiont_bus_correlation_size{correlation_kind="claims",job="semiont-gateway",otel_scope_name="semiont",otel_scope_schema_url="",otel_scope_version="",semiont_kb="did:web:example.github.io:test-kb",service_name="semiont-gateway",service_version="0.6.13"} 7
-semiont_bus_correlation_size{correlation_kind="claims_max",job="semiont-gateway",otel_scope_name="semiont",otel_scope_schema_url="",otel_scope_version="",semiont_kb="did:web:example.github.io%3A8443:a,b=c",service_name="semiont-gateway",service_version="0.6.13"} 512
-semiont_bus_correlation_size{correlation_kind="claims_max",job="semiont-gateway",otel_scope_name="semiont",otel_scope_schema_url="",otel_scope_version="",semiont_kb="did:web:example.github.io:test-kb",service_name="semiont-gateway",service_version="0.6.13"} 4096
-# HELP semiont_job_outcome_total Job outcomes
-# TYPE semiont_job_outcome_total counter
-semiont_job_outcome_total{job="semiont-worker",job_outcome="completed",job_type="yield",otel_scope_name="semiont",otel_scope_schema_url="",otel_scope_version="",semiont_kb="did:web:example.github.io%3A8443:a,b=c",service_name="semiont-worker",service_version="0.6.13"} 6
-semiont_job_outcome_total{job="semiont-worker",job_outcome="completed",job_type="yield",otel_scope_name="semiont",otel_scope_schema_url="",otel_scope_version="",semiont_kb="did:web:example.github.io:test-kb",service_name="semiont-worker",service_version="0.6.13"} 4
-semiont_job_outcome_total{job="semiont-worker",job_motivation="highlighting",job_outcome="completed",job_type="mark",otel_scope_name="semiont",otel_scope_schema_url="",otel_scope_version="",semiont_kb="did:web:example.github.io:test-kb",service_name="semiont-worker",service_version="0.6.13"} 5
-semiont_job_outcome_total{job="semiont-worker",job_motivation="tagging",job_outcome="completed",job_type="mark",otel_scope_name="semiont",otel_scope_schema_url="",otel_scope_version="",semiont_kb="did:web:example.github.io:test-kb",service_name="semiont-worker",service_version="0.6.13"} 1
-semiont_job_outcome_total{job="semiont-worker",job_outcome="failed",job_type="yield",otel_scope_name="semiont",otel_scope_schema_url="",otel_scope_version="",semiont_kb="did:web:example.github.io%3A8443:a,b=c",service_name="semiont-worker",service_version="0.6.13"} 1
-semiont_job_outcome_total{job="semiont-worker",job_outcome="failed",job_type="yield",otel_scope_name="semiont",otel_scope_schema_url="",otel_scope_version="",semiont_kb="did:web:example.github.io:test-kb",service_name="semiont-worker",service_version="0.6.13"} 2
-semiont_job_outcome_total{job="semiont-worker",job_motivation="linking",job_outcome="failed",job_type="mark",otel_scope_name="semiont",otel_scope_schema_url="",otel_scope_version="",semiont_kb="did:web:example.github.io:test-kb",service_name="semiont-worker",service_version="0.6.13"} 1
+// on a mark job only), with `xynolog_kb` on each point.
+const sampleReadout = `# HELP xynolog_job_queue_size Job queue size by status
+# TYPE xynolog_job_queue_size gauge
+xynolog_job_queue_size{job="xynolog-dispatcher",job_status="cancelled",otel_scope_name="xynolog",otel_scope_schema_url="",otel_scope_version="",xynolog_kb="did:web:example.github.io%3A8443:a,b=c",service_name="xynolog-dispatcher",service_version="0.6.13"} 0
+xynolog_job_queue_size{job="xynolog-dispatcher",job_status="cancelled",otel_scope_name="xynolog",otel_scope_schema_url="",otel_scope_version="",xynolog_kb="did:web:example.github.io:test-kb",service_name="xynolog-dispatcher",service_version="0.6.13"} 5
+xynolog_job_queue_size{job="xynolog-dispatcher",job_status="complete",otel_scope_name="xynolog",otel_scope_schema_url="",otel_scope_version="",xynolog_kb="did:web:example.github.io%3A8443:a,b=c",service_name="xynolog-dispatcher",service_version="0.6.13"} 40
+xynolog_job_queue_size{job="xynolog-dispatcher",job_status="complete",otel_scope_name="xynolog",otel_scope_schema_url="",otel_scope_version="",xynolog_kb="did:web:example.github.io:test-kb",service_name="xynolog-dispatcher",service_version="0.6.13"} 133
+xynolog_job_queue_size{job="xynolog-dispatcher",job_status="failed",otel_scope_name="xynolog",otel_scope_schema_url="",otel_scope_version="",xynolog_kb="did:web:example.github.io%3A8443:a,b=c",service_name="xynolog-dispatcher",service_version="0.6.13"} 0
+xynolog_job_queue_size{job="xynolog-dispatcher",job_status="failed",otel_scope_name="xynolog",otel_scope_schema_url="",otel_scope_version="",xynolog_kb="did:web:example.github.io:test-kb",service_name="xynolog-dispatcher",service_version="0.6.13"} 1
+xynolog_job_queue_size{job="xynolog-dispatcher",job_status="pending",otel_scope_name="xynolog",otel_scope_schema_url="",otel_scope_version="",xynolog_kb="did:web:example.github.io%3A8443:a,b=c",service_name="xynolog-dispatcher",service_version="0.6.13"} 9
+xynolog_job_queue_size{job="xynolog-dispatcher",job_status="pending",otel_scope_name="xynolog",otel_scope_schema_url="",otel_scope_version="",xynolog_kb="did:web:example.github.io:test-kb",service_name="xynolog-dispatcher",service_version="0.6.13"} 3
+xynolog_job_queue_size{job="xynolog-dispatcher",job_status="running",otel_scope_name="xynolog",otel_scope_schema_url="",otel_scope_version="",xynolog_kb="did:web:example.github.io%3A8443:a,b=c",service_name="xynolog-dispatcher",service_version="0.6.13"} 1
+xynolog_job_queue_size{job="xynolog-dispatcher",job_status="running",otel_scope_name="xynolog",otel_scope_schema_url="",otel_scope_version="",xynolog_kb="did:web:example.github.io:test-kb",service_name="xynolog-dispatcher",service_version="0.6.13"} 2
+# HELP xynolog_bus_correlation_size Correlation registry occupancy
+# TYPE xynolog_bus_correlation_size gauge
+xynolog_bus_correlation_size{correlation_kind="claims",job="xynolog-gateway",otel_scope_name="xynolog",otel_scope_schema_url="",otel_scope_version="",xynolog_kb="did:web:example.github.io%3A8443:a,b=c",service_name="xynolog-gateway",service_version="0.6.13"} 1
+xynolog_bus_correlation_size{correlation_kind="claims",job="xynolog-gateway",otel_scope_name="xynolog",otel_scope_schema_url="",otel_scope_version="",xynolog_kb="did:web:example.github.io:test-kb",service_name="xynolog-gateway",service_version="0.6.13"} 7
+xynolog_bus_correlation_size{correlation_kind="claims_max",job="xynolog-gateway",otel_scope_name="xynolog",otel_scope_schema_url="",otel_scope_version="",xynolog_kb="did:web:example.github.io%3A8443:a,b=c",service_name="xynolog-gateway",service_version="0.6.13"} 512
+xynolog_bus_correlation_size{correlation_kind="claims_max",job="xynolog-gateway",otel_scope_name="xynolog",otel_scope_schema_url="",otel_scope_version="",xynolog_kb="did:web:example.github.io:test-kb",service_name="xynolog-gateway",service_version="0.6.13"} 4096
+# HELP xynolog_job_outcome_total Job outcomes
+# TYPE xynolog_job_outcome_total counter
+xynolog_job_outcome_total{job="xynolog-worker",job_outcome="completed",job_type="yield",otel_scope_name="xynolog",otel_scope_schema_url="",otel_scope_version="",xynolog_kb="did:web:example.github.io%3A8443:a,b=c",service_name="xynolog-worker",service_version="0.6.13"} 6
+xynolog_job_outcome_total{job="xynolog-worker",job_outcome="completed",job_type="yield",otel_scope_name="xynolog",otel_scope_schema_url="",otel_scope_version="",xynolog_kb="did:web:example.github.io:test-kb",service_name="xynolog-worker",service_version="0.6.13"} 4
+xynolog_job_outcome_total{job="xynolog-worker",job_motivation="highlighting",job_outcome="completed",job_type="mark",otel_scope_name="xynolog",otel_scope_schema_url="",otel_scope_version="",xynolog_kb="did:web:example.github.io:test-kb",service_name="xynolog-worker",service_version="0.6.13"} 5
+xynolog_job_outcome_total{job="xynolog-worker",job_motivation="tagging",job_outcome="completed",job_type="mark",otel_scope_name="xynolog",otel_scope_schema_url="",otel_scope_version="",xynolog_kb="did:web:example.github.io:test-kb",service_name="xynolog-worker",service_version="0.6.13"} 1
+xynolog_job_outcome_total{job="xynolog-worker",job_outcome="failed",job_type="yield",otel_scope_name="xynolog",otel_scope_schema_url="",otel_scope_version="",xynolog_kb="did:web:example.github.io%3A8443:a,b=c",service_name="xynolog-worker",service_version="0.6.13"} 1
+xynolog_job_outcome_total{job="xynolog-worker",job_outcome="failed",job_type="yield",otel_scope_name="xynolog",otel_scope_schema_url="",otel_scope_version="",xynolog_kb="did:web:example.github.io:test-kb",service_name="xynolog-worker",service_version="0.6.13"} 2
+xynolog_job_outcome_total{job="xynolog-worker",job_motivation="linking",job_outcome="failed",job_type="mark",otel_scope_name="xynolog",otel_scope_schema_url="",otel_scope_version="",xynolog_kb="did:web:example.github.io:test-kb",service_name="xynolog-worker",service_version="0.6.13"} 1
 `
 
 // Each knowledge base's readings are its own numbers, never the other's
@@ -93,7 +93,7 @@ func TestEachKnowledgeBaseReadsItsOwnNumbers(t *testing.T) {
 func TestStatusPrintsEachKnowledgeBasesOwnNumbers(t *testing.T) {
 	var queueOnly strings.Builder
 	for _, line := range strings.SplitAfter(sampleReadout, "\n") {
-		if !strings.HasPrefix(line, "semiont_job_outcome_total{") {
+		if !strings.HasPrefix(line, "xynolog_job_outcome_total{") {
 			queueOnly.WriteString(line)
 		}
 	}
@@ -121,11 +121,11 @@ func TestStatusPrintsEachKnowledgeBasesOwnNumbers(t *testing.T) {
 // whose collector does not carry the resource as labels reads as nothing at
 // all, not as this one's.
 func TestASeriesThatNamesNoKnowledgeBaseIsNotRead(t *testing.T) {
-	const unlabelled = `semiont_job_queue_size{job="semiont-dispatcher",job_status="pending",otel_scope_name="semiont"} 3
-semiont_job_queue_size{job="semiont-dispatcher",job_status="running",otel_scope_name="semiont"} 2
-semiont_bus_correlation_size{correlation_kind="claims",job="semiont-gateway",otel_scope_name="semiont"} 7
-semiont_bus_correlation_size{correlation_kind="claims_max",job="semiont-gateway",otel_scope_name="semiont"} 4096
-semiont_job_outcome_total{job="semiont-worker",job_outcome="completed",job_type="yield",otel_scope_name="semiont"} 4
+	const unlabelled = `xynolog_job_queue_size{job="xynolog-dispatcher",job_status="pending",otel_scope_name="xynolog"} 3
+xynolog_job_queue_size{job="xynolog-dispatcher",job_status="running",otel_scope_name="xynolog"} 2
+xynolog_bus_correlation_size{correlation_kind="claims",job="xynolog-gateway",otel_scope_name="xynolog"} 7
+xynolog_bus_correlation_size{correlation_kind="claims_max",job="xynolog-gateway",otel_scope_name="xynolog"} 4096
+xynolog_job_outcome_total{job="xynolog-worker",job_outcome="completed",job_type="yield",otel_scope_name="xynolog"} 4
 `
 	if _, _, ok := queueDepth(unlabelled, kbA); ok {
 		t.Error("queueDepth read a dispatcher that names no knowledge base")
@@ -141,8 +141,8 @@ semiont_job_outcome_total{job="semiont-worker",job_outcome="completed",job_type=
 // The readout escapes a label's `"` and `\`, and a DID may hold either: the
 // reading asks for the DID as the readout writes it.
 func TestADIDIsReadAsTheReadoutEscapesIt(t *testing.T) {
-	const readout = `semiont_bus_correlation_size{correlation_kind="claims",job="semiont-gateway",otel_scope_name="semiont",otel_scope_schema_url="",otel_scope_version="",semiont_kb="did:web:quote\"back\\slash",service_name="semiont-gateway",service_version="0.6.13"} 7
-semiont_bus_correlation_size{correlation_kind="claims_max",job="semiont-gateway",otel_scope_name="semiont",otel_scope_schema_url="",otel_scope_version="",semiont_kb="did:web:quote\"back\\slash",service_name="semiont-gateway",service_version="0.6.13"} 4096
+	const readout = `xynolog_bus_correlation_size{correlation_kind="claims",job="xynolog-gateway",otel_scope_name="xynolog",otel_scope_schema_url="",otel_scope_version="",xynolog_kb="did:web:quote\"back\\slash",service_name="xynolog-gateway",service_version="0.6.13"} 7
+xynolog_bus_correlation_size{correlation_kind="claims_max",job="xynolog-gateway",otel_scope_name="xynolog",otel_scope_schema_url="",otel_scope_version="",xynolog_kb="did:web:quote\"back\\slash",service_name="xynolog-gateway",service_version="0.6.13"} 4096
 `
 	claims, claimsMax, ok := ledgerOccupancy(readout, `did:web:quote"back\slash`)
 	if !ok || claims != 7 || claimsMax != 4096 {
@@ -155,8 +155,8 @@ semiont_bus_correlation_size{correlation_kind="claims_max",job="semiont-gateway"
 // a readout with no dispatcher in it, `xynolog status` starts claiming an
 // empty queue for a dispatcher that has said nothing.
 func TestAbsentSeriesIsNotZero(t *testing.T) {
-	const noDispatcher = `semiont_job_queue_size{job="semiont-worker",job_status="pending",semiont_kb="did:web:example.github.io:test-kb"} 4
-semiont_bus_correlation_size{correlation_kind="claims",job="semiont-gateway",semiont_kb="did:web:example.github.io:test-kb"} 1
+	const noDispatcher = `xynolog_job_queue_size{job="xynolog-worker",job_status="pending",xynolog_kb="did:web:example.github.io:test-kb"} 4
+xynolog_bus_correlation_size{correlation_kind="claims",job="xynolog-gateway",xynolog_kb="did:web:example.github.io:test-kb"} 1
 `
 	if _, _, ok := queueDepth(noDispatcher, kbA); ok {
 		t.Error("queueDepth reported a reading for a dispatcher that never exported")
@@ -174,11 +174,11 @@ semiont_bus_correlation_size{correlation_kind="claims",job="semiont-gateway",sem
 // A metric whose name merely begins with the one being asked for must not be
 // mistaken for it — Prometheus readouts are full of `_total`/`_bucket` kin.
 func TestPromGaugeDoesNotMatchALongerName(t *testing.T) {
-	const readout = `semiont_job_queue_size_estimate{job="semiont-dispatcher",job_status="pending",semiont_kb="did:web:example.github.io:test-kb"} 99
-semiont_job_queue_size{job="semiont-dispatcher",job_status="pending",semiont_kb="did:web:example.github.io:test-kb"} 3
+	const readout = `xynolog_job_queue_size_estimate{job="xynolog-dispatcher",job_status="pending",xynolog_kb="did:web:example.github.io:test-kb"} 99
+xynolog_job_queue_size{job="xynolog-dispatcher",job_status="pending",xynolog_kb="did:web:example.github.io:test-kb"} 3
 `
-	v, ok := promGaugeInt(readout, "semiont_job_queue_size", kbA,
-		map[string]string{"job": "semiont-dispatcher", "job_status": "pending"})
+	v, ok := promGaugeInt(readout, "xynolog_job_queue_size", kbA,
+		map[string]string{"job": "xynolog-dispatcher", "job_status": "pending"})
 	if !ok || v != 3 {
 		t.Errorf("got %d (ok=%v), want 3 — the longer metric name was matched", v, ok)
 	}
@@ -221,7 +221,7 @@ func TestJobsConcludedSumsAcrossJobTypesAndMotivations(t *testing.T) {
 // Nothing has failed on most stacks, and that is a real zero rather than an
 // unknown — the figure must still render.
 func TestJobsConcludedReportsWhenOnlyOneOutcomeExists(t *testing.T) {
-	const onlyCompleted = `semiont_job_outcome_total{job="semiont-worker",job_outcome="completed",job_type="yield",semiont_kb="did:web:example.github.io:test-kb"} 3
+	const onlyCompleted = `xynolog_job_outcome_total{job="xynolog-worker",job_outcome="completed",job_type="yield",xynolog_kb="did:web:example.github.io:test-kb"} 3
 `
 	completed, failed, ok := jobsConcluded(onlyCompleted, kbA)
 	if !ok || completed != 3 || failed != 0 {

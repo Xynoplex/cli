@@ -13,8 +13,8 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/Xynoplex/cli/internal/launcher/stack"
-	xynoplex "github.com/Xynoplex/sdk/go"
+	"github.com/xynolog/cli/internal/launcher/stack"
+	xynolog "github.com/xynolog/sdk/go"
 )
 
 // trustExternalIssuer: st trusting an issuer somebody else runs, and so not
@@ -111,21 +111,21 @@ func TestDerivePlanIdentityRefusals(t *testing.T) {
 }
 
 func TestKeycloakRealmJSONRegistersTheGateway(t *testing.T) {
-	doc := string(keycloakRealmJSON("semiont", "https://example.github.io/my-kb", 3000, keycloakAccessTokenLifespan, realmAccounts{}))
+	doc := string(keycloakRealmJSON("xynolog", "https://example.github.io/my-kb", 3000, keycloakAccessTokenLifespan, realmAccounts{}))
 	// The gateway verifies tokens, and in the agent exchange never presents
 	// one — but it dials the Archivist for content, events and the working
 	// tree's branch, and proves who it is like any caller.
-	if !strings.Contains(doc, `"clientId": "semiont-gateway"`) {
+	if !strings.Contains(doc, `"clientId": "xynolog-gateway"`) {
 		t.Error("realm document has no service account for the gateway, which dials the Archivist")
 	}
 }
 
 func TestKeycloakRealmJSON(t *testing.T) {
-	doc := string(keycloakRealmJSON("semiont", "https://example.github.io/my-kb", 3000, keycloakAccessTokenLifespan,
+	doc := string(keycloakRealmJSON("xynolog", "https://example.github.io/my-kb", 3000, keycloakAccessTokenLifespan,
 		realmAccounts{secrets: map[string]string{"archivist": "archivist-secret", "weaver": "weaver-secret"}}))
 	for _, want := range []string{
-		`"realm": "semiont"`,
-		`"clientId": "` + xynoplex.BrowserClientID + `"`,
+		`"realm": "xynolog"`,
+		`"clientId": "` + xynolog.BrowserClientID + `"`,
 		`"publicClient": true`,
 		`"pkce.code.challenge.method": "S256"`,
 		// Loopback carries NO port, which lets the Browser's document name
@@ -135,9 +135,9 @@ func TestKeycloakRealmJSON(t *testing.T) {
 		`"http://localhost/*"`,
 		`"http://127.0.0.1/*"`,
 		`"included.custom.audience": "https://example.github.io/my-kb"`,
-		`"clientId": "` + xynoplex.ScriptClientID + `"`,
+		`"clientId": "` + xynolog.ScriptClientID + `"`,
 		`"oauth2.device.authorization.grant.enabled": "true"`,
-		// The revocation window for every person on this knowledge base: Semiont
+		// The revocation window for every person on this knowledge base: Xynolog
 		// keeps no admission flag of its own, so a disabled account's token stays
 		// good until it expires. A realm created without this would take whatever
 		// Keycloak defaults to that release.
@@ -145,14 +145,14 @@ func TestKeycloakRealmJSON(t *testing.T) {
 		// Each service signs in as its own account, so each needs a
 		// confidential client of its own. A shared one would be a static
 		// secret wearing a realm's clothes.
-		`"clientId": "semiont-archivist"`,
-		`"clientId": "semiont-weaver"`,
+		`"clientId": "xynolog-archivist"`,
+		`"clientId": "xynolog-weaver"`,
 		`"serviceAccountsEnabled": true`,
 		`"secret": "archivist-secret"`,
 		// The gateway reads a FLAT roles array; Keycloak's nested realm_access
 		// shape is deliberately not what this stamps.
 		`"claim.name": "roles"`,
-		`"claim.value": "[\"semiont-service\"]"`,
+		`"claim.value": "[\"xynolog-service\"]"`,
 		// The realm declares its own user profile rather than inheriting
 		// Keycloak's. firstName and lastName are required, so a person an
 		// administrator created an account for names themselves at first
@@ -176,7 +176,7 @@ func TestTheRealmMarksEveryAgentsAccountAndNoPersons(t *testing.T) {
 	var doc struct {
 		Clients []map[string]any `json:"clients"`
 	}
-	if err := json.Unmarshal(keycloakRealmJSON("semiont", "aud", 3000, keycloakAccessTokenLifespan, realmAccounts{worker: testWorkerKey()}), &doc); err != nil {
+	if err := json.Unmarshal(keycloakRealmJSON("xynolog", "aud", 3000, keycloakAccessTokenLifespan, realmAccounts{worker: testWorkerKey()}), &doc); err != nil {
 		t.Fatal(err)
 	}
 	stamps := func(client map[string]any) bool {
@@ -192,7 +192,7 @@ func TestTheRealmMarksEveryAgentsAccountAndNoPersons(t *testing.T) {
 	accounts := 0
 	for _, c := range doc.Clients {
 		switch c["clientId"] {
-		case xynoplex.BrowserClientID, xynoplex.ScriptClientID:
+		case xynolog.BrowserClientID, xynolog.ScriptClientID:
 			if stamps(c) {
 				t.Errorf("%v, a client people sign in through, stamps the agent kind", c["clientId"])
 			}
@@ -210,7 +210,7 @@ func TestTheRealmMarksEveryAgentsAccountAndNoPersons(t *testing.T) {
 
 // accessTokenLifespan sets the revocation window of the realm the launcher
 // creates. Only the launcher reads it, because only a realm the launcher
-// creates has a lifespan Semiont sets; it is the knowledge base's, as its
+// creates has a lifespan Xynolog sets; it is the knowledge base's, as its
 // realm is.
 func TestDerivePlanIdentityAccessTokenLifespan(t *testing.T) {
 	st := fixtureStack(t, "anthropic")
@@ -219,7 +219,7 @@ func TestDerivePlanIdentityAccessTokenLifespan(t *testing.T) {
 	if got := plan.Roles["identity"].AccessTokenLifespan; got != 60 {
 		t.Errorf("configured lifespan not carried on the plan: got %d, want 60", got)
 	}
-	doc := string(keycloakRealmJSON("semiont", "aud", 3000, plan.Roles["identity"].AccessTokenLifespan, realmAccounts{}))
+	doc := string(keycloakRealmJSON("xynolog", "aud", 3000, plan.Roles["identity"].AccessTokenLifespan, realmAccounts{}))
 	if !strings.Contains(doc, `"accessTokenLifespan": 60`) {
 		t.Error("the realm document did not take the configured lifespan")
 	}
@@ -265,7 +265,7 @@ func TestBrowserWebOriginsFollowTheBrowserPort(t *testing.T) {
 // The realm document is what actually reaches Keycloak, so the origin has to
 // survive the render — and the redirect URIs must stay portless beside it.
 func TestKeycloakRealmJSONAllowsTheBrowsersOrigin(t *testing.T) {
-	doc := string(keycloakRealmJSON("semiont", "https://example.github.io/my-kb", 3000, keycloakAccessTokenLifespan, realmAccounts{}))
+	doc := string(keycloakRealmJSON("xynolog", "https://example.github.io/my-kb", 3000, keycloakAccessTokenLifespan, realmAccounts{}))
 	for _, want := range []string{
 		`"http://localhost:3000"`,
 		`"http://127.0.0.1:3000"`,

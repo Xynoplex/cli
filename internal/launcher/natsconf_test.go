@@ -63,7 +63,7 @@ func TestBrokerTakesTwiceTheLargestEmit(t *testing.T) {
 		Post struct {
 			Limits struct {
 				MaxBodyBytes int64 `json:"maxBodyBytes"`
-			} `json:"x-semiont-limits"`
+			} `json:"x-xynolog-limits"`
 		} `json:"post"`
 	}
 	if err := json.Unmarshal(b, &emit); err != nil {
@@ -71,7 +71,7 @@ func TestBrokerTakesTwiceTheLargestEmit(t *testing.T) {
 	}
 	largest := emit.Post.Limits.MaxBodyBytes
 	if largest <= 0 {
-		t.Fatalf("POST /bus/emit states no x-semiont-limits.maxBodyBytes")
+		t.Fatalf("POST /bus/emit states no x-xynolog-limits.maxBodyBytes")
 	}
 	t.Setenv("NATS_USER", natsConfString(brokerUser))
 	t.Setenv("NATS_PASSWORD", natsConfString("a-password"))

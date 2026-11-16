@@ -15,7 +15,7 @@ import (
 	"sort"
 	"sync"
 
-	"github.com/Xynoplex/sdk/go/bus"
+	"github.com/xynolog/sdk/go/bus"
 )
 
 // KnowledgeBase is a stack recorded here, with a stored sign-in.

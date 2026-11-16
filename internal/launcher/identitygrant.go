@@ -34,7 +34,7 @@ const localWorkerLabel = "local"
 
 // workerClientPrefix: what every worker's client id begins with; the label
 // follows.
-const workerClientPrefix = "semiont-worker-"
+const workerClientPrefix = "xynolog-worker-"
 
 // workerClientID: the realm client of the worker admitted under label.
 func workerClientID(label string) string { return workerClientPrefix + label }

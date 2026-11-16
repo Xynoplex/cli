@@ -6,21 +6,21 @@ import (
 	"strings"
 	"time"
 
-	"github.com/Xynoplex/cli/internal/launcher/stack"
+	"github.com/xynolog/cli/internal/launcher/stack"
 )
 
 // service.go — the `--service` half of the lifecycle verbs.
 //
 // The launcher's primary vocabulary is the ROLE a container plays in the
-// stack: identity-store, graph, vectors, inference, traces — plus Semiont's own
+// stack: identity-store, graph, vectors, inference, traces — plus Xynolog's own
 // services by name. The concrete product behind an infra role (PostgreSQL,
 // Neo4j, …) belongs to its DRIVER, and both live in descriptors.go;
 // container names and config env vars stay at the wire level
-// (semiont-<kb>-postgres, NEO4J_HOST) — they're shared contracts with every
+// (xynolog-<kb>-postgres, NEO4J_HOST) — they're shared contracts with every
 // running stack, local or inside a codespace.
 
 // isConfigConsumer: is this role staged a resolved document for its start?
-// Exactly Semiont's own stack services — the same list that is pulled and
+// Exactly Xynolog's own stack services — the same list that is pulled and
 // that holds realm accounts.
 func isConfigConsumer(svc string) bool { return contains(stackServices, svc) }
 

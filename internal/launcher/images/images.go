@@ -1,4 +1,4 @@
-// Package images reads what a Semiont service IMAGE declares about itself.
+// Package images reads what a Xynolog service IMAGE declares about itself.
 //
 // The image is the thing that actually runs, so it owns these facts. Two
 // readers take them from here rather than restating them:

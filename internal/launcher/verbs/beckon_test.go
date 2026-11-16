@@ -6,7 +6,7 @@ import (
 	"strings"
 	"testing"
 
-	launcher "github.com/Xynoplex/cli/internal/launcher"
+	launcher "github.com/xynolog/cli/internal/launcher"
 )
 
 // The subscriber count is the only thing standing between "sent" and "seen",

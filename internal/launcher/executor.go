@@ -18,8 +18,8 @@ import (
 	"strings"
 	"time"
 
-	xynoplex "github.com/Xynoplex/sdk/go"
-	"github.com/Xynoplex/sdk/go/api"
+	xynolog "github.com/xynolog/sdk/go"
+	"github.com/xynolog/sdk/go/api"
 )
 
 // stager: writes what a container will read: each service's configuration document, the launcher-owned
@@ -28,7 +28,7 @@ type stager interface {
 	stageAll(fc flowCtx, addr string) (string, bool)             // each service's configuration document; returns stage dir
 	stageOne(svc string, fc flowCtx, addr string) (string, bool) // one service's configuration document, written afresh
 	stageNatsConf(doc []byte) (string, bool)                     // the broker's authorization block (no secret in it); returns its staged path
-	sweepStaging()                                               // this KB's /tmp/semiont-config.<key>.* removal (+ its record forgotten)
+	sweepStaging()                                               // this KB's /tmp/xynolog-config.<key>.* removal (+ its record forgotten)
 	sharedConfigCurrent(file, want string) bool                  // whether the shared container's config file says want, byte for byte
 	writeSharedConfig(file, content string) (string, bool)       // a shared container's config, outside every stack's staging; returns its path
 }
@@ -36,7 +36,7 @@ type stager interface {
 // runner: the container lifecycle itself — pull, run, tear down, and show the crash where it
 // happened when a gate fails.
 type runner interface {
-	verifyImage(svc, img string) (string, bool) // a Semiont image's build provenance, checked; returns it pinned to the digest that runs
+	verifyImage(svc, img string) (string, bool) // a Xynolog image's build provenance, checked; returns it pinned to the digest that runs
 	pull(img string) bool
 	runDetached(args []string) (string, bool)                  // echo + run -d; returns runtime-reported id
 	stopRm(name string) bool                                   // teardown; reports whether anything existed
@@ -171,7 +171,7 @@ type liveExec struct {
 	u  *UI
 	rt string
 	st *StackState
-	// existing: semiont-* container names per runtime, listed once and cached
+	// existing: xynolog-* container names per runtime, listed once and cached
 	// for the life of the command (see present).
 	existing map[string]map[string]bool
 	kb       kbRoot // the KB root and its identity; zero for root-free services
@@ -184,7 +184,7 @@ type liveExec struct {
 	lan string
 }
 
-// present lists the semiont-* containers that EXIST under a runtime — running
+// present lists the xynolog-* containers that EXIST under a runtime — running
 // or stopped, because a stopped container still holds its name and the next
 // `run --name` fails on it.
 //
@@ -213,7 +213,7 @@ func (x *liveExec) present(rt string) map[string]bool {
 	}
 	if err == nil {
 		for _, line := range strings.Split(out, "\n") {
-			if f := strings.Fields(line); len(f) > 0 && strings.HasPrefix(f[0], "semiont-") {
+			if f := strings.Fields(line); len(f) > 0 && strings.HasPrefix(f[0], "xynolog-") {
 				names[f[0]] = true
 			}
 		}
@@ -263,7 +263,7 @@ func (x *liveExec) stopShared(name string, rec *ServiceState) bool {
 	return stopped
 }
 
-// sweepStray: the cross-runtime belt-and-braces — after this, no semiont-*
+// sweepStray: the cross-runtime belt-and-braces — after this, no xynolog-*
 // container exists under ANY installed runtime, so a port holder at check
 // time is provably foreign. Idempotent no-ops when clean.
 func (x *liveExec) sweepStray(names []string) bool {
@@ -286,7 +286,7 @@ func (x *liveExec) sweepStray(names []string) bool {
 		}
 		if removed > 0 {
 			swept = true
-			x.u.Warn("Removed %d stray Semiont container(s) under %s.", removed, rt)
+			x.u.Warn("Removed %d stray Xynolog container(s) under %s.", removed, rt)
 		}
 	}
 	return swept
@@ -396,7 +396,7 @@ const gatewayDocumentFile = "gateway.json"
 // image passes to `--config`; TestConfigDocumentsAreWhereTheImagesLook holds
 // the two together. Its own name and place: a resolved JSON artifact, not the
 // documents it was derived from.
-const gatewayDocumentTarget = "/etc/semiont/gateway.json"
+const gatewayDocumentTarget = "/etc/xynolog/gateway.json"
 
 // serviceDocuments: each stack service's configuration document — the file it
 // is staged as, the name a refusal gives it, and its writer, handed the
@@ -507,11 +507,11 @@ func (x *liveExec) initStack(kb kbRoot, config, addr, stage string) {
 }
 
 func (x *liveExec) verifyImage(svc, img string) (string, bool) {
-	release := semiontRelease(svc)
+	release := xynologRelease(svc)
 	digest, err := imageVerifier().Verify(img, release)
 	if err != nil {
 		x.u.Fail("%s does not run: %v", img, err)
-		fmt.Fprintf(os.Stderr, "  An image of Semiont's runs only when a release built it: %s, run at a release tag (refs/tags/v…).\n", release.Workflow)
+		fmt.Fprintf(os.Stderr, "  An image of Xynolog's runs only when a release built it: %s, run at a release tag (refs/tags/v…).\n", release.Workflow)
 		fmt.Fprintln(os.Stderr, "  Name a released image in the document, or build it on this machine as :local, which runs unverified.")
 		return "", false
 	}
@@ -684,7 +684,7 @@ func (x *liveExec) stageNatsConf(doc []byte) (string, bool) {
 	if !ok {
 		return "", false
 	}
-	p := filepath.Join(stage, "nats-semiont.conf")
+	p := filepath.Join(stage, "nats-xynolog.conf")
 	if err := os.WriteFile(p, doc, 0o644); err != nil {
 		x.u.Fail("Cannot stage the broker config at %s: %v", p, err)
 		return "", false
@@ -940,7 +940,7 @@ func (x *liveExec) preflightIdentity(issuerBase, audience string, accounts realm
 			svc := findings[secretFinding].svc
 			fmt.Fprintln(os.Stderr, "  For each client named above: create it, enable the client-credentials grant,")
 			fmt.Fprintf(os.Stderr, "  and supply its secret as %s — for example %s\n",
-				x.u.Bold("SEMIONT_OIDC_CLIENT_SECRET_<SERVICE>"),
+				x.u.Bold("XYNOLOG_OIDC_CLIENT_SECRET_<SERVICE>"),
 				serviceClientSecretEnv(svc)+" for "+serviceClientID(svc)+".")
 		}
 		if workerFinding {
@@ -986,7 +986,7 @@ func (x *liveExec) preflightIdentity(issuerBase, audience string, accounts realm
 		fmt.Fprintln(os.Stderr, "  nobody could open the knowledge base.")
 		return false
 	}
-	x.u.Log("Sign-in clients: %s", x.u.Dim(xynoplex.BrowserClientID+" and "+xynoplex.ScriptClientID+" verified at the realm"))
+	x.u.Log("Sign-in clients: %s", x.u.Dim(xynolog.BrowserClientID+" and "+xynolog.ScriptClientID+" verified at the realm"))
 	return true
 }
 
@@ -1269,7 +1269,7 @@ func (x *planExec) sweepStray(names []string) bool {
 		if rt == x.rt {
 			continue
 		}
-		x.c("sweep stray Semiont containers under %s:", rt)
+		x.c("sweep stray Xynolog containers under %s:", rt)
 		for _, c := range names {
 			fmt.Println(renderCmd(rt, "stop", c))
 			fmt.Println(renderCmd(rt, "rm", c))
@@ -1348,7 +1348,7 @@ func (x *planExec) stageOne(svc string, _ flowCtx, _ string) (string, bool) {
 func (x *planExec) initStack(kbRoot, string, string, string) {}
 
 func (x *planExec) verifyImage(svc, img string) (string, bool) {
-	x.c("verify %s: its build provenance, signed by %s at a release tag (refs/tags/v…); then pull and run it by its digest", img, semiontWorkflow(svc))
+	x.c("verify %s: its build provenance, signed by %s at a release tag (refs/tags/v…); then pull and run it by its digest", img, xynologWorkflow(svc))
 	return pinnedImage(img, "sha256:<verified>"), true
 }
 
@@ -1452,7 +1452,7 @@ func (x *planExec) daemonCredential(_ kbRoot, role string, _ bool) (string, bool
 
 func (x *planExec) stageNatsConf(_ []byte) (string, bool) {
 	x.c("stage the broker's authorization block (no credential in it — the daemon interpolates $NATS_USER/$NATS_PASSWORD from its own environment)")
-	return "<stage>/nats-semiont.conf", true
+	return "<stage>/nats-xynolog.conf", true
 }
 
 func (x *planExec) createDatabase(user, name string) bool {
@@ -1522,10 +1522,10 @@ func (x *planExec) preflightIdentity(issuerBase, audience string, accounts realm
 	}
 	x.c("client-credentials grant at %s as %s, by an assertion signed with the shared worker key (%s) — require flat `roles` containing %q and %q, and `aud` containing %s",
 		issuerBase, serviceClientID("worker"), accounts.worker.thumbprint, serviceRole, workerRole, audience)
-	x.c("device authorization at %s as %s — require the grant to be enabled for it", issuerBase, xynoplex.ScriptClientID)
-	x.c("authorization request at %s as %s — require a redirect to %s", issuerBase, xynoplex.BrowserClientID, browserRedirect(browserPort))
+	x.c("device authorization at %s as %s — require the grant to be enabled for it", issuerBase, xynolog.ScriptClientID)
+	x.c("authorization request at %s as %s — require a redirect to %s", issuerBase, xynolog.BrowserClientID, browserRedirect(browserPort))
 	x.c("the same request carrying NO code challenge — require it to be refused, so PKCE is enforced rather than merely offered")
-	x.c("password grant at %s as %s and %s, sending no credential — require both to refuse it", issuerBase, xynoplex.BrowserClientID, xynoplex.ScriptClientID)
+	x.c("password grant at %s as %s and %s, sending no credential — require both to refuse it", issuerBase, xynolog.BrowserClientID, xynolog.ScriptClientID)
 	if wantLifespan > 0 {
 		x.c("compare `exp - iat` on those tokens against the configured %ds — warn if the realm was created with another", wantLifespan)
 	}

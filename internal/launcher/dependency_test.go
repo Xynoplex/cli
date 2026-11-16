@@ -7,7 +7,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/Xynoplex/cli/internal/launcher/stack"
+	"github.com/xynolog/cli/internal/launcher/stack"
 )
 
 // Service dependencies are data: there is ONE start order and a set of edges
@@ -78,10 +78,10 @@ func TestTeardownIsTheStartWalkReversed(t *testing.T) {
 // stopped from their own records (stopSharedServices).
 func TestAStacksSweepDerivesTheTeardownOrder(t *testing.T) {
 	assertNames(t, "stackContainers", stackContainers("kb"), []string{
-		"semiont-kb-weaver", "semiont-kb-smelter",
-		"semiont-kb-dispatcher", "semiont-kb-librarian", "semiont-kb-archivist",
-		"semiont-kb-qdrant", "semiont-kb-neo4j",
-		"semiont-kb-gateway", "semiont-kb-nats",
+		"xynolog-kb-weaver", "xynolog-kb-smelter",
+		"xynolog-kb-dispatcher", "xynolog-kb-librarian", "xynolog-kb-archivist",
+		"xynolog-kb-qdrant", "xynolog-kb-neo4j",
+		"xynolog-kb-gateway", "xynolog-kb-nats",
 	})
 }
 

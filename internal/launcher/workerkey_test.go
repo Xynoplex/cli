@@ -19,8 +19,8 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/Xynoplex/cli/internal/launcher/harness"
-	xynoplex "github.com/Xynoplex/sdk/go"
+	"github.com/xynolog/cli/internal/launcher/harness"
+	xynolog "github.com/xynolog/sdk/go"
 )
 
 // A second start, of this knowledge base or another, gets the FIRST key: every
@@ -62,7 +62,7 @@ func TestTheWorkerKeyIsKeptForEveryKnowledgeBase(t *testing.T) {
 	if !first.signer.PublicKey.Equal(parsed) {
 		t.Error("the public half the realm is given is not the key's")
 	}
-	if first.thumbprint != xynoplex.JWKThumbprint(&first.signer.PublicKey) {
+	if first.thumbprint != xynolog.JWKThumbprint(&first.signer.PublicKey) {
 		t.Error("the key is not named by its thumbprint")
 	}
 }
@@ -101,7 +101,7 @@ func TestTheRealmRegistersTheWorkerByItsKey(t *testing.T) {
 	var doc struct {
 		Clients []map[string]any `json:"clients"`
 	}
-	if err := json.Unmarshal(keycloakRealmJSON("semiont", "aud", 3000, keycloakAccessTokenLifespan, realmAccounts{worker: k}), &doc); err != nil {
+	if err := json.Unmarshal(keycloakRealmJSON("xynolog", "aud", 3000, keycloakAccessTokenLifespan, realmAccounts{worker: k}), &doc); err != nil {
 		t.Fatal(err)
 	}
 	var worker map[string]any
@@ -109,7 +109,7 @@ func TestTheRealmRegistersTheWorkerByItsKey(t *testing.T) {
 		if c["clientId"] == serviceClientID("worker") {
 			worker = c
 		}
-		if c["clientId"] == "semiont-worker" {
+		if c["clientId"] == "xynolog-worker" {
 			t.Error("the realm still renders the worker's secret client")
 		}
 	}
@@ -174,16 +174,16 @@ func TestTheWorkerKeySetNamesTheKeyByItsThumbprint(t *testing.T) {
 	}
 }
 
-// The worker's container is handed the key as SEMIONT_OIDC_CLIENT_KEY, and
+// The worker's container is handed the key as XYNOLOG_OIDC_CLIENT_KEY, and
 // its value never rides the command line: the runtime copies it from the
 // launcher's own environment.
 func TestTheWorkerIsHandedItsKeyOffTheCommandLine(t *testing.T) {
 	k := testWorkerKey()
-	argv, env := offCommandLine(workerArgs("/state/shared/worker.json", exposure{rt: "container", addr: "1.2.3.4"}, k.private, "v", semiontDescriptor("worker").mem, nil, nil))
-	if line := strings.Join(argv, " "); strings.Contains(line, "PRIVATE KEY") || !strings.Contains(line, "--env SEMIONT_OIDC_CLIENT_KEY ") {
+	argv, env := offCommandLine(workerArgs("/state/shared/worker.json", exposure{rt: "container", addr: "1.2.3.4"}, k.private, "v", xynologDescriptor("worker").mem, nil, nil))
+	if line := strings.Join(argv, " "); strings.Contains(line, "PRIVATE KEY") || !strings.Contains(line, "--env XYNOLOG_OIDC_CLIENT_KEY ") {
 		t.Errorf("the key's value rides the command line, or its name is missing:\n%s", line)
 	}
-	if !strings.Contains(strings.Join(env, "\n"), "SEMIONT_OIDC_CLIENT_KEY="+k.private) {
+	if !strings.Contains(strings.Join(env, "\n"), "XYNOLOG_OIDC_CLIENT_KEY="+k.private) {
 		t.Error("the runtime's environment does not carry the worker's key whole")
 	}
 }

@@ -12,7 +12,7 @@ package launcher
 // DiscoveredKB.json) — the multi-language contract of record: a standalone
 // contract directory in specs (per-directory ref-closure by rule, so binding
 // it never drags in the API surface; see protocol/specs/src/discovery/README.md). TypeScript
-// consumers get their types from @semiont/core (the OpenAPI pipeline); THIS
+// consumers get their types from @xynolog/core (the OpenAPI pipeline); THIS
 // side gets discovery_types_gen.go from the same files via the go:generate
 // below — the Go equivalent of core's generated types.ts, so schema drift is
 // a compile error here, not a review promise. Change the schema first, then
@@ -95,7 +95,7 @@ func publishedKBs(ss *StackSet) []publishedKB {
 			continue
 		}
 		e := DiscoveredKB{Host: "localhost", Port: 4000, Placement: DiscoveredKBPlacementLocal,
-			Did: st.KBDid, ManagedBy: "semiont-launcher"}
+			Did: st.KBDid, ManagedBy: "xynolog-launcher"}
 		// The gateway endpoint carries the real port when the config moved it.
 		if b, ok := st.Services["gateway"]; ok {
 			if p := portFromEndpoint(b.Endpoint); p != 0 {
@@ -143,7 +143,7 @@ func publishedKBs(ss *StackSet) []publishedKB {
 		claimed[c.Codespace.ForwardPort] = true
 		kbs = append(kbs, publishedKB{stack: c, kb: DiscoveredKB{
 			Host: "localhost", Port: c.Codespace.ForwardPort, Placement: DiscoveredKBPlacementCodespace,
-			Repo: opt(c.Codespace.Repo), Did: c.KBDid, ManagedBy: "semiont-launcher",
+			Repo: opt(c.Codespace.Repo), Did: c.KBDid, ManagedBy: "xynolog-launcher",
 		}})
 	}
 	return kbs

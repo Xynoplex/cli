@@ -81,13 +81,13 @@ func TestAStacksSweepCoversEveryContainerItRuns(t *testing.T) {
 // knowledge base is a fault, not a name.
 func TestAStacksContainersAreNamedForItsKnowledgeBase(t *testing.T) {
 	for role, want := range map[string]string{
-		"graph":          "semiont-example.org-kb-neo4j",
-		"gateway":        "semiont-example.org-kb-gateway",
-		"identity":       "semiont-keycloak",
-		"identity-store": "semiont-postgres",
-		"worker":         "semiont-worker",
-		"inference":      "semiont-ollama",
-		"collector":      "semiont-otel-collector",
+		"graph":          "xynolog-example.org-kb-neo4j",
+		"gateway":        "xynolog-example.org-kb-gateway",
+		"identity":       "xynolog-keycloak",
+		"identity-store": "xynolog-postgres",
+		"worker":         "xynolog-worker",
+		"inference":      "xynolog-ollama",
+		"collector":      "xynolog-otel-collector",
 	} {
 		if got := roleContainer(role, "example.org-kb"); got != want {
 			t.Errorf("%s runs %s, want %s", role, got, want)
@@ -161,10 +161,10 @@ func TestEveryRoleHasOneGroup(t *testing.T) {
 	assertNames(t, "shared groups", shared, []string{"issuer", "knowledge-workers", "providers", "telemetry"})
 }
 
-// The realm's accounts are every Semiont service that presents a token to
+// The realm's accounts are every Xynolog service that presents a token to
 // another: the stack's, each with a secret, and the shared worker, which
 // proves itself with the worker key. The Browser presents none — it is a
-// viewer, and the only Semiont role without an account. The list is derived;
+// viewer, and the only Xynolog role without an account. The list is derived;
 // the literal pins it.
 func TestSecretClientsDeriveTheRealmAccountList(t *testing.T) {
 	assertNames(t, "secretClients", secretClients,
@@ -208,7 +208,7 @@ func TestNoRoleHasTwoContainerNames(t *testing.T) {
 // containers a stack runs. Each list is held to the descriptors here, so a
 // role or a container the table gains fails until the catalog names it.
 func TestTheServiceCatalogNamesWhatTheDescriptorsRun(t *testing.T) {
-	b, err := os.ReadFile(filepath.Join("..", "..", "testdata", "semiont-docs", "services", "OVERVIEW.md"))
+	b, err := os.ReadFile(filepath.Join("..", "..", "testdata", "xynolog-docs", "services", "OVERVIEW.md"))
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -251,7 +251,7 @@ func TestTheServiceCatalogNamesWhatTheDescriptorsRun(t *testing.T) {
 	}
 	assertNames(t, "the roles --service takes", named("takes a role name from the tables above: ", ". It takes"), roles)
 	assertNames(t, "a knowledge base's products", named("`<product>` is ", ". `<kb>`"), products)
-	assertNames(t, "the shared containers", named("are named `semiont-<name>`: ", ".\n"), shared)
+	assertNames(t, "the shared containers", named("are named `xynolog-<name>`: ", ".\n"), shared)
 }
 
 // The operator's guide tells a reader the groups `status` reads and `--group`
@@ -259,7 +259,7 @@ func TestTheServiceCatalogNamesWhatTheDescriptorsRun(t *testing.T) {
 // is held to serviceGroups here, so a group or a member the launcher gains
 // fails until the guide names it.
 func TestTheOperatorGuideNamesEachGroup(t *testing.T) {
-	b, err := os.ReadFile(filepath.Join("..", "..", "testdata", "semiont-docs", "LOCAL-SEMIONT.md"))
+	b, err := os.ReadFile(filepath.Join("..", "..", "testdata", "xynolog-docs", "LOCAL-XYNOLOG.md"))
 	if err != nil {
 		t.Fatal(err)
 	}

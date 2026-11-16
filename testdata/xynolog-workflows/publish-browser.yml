@@ -1,12 +1,12 @@
 name: Publish Browser Container Image
 
-run-name: "Browser Image: @semiont/browser@${{ inputs.version }}"
+run-name: "Browser Image: @xynolog/browser@${{ inputs.version }}"
 
 on:
   workflow_dispatch:
     inputs:
       version:
-        description: '@semiont/browser version (e.g. 0.4.15, 0.4.15-build.42, latest)'
+        description: '@xynolog/browser version (e.g. 0.4.15, 0.4.15-build.42, latest)'
         required: true
         type: string
       dry_run:
@@ -45,12 +45,12 @@ jobs:
         # `dist.tarball`. Those are different artifacts served by different
         # infrastructure, and they do not become available at the same instant:
         # the packument can report every published package present while an
-        # install dies on `404 .../@semiont/<pkg>/-/<pkg>-<ver>.tgz`. A gate in
+        # install dies on `404 .../@xynolog/<pkg>/-/<pkg>-<ver>.tgz`. A gate in
         # front of a build has to perform the operation the build performs, not
         # a cheaper one that correlates with it.
         #
-        # Waiting only for @semiont/browser is not enough either: the install
-        # resolves its whole @semiont/* closure at the same version, and those
+        # Waiting only for @xynolog/browser is not enough either: the install
+        # resolves its whole @xynolog/* closure at the same version, and those
         # propagate independently. version.json owns which packages publish, so
         # wait for all of them rather than restating a dependency list that
         # would drift.
@@ -90,7 +90,7 @@ jobs:
               exit 1
             fi
           done
-          echo "✅ every published @semiont package is installable at ${{ inputs.version }}"
+          echo "✅ every published @xynolog package is installable at ${{ inputs.version }}"
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v4.4.1
@@ -106,10 +106,10 @@ jobs:
         id: tags
         run: |
           COMMIT_SHA=$(git rev-parse --short HEAD)
-          TAGS="ghcr.io/the-ai-alliance/semiont-browser:${{ inputs.version }}"
-          TAGS="$TAGS,ghcr.io/the-ai-alliance/semiont-browser:sha-$COMMIT_SHA"
+          TAGS="ghcr.io/xynolog/xynolog-browser:${{ inputs.version }}"
+          TAGS="$TAGS,ghcr.io/xynolog/xynolog-browser:sha-$COMMIT_SHA"
           if [ "${{ inputs.tag_latest }}" = "true" ]; then
-            TAGS="$TAGS,ghcr.io/the-ai-alliance/semiont-browser:latest"
+            TAGS="$TAGS,ghcr.io/xynolog/xynolog-browser:latest"
           fi
           echo "tags=$TAGS" >> $GITHUB_OUTPUT
           echo "sha=$COMMIT_SHA" >> $GITHUB_OUTPUT
@@ -125,16 +125,16 @@ jobs:
           file: ./images/browser/Dockerfile
           platforms: linux/amd64
           load: true
-          tags: semiont-browser:scan
+          tags: xynolog-browser:scan
           build-args: |
-            SEMIONT_BROWSER_VERSION=${{ inputs.version }}
+            XYNOLOG_BROWSER_VERSION=${{ inputs.version }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
       - name: Scan image with Trivy
         uses: aquasecurity/trivy-action@v0.36.0
         with:
-          image-ref: semiont-browser:scan
+          image-ref: xynolog-browser:scan
           severity: HIGH,CRITICAL
           exit-code: '1'
           ignore-unfixed: true
@@ -150,17 +150,17 @@ jobs:
       - name: Generate SBOM with Trivy
         uses: aquasecurity/trivy-action@v0.36.0
         with:
-          image-ref: semiont-browser:scan
+          image-ref: xynolog-browser:scan
           format: spdx-json
           output: sbom.spdx.json
 
       # License-policy gate, matching publish-service-images.yml.
       #
-      # Scope note, so this is not read as more than it is: @semiont/browser
+      # Scope note, so this is not read as more than it is: @xynolog/browser
       # ships a PRE-BUILT SPA, so its third-party dependencies are bundled into
       # the output before the package is published and never appear as npm
       # packages in the image. This inspects the npm packages the SBOM lists:
-      # @semiont/browser itself and the installer-stage scaffold.
+      # @xynolog/browser itself and the installer-stage scaffold.
       # It is here for symmetry and to catch drift if this image ever gains a
       # real runtime dependency tree -- NOT as assurance about the bundle.
       - name: License policy gate
@@ -177,7 +177,7 @@ jobs:
       - name: Boot smoke (module load)
         run: |
           set +e
-          out=$(timeout 10 docker run --rm semiont-browser:scan 2>&1)
+          out=$(timeout 10 docker run --rm xynolog-browser:scan 2>&1)
           rc=$?
           set -e
           echo "$out"
@@ -207,7 +207,7 @@ jobs:
           push: ${{ !inputs.dry_run }}
           tags: ${{ steps.tags.outputs.tags }}
           build-args: |
-            SEMIONT_BROWSER_VERSION=${{ inputs.version }}
+            XYNOLOG_BROWSER_VERSION=${{ inputs.version }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
@@ -219,7 +219,7 @@ jobs:
         if: ${{ !inputs.dry_run }}
         uses: actions/attest-build-provenance@v4.2.2
         with:
-          subject-name: ghcr.io/the-ai-alliance/semiont-browser
+          subject-name: ghcr.io/xynolog/xynolog-browser
           subject-digest: ${{ steps.build-push.outputs.digest }}
           push-to-registry: true
 
@@ -227,7 +227,7 @@ jobs:
         if: ${{ !inputs.dry_run }}
         uses: actions/attest-sbom@v4
         with:
-          subject-name: ghcr.io/the-ai-alliance/semiont-browser
+          subject-name: ghcr.io/xynolog/xynolog-browser
           subject-digest: ${{ steps.build-push.outputs.digest }}
           sbom-path: sbom.spdx.json
           push-to-registry: true
@@ -236,18 +236,18 @@ jobs:
         run: |
           echo "## Browser Container Image" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
-          echo "**@semiont/browser version:** ${{ inputs.version }}" >> $GITHUB_STEP_SUMMARY
+          echo "**@xynolog/browser version:** ${{ inputs.version }}" >> $GITHUB_STEP_SUMMARY
           echo "**Commit:** ${{ steps.tags.outputs.sha }}" >> $GITHUB_STEP_SUMMARY
           echo "**Dry run:** ${{ inputs.dry_run }}" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "### Pull with:" >> $GITHUB_STEP_SUMMARY
           echo "\`\`\`bash" >> $GITHUB_STEP_SUMMARY
-          echo "docker pull ghcr.io/the-ai-alliance/semiont-browser:${{ inputs.version }}" >> $GITHUB_STEP_SUMMARY
+          echo "docker pull ghcr.io/xynolog/xynolog-browser:${{ inputs.version }}" >> $GITHUB_STEP_SUMMARY
           echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "### Verify supply-chain attestations:" >> $GITHUB_STEP_SUMMARY
           echo "\`\`\`bash" >> $GITHUB_STEP_SUMMARY
-          echo "gh attestation verify oci://ghcr.io/the-ai-alliance/semiont-browser:${{ inputs.version }} \\" >> $GITHUB_STEP_SUMMARY
+          echo "gh attestation verify oci://ghcr.io/xynolog/xynolog-browser:${{ inputs.version }} \\" >> $GITHUB_STEP_SUMMARY
           echo "  --repo $GITHUB_REPOSITORY \\" >> $GITHUB_STEP_SUMMARY
           echo "  --cert-identity https://github.com/${GITHUB_WORKFLOW_REF%@*}@refs/tags/v${{ inputs.version }}" >> $GITHUB_STEP_SUMMARY
           echo "\`\`\`" >> $GITHUB_STEP_SUMMARY

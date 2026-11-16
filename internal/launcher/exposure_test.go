@@ -208,7 +208,7 @@ func TestDockerAndPodmanPublishAsBefore(t *testing.T) {
 func TestTheLaunchersProbesGoWhereTheDialersAre(t *testing.T) {
 	plan := mustPlan(t, fixtureStack(t, "ollama-gemma"))
 	for _, c := range []struct{ role, driver, want string }{
-		{"gateway", driverSemiont, "http://localhost:4000/api/health"},
+		{"gateway", driverXynolog, "http://localhost:4000/api/health"},
 		{"graph", "neo4j", "http://localhost:7474"},
 		{"metrics", "prometheus", "http://localhost:9090/-/healthy"},
 		{"vectors", "qdrant", "http://" + bridge + ":6330/readyz"},
@@ -216,8 +216,8 @@ func TestTheLaunchersProbesGoWhereTheDialersAre(t *testing.T) {
 		{"messaging", "jetstream", "tcp:" + bridge + ":4222"},
 		{"collector", "otel", "http://" + bridge + ":24110/metrics"},
 		{"identity", "keycloak", "http://" + bridge + ":8080/realms/example.github.io-test-kb"},
-		{"archivist", driverSemiont, "http://" + bridge + ":24103/health"},
-		{"worker", driverSemiont, "http://" + bridge + ":24100/health"},
+		{"archivist", driverXynolog, "http://" + bridge + ":24103/health"},
+		{"worker", driverXynolog, "http://" + bridge + ":24100/health"},
 	} {
 		if got := healthEndpoint(c.role, c.driver, plan, appleContainer); got != c.want {
 			t.Errorf("%s is asked at %s, want %s", c.role, got, c.want)
@@ -298,9 +298,9 @@ func TestTheE2EBridgeForwardsWhereTheContainersDial(t *testing.T) {
 	plan := mustPlan(t, fixtureStack(t, "ollama-gemma"))
 	want := map[int]int{}
 	for role, port := range map[string]int{
-		"browser":  semiontDescriptor("browser").defaultPort,
+		"browser":  xynologDescriptor("browser").defaultPort,
 		"identity": plan.Roles["identity"].Port,
-		"worker":   semiontDescriptor("worker").ports[0].port,
+		"worker":   xynologDescriptor("worker").ports[0].port,
 	} {
 		if reachOf(role, port)&reachContainers == 0 {
 			t.Errorf("the suite reaches %s at %d, which no container can dial under Apple container", role, port)

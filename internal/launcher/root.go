@@ -14,26 +14,26 @@ import (
 	"strings"
 	"time"
 
-	"github.com/Xynoplex/cli/internal/launcher/stack"
+	"github.com/xynolog/cli/internal/launcher/stack"
 )
 
-// KB-root discovery: SEMIONT_ROOT is an explicit override analogous to
+// KB-root discovery: XYNOLOG_ROOT is an explicit override analogous to
 // GIT_DIR — strictly validated, never silently ignored — else the root is
-// found by walking up from cwd looking for .semiont/. git is deliberately NOT
+// found by walking up from cwd looking for .xynolog/. git is deliberately NOT
 // part of discovery; whether the root must also be a git clone is a separate
 // invariant, enforced for a full start and --service archivist
 // (requireGitClone).
 
-// resolveKBRoot returns the KB root, where it came from ("SEMIONT_ROOT" or
+// resolveKBRoot returns the KB root, where it came from ("XYNOLOG_ROOT" or
 // "discovered") and its identity (nil when it commits no project file),
 // refusing one whose config.yaml does not hold (holdProjectFile).
 func resolveKBRoot() (path, source string, ident *kbIdentity, err error) {
-	if override := os.Getenv("SEMIONT_ROOT"); override != "" {
+	if override := os.Getenv("XYNOLOG_ROOT"); override != "" {
 		if fi, statErr := os.Stat(override); statErr != nil || !fi.IsDir() {
-			return "", "", nil, fmt.Errorf("SEMIONT_ROOT points to non-existent directory: %s", override)
+			return "", "", nil, fmt.Errorf("XYNOLOG_ROOT points to non-existent directory: %s", override)
 		}
-		if fi, statErr := os.Stat(filepath.Join(override, ".semiont")); statErr != nil || !fi.IsDir() {
-			return "", "", nil, fmt.Errorf("SEMIONT_ROOT does not contain a .semiont/ directory: %s", override)
+		if fi, statErr := os.Stat(filepath.Join(override, ".xynolog")); statErr != nil || !fi.IsDir() {
+			return "", "", nil, fmt.Errorf("XYNOLOG_ROOT does not contain a .xynolog/ directory: %s", override)
 		}
 		if abs, absErr := filepath.Abs(override); absErr == nil {
 			override = abs
@@ -42,7 +42,7 @@ func resolveKBRoot() (path, source string, ident *kbIdentity, err error) {
 		if err != nil {
 			return "", "", nil, err
 		}
-		return override, "SEMIONT_ROOT", ident, nil
+		return override, "XYNOLOG_ROOT", ident, nil
 	}
 
 	dir, err := os.Getwd()
@@ -50,7 +50,7 @@ func resolveKBRoot() (path, source string, ident *kbIdentity, err error) {
 		return "", "", nil, fmt.Errorf("cannot determine current directory: %v", err)
 	}
 	for {
-		if fi, statErr := os.Stat(filepath.Join(dir, ".semiont")); statErr == nil && fi.IsDir() {
+		if fi, statErr := os.Stat(filepath.Join(dir, ".xynolog")); statErr == nil && fi.IsDir() {
 			ident, err := holdProjectFile(dir)
 			if err != nil {
 				return "", "", nil, err
@@ -59,7 +59,7 @@ func resolveKBRoot() (path, source string, ident *kbIdentity, err error) {
 		}
 		parent := filepath.Dir(dir)
 		if parent == dir {
-			return "", "", nil, fmt.Errorf("no .semiont/ directory found in the current directory or any parent")
+			return "", "", nil, fmt.Errorf("no .xynolog/ directory found in the current directory or any parent")
 		}
 		dir = parent
 	}
@@ -79,7 +79,7 @@ func resolveKBRoot() (path, source string, ident *kbIdentity, err error) {
 
 type rootEntry struct {
 	Path     string `json:"path"`
-	Did      string `json:"did,omitempty"`      // did:web identity from .semiont/config.yaml site.domain
+	Did      string `json:"did,omitempty"`      // did:web identity from .xynolog/config.yaml site.domain
 	SiteName string `json:"siteName,omitempty"` // human label — kept here so even a missing root stays identifiable
 	Config   string `json:"config,omitempty"`   // sticky --config: the config `init` wrote, then whatever a successful start last used explicitly
 	// PortBlock: the block of ports this KB's stack is published on
@@ -181,7 +181,7 @@ func upsertRoot(reg *rootsRegistry, kb kbRoot) *rootEntry {
 		path = abs
 	}
 	now := time.Now().UTC()
-	// The row takes the identity on every use: the KB's .semiont/config.yaml
+	// The row takes the identity on every use: the KB's .xynolog/config.yaml
 	// can change between commands.
 	ident := kb.ident
 	// A moved KB re-registers its did at the new path, leaving its previous
@@ -273,7 +273,7 @@ func recordRuntimePref(rt string) {
 }
 
 // portStride: how far apart two knowledge bases' port blocks place one
-// port. 10 keeps every block's Semiont services (24101–24105 on block 0)
+// port. 10 keeps every block's Xynolog services (24101–24105 on block 0)
 // clear of the shared worker and collector (24100, 24110), and no two of
 // the ports a block places meet one another, or one of the machine's
 // containers' (the shared Qdrant's 6330 among them), below block 101.
@@ -342,7 +342,7 @@ func freeGatewayPort(root string) int {
 	for _, kb := range otherKnowledgeBases(root) {
 		committed[kb.Spec.Gateway.Port] = true
 	}
-	base := semiontDescriptor("gateway").ports[0].port
+	base := xynologDescriptor("gateway").ports[0].port
 	block := 0
 	for committed[blockPort(base, block)] {
 		block++
@@ -426,14 +426,14 @@ func recordedConfig(path string) string {
 }
 
 // resolveRootArg resolves a `--root` value: an existing directory path is
-// validated directly (strict, like SEMIONT_ROOT); anything else is looked up
+// validated directly (strict, like XYNOLOG_ROOT); anything else is looked up
 // in the registry by basename. Either way, a root whose config.yaml does not
 // hold is refused (holdProjectFile), and one that holds comes with its
 // identity (nil when it commits no project file).
 func resolveRootArg(arg string) (string, *kbIdentity, error) {
 	if fi, err := os.Stat(arg); err == nil && fi.IsDir() {
-		if fi, err := os.Stat(filepath.Join(arg, ".semiont")); err != nil || !fi.IsDir() {
-			return "", nil, fmt.Errorf("--root does not contain a .semiont/ directory: %s", arg)
+		if fi, err := os.Stat(filepath.Join(arg, ".xynolog")); err != nil || !fi.IsDir() {
+			return "", nil, fmt.Errorf("--root does not contain a .xynolog/ directory: %s", arg)
 		}
 		if abs, err := filepath.Abs(arg); err == nil {
 			arg = abs
@@ -466,8 +466,8 @@ func resolveRootArg(arg string) (string, *kbIdentity, error) {
 		return "", nil, fmt.Errorf("--root '%s' matches no registered root; known roots:\n  %s", arg, strings.Join(known, "\n  "))
 	case 1:
 		path := matches[0]
-		if fi, err := os.Stat(filepath.Join(path, ".semiont")); err != nil || !fi.IsDir() {
-			return "", nil, fmt.Errorf("registered root %s is missing on disk (or lost its .semiont/)", path)
+		if fi, err := os.Stat(filepath.Join(path, ".xynolog")); err != nil || !fi.IsDir() {
+			return "", nil, fmt.Errorf("registered root %s is missing on disk (or lost its .xynolog/)", path)
 		}
 		ident, err := holdProjectFile(path)
 		if err != nil {

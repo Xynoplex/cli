@@ -4,16 +4,16 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/Xynoplex/cli/internal/launcher/harness"
+	"github.com/xynolog/cli/internal/launcher/harness"
 )
 
-// The "state" store is the Archivist's host volume at /semiont-state. The
+// The "state" store is the Archivist's host volume at /xynolog-state. The
 // Archivist writes its projection tree and stamp under it (its document names
 // it as stateHome), and its supervisor keeps its events log there so a death
 // record outlives the container. If the store stopped mounting a host volume,
 // all of that would silently fall back inside the container and die with it.
 
-func TestStateStoreMountsSemiontStateOnHostVolume(t *testing.T) {
+func TestStateStoreMountsXynologStateOnHostVolume(t *testing.T) {
 	harness.Home(t)
 	home := dataDir() // the launcher's data home backs the state store
 
@@ -22,12 +22,12 @@ func TestStateStoreMountsSemiontStateOnHostVolume(t *testing.T) {
 		t.Fatal("the \"state\" store must mount a host volume; got none — the projection tree would be container-ephemeral")
 	}
 
-	target, hostPath, ok := volumeMount(args, "/semiont-state")
+	target, hostPath, ok := volumeMount(args, "/xynolog-state")
 	if !ok {
-		t.Fatalf("the \"state\" store must mount to /semiont-state (the Archivist's stateHome); args=%v", args)
+		t.Fatalf("the \"state\" store must mount to /xynolog-state (the Archivist's stateHome); args=%v", args)
 	}
-	if target != "/semiont-state" {
-		t.Fatalf("mount target = %q, want /semiont-state", target)
+	if target != "/xynolog-state" {
+		t.Fatalf("mount target = %q, want /xynolog-state", target)
 	}
 	// The host side must be a real path under the data home, not empty — an
 	// empty host path is a bind to nothing, i.e. ephemeral.

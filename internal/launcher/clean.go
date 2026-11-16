@@ -23,7 +23,7 @@ import (
 	"slices"
 	"strings"
 
-	"github.com/Xynoplex/cli/internal/launcher/stack"
+	"github.com/xynolog/cli/internal/launcher/stack"
 )
 
 const cleanUsage = `Usage: xynolog clean [options]

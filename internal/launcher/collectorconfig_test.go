@@ -7,7 +7,7 @@ import (
 )
 
 // The readout labels each series with the resource that exported it, so a
-// series names its knowledge base (`semiont_kb`) and two knowledge bases'
+// series names its knowledge base (`xynolog_kb`) and two knowledge bases'
 // dispatchers are two series, not one — with Jaeger running or without.
 func TestTheCollectorLabelsEachSeriesWithItsResource(t *testing.T) {
 	for _, traces := range []bool{false, true} {

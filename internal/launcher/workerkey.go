@@ -6,7 +6,7 @@ package launcher
 // knowledge base the launcher runs here, and each one's realm registers the
 // key's public half on one client, serviceClientID("worker"). The private half never
 // leaves the machine: it reaches the worker's container as
-// SEMIONT_OIDC_CLIENT_KEY, and the worker signs each sign-in with it (RFC 7523,
+// XYNOLOG_OIDC_CLIENT_KEY, and the worker signs each sign-in with it (RFC 7523,
 // the SDK's KeyCredential). No secret is sent, and none is kept for the worker
 // in a root.
 
@@ -18,7 +18,7 @@ import (
 	"encoding/pem"
 	"path/filepath"
 
-	xynoplex "github.com/Xynoplex/sdk/go"
+	xynolog "github.com/xynolog/sdk/go"
 )
 
 // custodyWorkerKey: the custody name of the shared worker key, an RSA
@@ -51,7 +51,7 @@ func registeredKeyOf(pub *rsa.PublicKey) (registeredKey, error) {
 	if err != nil {
 		return registeredKey{}, err
 	}
-	return registeredKey{public: base64.StdEncoding.EncodeToString(der), thumbprint: xynoplex.JWKThumbprint(pub)}, nil
+	return registeredKey{public: base64.StdEncoding.EncodeToString(der), thumbprint: xynolog.JWKThumbprint(pub)}, nil
 }
 
 // workerKey: the shared worker key as the launcher hands it on — what the
@@ -60,7 +60,7 @@ func registeredKeyOf(pub *rsa.PublicKey) (registeredKey, error) {
 // no key.
 type workerKey struct {
 	registeredKey
-	private string          // PKCS#8 PEM: SEMIONT_OIDC_CLIENT_KEY
+	private string          // PKCS#8 PEM: XYNOLOG_OIDC_CLIENT_KEY
 	signer  *rsa.PrivateKey // nil in a plan
 }
 
@@ -94,7 +94,7 @@ func loadOrCreateWorkerKey(u *UI) (workerKey, bool) {
 		return workerKey{}, false
 	}
 	if kept != "" {
-		key, err := xynoplex.ParsePrivateKeyPEM(kept)
+		key, err := xynolog.ParsePrivateKeyPEM(kept)
 		if err != nil {
 			u.Fail("The worker's key at %s cannot be read: %v", store.where(custodyWorkerKey), err)
 			return workerKey{}, false
@@ -130,7 +130,7 @@ func loadOrCreateWorkerKey(u *UI) (workerKey, bool) {
 // assertion's header names too: Keycloak refuses an assertion naming a key the
 // client does not.
 func workerClient(label string, k registeredKey, audience string) map[string]any {
-	return accountClient(workerClientID(label), "Semiont worker "+label, map[string]any{
+	return accountClient(workerClientID(label), "Xynolog worker "+label, map[string]any{
 		"clientAuthenticatorType": clientJWT,
 		"attributes":              workerKeyAttributes(k),
 	}, audience, serviceRolesClaim("worker"))

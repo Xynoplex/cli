@@ -35,7 +35,7 @@ import (
 	"time"
 )
 
-// IssuerProxyVerb: the launcher's own verb for the proxy, which `semiont
+// IssuerProxyVerb: the launcher's own verb for the proxy, which `xynolog
 // --help` does not list: a person never runs it.
 const IssuerProxyVerb = "issuer-proxy"
 

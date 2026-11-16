@@ -12,7 +12,7 @@ package launcher
 import (
 	"encoding/json"
 
-	"github.com/Xynoplex/sdk/go/api"
+	"github.com/xynolog/sdk/go/api"
 )
 
 // librarianDocumentFile: the Librarian is configured by a document, not a copy
@@ -22,7 +22,7 @@ const librarianDocumentFile = "librarian.json"
 // librarianDocumentTarget: where the Librarian reads that document — the path
 // its image passes to `--config`. TestConfigDocumentsAreWhereTheImagesLook
 // holds the two together.
-const librarianDocumentTarget = "/etc/semiont/librarian.json"
+const librarianDocumentTarget = "/etc/xynolog/librarian.json"
 
 // librarianActors: the two actors the Librarian works as, each asking an
 // engine of its own, with where the engines give each one.
@@ -110,7 +110,7 @@ func librarianDocument(p placement, served api.KbIdentity) ([]byte, error) {
 	doc.ModelCatalogue = modelCatalogueTarget
 	doc.Gather.SettleTimeoutMs = index.Librarian.Gather.SettleTimeoutMs
 	doc.Search.SemanticFloor = index.Librarian.Search.SemanticFloor
-	doc.Port = semiontDescriptor("librarian").ports[0].port
+	doc.Port = xynologDescriptor("librarian").ports[0].port
 	doc.LogLevel = index.LogLevel
 	doc.LogFormat = api.LogFormatJson
 	return json.MarshalIndent(doc, "", "  ")

@@ -14,7 +14,7 @@ import (
 	"strings"
 	"unicode/utf8"
 
-	"github.com/Xynoplex/cli/internal/launcher/stack"
+	"github.com/xynolog/cli/internal/launcher/stack"
 )
 
 // setting: one setting `xynolog settings` lists.
@@ -151,7 +151,7 @@ Settings:
                                    issuer too, over plain HTTP. Apple
                                    container only.
   config          knowledge base   Which Inference document in
-                                   .semiont/stack/inference/ a start runs
+                                   .xynolog/stack/inference/ a start runs
   secret-store    knowledge base   Where the values the launcher generates for
                                    the knowledge base are kept: op://<vault>,
                                    one 1Password item per knowledge base, or

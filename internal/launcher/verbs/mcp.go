@@ -27,9 +27,9 @@ import (
 	"golang.org/x/text/language"
 	"golang.org/x/text/message"
 
-	launcher "github.com/Xynoplex/cli/internal/launcher"
+	launcher "github.com/xynolog/cli/internal/launcher"
 
-	xynoplex "github.com/Xynoplex/sdk/go"
+	xynolog "github.com/xynolog/sdk/go"
 )
 
 const mcpUsage = `Usage: xynolog mcp
@@ -160,8 +160,8 @@ func newMCPServer(sessions *launcher.Sessions) (*mcp.Server, error) {
 	if err != nil {
 		return nil, fmt.Errorf("the tools' document cannot be read: %w", err)
 	}
-	server := mcp.NewServer(&mcp.Implementation{Name: "semiont", Title: "Semiont", Version: launcher.BuildVersion}, &mcp.ServerOptions{
-		Instructions: "Semiont knowledge bases: resources, the annotations on them, and the links between them. " +
+	server := mcp.NewServer(&mcp.Implementation{Name: "xynolog", Title: "Xynolog", Version: launcher.BuildVersion}, &mcp.ServerOptions{
+		Instructions: "Xynolog knowledge bases: resources, the annotations on them, and the links between them. " +
 			"knowledge_bases lists the ones this machine signed in to; every other tool takes one as kb.",
 		SetCacheable: mcpCacheable,
 	})
@@ -295,7 +295,7 @@ func mcpFailure(call mcpCall, err error) string {
 	if errors.As(err, &rejected) {
 		return fmt.Sprintf("%s: %v. Sign in again: %s", call.kb, rejected, signInCommand(call.kb))
 	}
-	var failed *xynoplex.BusRequestError
+	var failed *xynolog.BusRequestError
 	if errors.As(err, &failed) && failed.Failure != nil {
 		return "The knowledge base refused it: " + failed.Message
 	}

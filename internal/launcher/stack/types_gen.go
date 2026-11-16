@@ -4,14 +4,14 @@
 
 package stack
 
-import "github.com/Xynoplex/sdk/go/api"
+import "github.com/xynolog/sdk/go/api"
 
 // Browser: The shared Browser: one viewer for every knowledge base the
 // machine reaches. It belongs to no knowledge base, so its document is kept
 // in the launcher's state home, in `stack/browser.yaml`, not in a knowledge
 // base's repository.
 type Browser struct {
-	// The group and version of Xynoplex's kinds. The group names who defines a
+	// The group and version of Xynolog's kinds. The group names who defines a
 	// kind, under the domain the knowledge bases' DIDs use; which knowledge base
 	// a document is about is said inside it.
 	ApiVersion string `json:"apiVersion"`
@@ -47,7 +47,7 @@ type Metadata struct {
 // BrowserSpec: How the Browser runs.
 type BrowserSpec struct {
 	// The container image a service runs, as a registry names it:
-	// `ghcr.io/the-ai-alliance/semiont-gateway:latest`.
+	// `ghcr.io/xynolog/xynolog-gateway:latest`.
 	Image string `json:"image"`
 
 	// What a container is given, in Kubernetes' spelling.
@@ -77,7 +77,7 @@ type ResourcesLimits struct {
 // done with. A knowledge base's repository may carry several, one for each
 // provider, and a machine chooses one.
 type Inference struct {
-	// The group and version of Xynoplex's kinds. The group names who defines a
+	// The group and version of Xynolog's kinds. The group names who defines a
 	// kind, under the domain the knowledge bases' DIDs use; which knowledge base
 	// a document is about is said inside it.
 	ApiVersion string `json:"apiVersion"`
@@ -129,7 +129,7 @@ type SecretRef struct {
 // knowledge base trusts it by naming `shared`; one trusting somebody else's
 // issuer names it at `external`.
 type Issuer struct {
-	// The group and version of Xynoplex's kinds. The group names who defines a
+	// The group and version of Xynolog's kinds. The group names who defines a
 	// kind, under the domain the knowledge bases' DIDs use; which knowledge base
 	// a document is about is said inside it.
 	ApiVersion string `json:"apiVersion"`
@@ -152,7 +152,7 @@ type IssuerSpec struct {
 	Type string `json:"type"`
 
 	// The container image a service runs, as a registry names it:
-	// `ghcr.io/the-ai-alliance/semiont-gateway:latest`.
+	// `ghcr.io/xynolog/xynolog-gateway:latest`.
 	Image string `json:"image"`
 
 	// What a container is given, in Kubernetes' spelling.
@@ -181,7 +181,7 @@ type IssuerDatabase struct {
 	User string `json:"user"`
 
 	// The container image a service runs, as a registry names it:
-	// `ghcr.io/the-ai-alliance/semiont-gateway:latest`.
+	// `ghcr.io/xynolog/xynolog-gateway:latest`.
 	Image *string `json:"image,omitempty"`
 
 	// What a container is given, in Kubernetes' spelling.
@@ -213,7 +213,7 @@ type IssuerDatabaseExternal struct {
 // Gateway, the Dispatcher, the Archivist, and the broker between them. They
 // live and die with the knowledge base.
 type KnowledgeBase struct {
-	// The group and version of Xynoplex's kinds. The group names who defines a
+	// The group and version of Xynolog's kinds. The group names who defines a
 	// kind, under the domain the knowledge bases' DIDs use; which knowledge base
 	// a document is about is said inside it.
 	ApiVersion string `json:"apiVersion"`
@@ -258,7 +258,7 @@ type KnowledgeBaseSpec struct {
 // reaches the knowledge base.
 type KnowledgeBaseGateway struct {
 	// The container image a service runs, as a registry names it:
-	// `ghcr.io/the-ai-alliance/semiont-gateway:latest`.
+	// `ghcr.io/xynolog/xynolog-gateway:latest`.
 	Image string `json:"image"`
 
 	// What a container is given, in Kubernetes' spelling.
@@ -275,7 +275,7 @@ type KnowledgeBaseGateway struct {
 // KnowledgeBaseDispatcher: The Dispatcher: it hands queued jobs to workers.
 type KnowledgeBaseDispatcher struct {
 	// The container image a service runs, as a registry names it:
-	// `ghcr.io/the-ai-alliance/semiont-gateway:latest`.
+	// `ghcr.io/xynolog/xynolog-gateway:latest`.
 	Image string `json:"image"`
 
 	// What a container is given, in Kubernetes' spelling.
@@ -286,7 +286,7 @@ type KnowledgeBaseDispatcher struct {
 // in its working tree.
 type KnowledgeBaseArchivist struct {
 	// The container image a service runs, as a registry names it:
-	// `ghcr.io/the-ai-alliance/semiont-gateway:latest`.
+	// `ghcr.io/xynolog/xynolog-gateway:latest`.
 	Image string `json:"image"`
 
 	// What a container is given, in Kubernetes' spelling.
@@ -316,7 +316,7 @@ type KnowledgeBaseMessaging struct {
 	Signal KnowledgeBaseMessagingSignal `json:"signal"`
 
 	// The container image a service runs, as a registry names it:
-	// `ghcr.io/the-ai-alliance/semiont-gateway:latest`.
+	// `ghcr.io/xynolog/xynolog-gateway:latest`.
 	Image *string `json:"image,omitempty"`
 
 	// What a container is given, in Kubernetes' spelling.
@@ -400,7 +400,7 @@ type KnowledgeBaseIssuerExternal struct {
 // vectors and anchored text, and the Librarian that answers from them. Each
 // can be rebuilt from the record.
 type KnowledgeIndex struct {
-	// The group and version of Xynoplex's kinds. The group names who defines a
+	// The group and version of Xynolog's kinds. The group names who defines a
 	// kind, under the domain the knowledge bases' DIDs use; which knowledge base
 	// a document is about is said inside it.
 	ApiVersion string `json:"apiVersion"`
@@ -464,7 +464,7 @@ type KnowledgeIndexGraph struct {
 	Username string `json:"username"`
 
 	// The container image a service runs, as a registry names it:
-	// `ghcr.io/the-ai-alliance/semiont-gateway:latest`.
+	// `ghcr.io/xynolog/xynolog-gateway:latest`.
 	Image *string `json:"image,omitempty"`
 
 	// What a container is given, in Kubernetes' spelling.
@@ -499,7 +499,7 @@ type KnowledgeIndexVectors struct {
 	Shared *KnowledgeIndexVectorsShared `json:"shared,omitempty"`
 
 	// The container image a service runs, as a registry names it:
-	// `ghcr.io/the-ai-alliance/semiont-gateway:latest`.
+	// `ghcr.io/xynolog/xynolog-gateway:latest`.
 	Image *string `json:"image,omitempty"`
 
 	// What a container is given, in Kubernetes' spelling.
@@ -571,7 +571,7 @@ type KnowledgeIndexEmbeddingChunking struct {
 // from the indexes.
 type KnowledgeIndexLibrarian struct {
 	// The container image a service runs, as a registry names it:
-	// `ghcr.io/the-ai-alliance/semiont-gateway:latest`.
+	// `ghcr.io/xynolog/xynolog-gateway:latest`.
 	Image string `json:"image"`
 
 	// What a container is given, in Kubernetes' spelling.
@@ -601,7 +601,7 @@ type KnowledgeIndexLibrarianSearch struct {
 // text.
 type KnowledgeIndexSmelter struct {
 	// The container image a service runs, as a registry names it:
-	// `ghcr.io/the-ai-alliance/semiont-gateway:latest`.
+	// `ghcr.io/xynolog/xynolog-gateway:latest`.
 	Image string `json:"image"`
 
 	// What a container is given, in Kubernetes' spelling.
@@ -615,7 +615,7 @@ type KnowledgeIndexSmelter struct {
 // KnowledgeIndexWeaver: The Weaver: it writes the graph.
 type KnowledgeIndexWeaver struct {
 	// The container image a service runs, as a registry names it:
-	// `ghcr.io/the-ai-alliance/semiont-gateway:latest`.
+	// `ghcr.io/xynolog/xynolog-gateway:latest`.
 	Image string `json:"image"`
 
 	// What a container is given, in Kubernetes' spelling.
@@ -629,7 +629,7 @@ type KnowledgeIndexWeaver struct {
 // A knowledge base keeps its index in it by naming `shared` at
 // `spec.vectors`.
 type VectorStore struct {
-	// The group and version of Xynoplex's kinds. The group names who defines a
+	// The group and version of Xynolog's kinds. The group names who defines a
 	// kind, under the domain the knowledge bases' DIDs use; which knowledge base
 	// a document is about is said inside it.
 	ApiVersion string `json:"apiVersion"`
@@ -650,7 +650,7 @@ type VectorStoreSpec struct {
 	Type string `json:"type"`
 
 	// The container image a service runs, as a registry names it:
-	// `ghcr.io/the-ai-alliance/semiont-gateway:latest`.
+	// `ghcr.io/xynolog/xynolog-gateway:latest`.
 	Image string `json:"image"`
 
 	// What a container is given, in Kubernetes' spelling.
@@ -668,7 +668,7 @@ type VectorStoreSpec struct {
 // its Inference document gives a job an engine. A worker needs only the
 // Gateway, and an issuer's token with the worker's role.
 type WorkerPool struct {
-	// The group and version of Xynoplex's kinds. The group names who defines a
+	// The group and version of Xynolog's kinds. The group names who defines a
 	// kind, under the domain the knowledge bases' DIDs use; which knowledge base
 	// a document is about is said inside it.
 	ApiVersion string `json:"apiVersion"`
@@ -696,14 +696,14 @@ type WorkerPoolSpec struct {
 // WorkerPoolWorker: The Worker.
 type WorkerPoolWorker struct {
 	// The container image a service runs, as a registry names it:
-	// `ghcr.io/the-ai-alliance/semiont-gateway:latest`.
+	// `ghcr.io/xynolog/xynolog-gateway:latest`.
 	Image string `json:"image"`
 
 	// What a container is given, in Kubernetes' spelling.
 	Resources Resources `json:"resources"`
 }
 
-// ProjectConfig: A knowledge base's committed `.semiont/config.yaml`: its
+// ProjectConfig: A knowledge base's committed `.xynolog/config.yaml`: its
 // name, whether its changes are staged in git, and its permanent identity. A
 // deployment's documents never restate any of it.
 type ProjectConfig struct {

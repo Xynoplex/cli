@@ -4,7 +4,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/Xynoplex/sdk/go/api"
+	"github.com/xynolog/sdk/go/api"
 )
 
 // Every container-bearing driver carries an explicit ceiling — the silent

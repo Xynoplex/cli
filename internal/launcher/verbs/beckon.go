@@ -10,10 +10,10 @@ import (
 	"fmt"
 	"strings"
 
-	launcher "github.com/Xynoplex/cli/internal/launcher"
+	launcher "github.com/xynolog/cli/internal/launcher"
 
-	"github.com/Xynoplex/sdk/go/api"
-	"github.com/Xynoplex/sdk/go/bus"
+	"github.com/xynolog/sdk/go/api"
+	"github.com/xynolog/sdk/go/bus"
 )
 
 const beckonIDs = "xynolog beckon [options] -- <resourceId> [<annotationId>]"

@@ -45,7 +45,7 @@ func TestHealthEndpointReproducesTheStartGates(t *testing.T) {
 			"graph":          {Role: "graph", Driver: "neo4j", Port: 7687},
 			"vectors":        {Role: "vectors", Driver: "qdrant", Port: 6333},
 			"inference":      {Role: "inference", Driver: "ollama", Port: 11434},
-			"identity":       {Role: "identity", Driver: "keycloak", Port: 8080, Issuer: "http://localhost:8080/realms/semiont"},
+			"identity":       {Role: "identity", Driver: "keycloak", Port: 8080, Issuer: "http://localhost:8080/realms/xynolog"},
 		},
 	}
 	for _, c := range []struct{ role, driver, want string }{
@@ -53,21 +53,21 @@ func TestHealthEndpointReproducesTheStartGates(t *testing.T) {
 		{"collector", "otel", "http://localhost:24110/metrics"},
 		{"messaging", "jetstream", "tcp:localhost:4222"},
 		{"metrics", "prometheus", "http://localhost:9090/-/healthy"},
-		{"browser", driverSemiont, "http://localhost:3000"},
-		{"gateway", driverSemiont, "http://localhost:4000/api/health"},
-		{"worker", driverSemiont, "http://localhost:24100/health"},
-		{"smelter", driverSemiont, "http://localhost:24101/health"},
-		{"weaver", driverSemiont, "http://localhost:24102/health"},
+		{"browser", driverXynolog, "http://localhost:3000"},
+		{"gateway", driverXynolog, "http://localhost:4000/api/health"},
+		{"worker", driverXynolog, "http://localhost:24100/health"},
+		{"smelter", driverXynolog, "http://localhost:24101/health"},
+		{"weaver", driverXynolog, "http://localhost:24102/health"},
 		{"graph", "neo4j", "http://localhost:7474"},
 		{"vectors", "qdrant", "http://localhost:6333/readyz"},
 		{"inference", "ollama", "http://localhost:11434/api/version"},
 		{"identity-store", "postgres", "tcp:localhost:5432"},
-		{"archivist", driverSemiont, "http://localhost:24103/health"},
-		{"librarian", driverSemiont, "http://localhost:24104/health"},
-		{"dispatcher", driverSemiont, "http://localhost:24105/health"},
+		{"archivist", driverXynolog, "http://localhost:24103/health"},
+		{"librarian", driverXynolog, "http://localhost:24104/health"},
+		{"dispatcher", driverXynolog, "http://localhost:24105/health"},
 		// The configured realm, not master: it answers only once Keycloak
 		// holds it, so that is what says the issuer is up.
-		{"identity", "keycloak", "http://localhost:8080/realms/semiont"},
+		{"identity", "keycloak", "http://localhost:8080/realms/xynolog"},
 	} {
 		if got := healthEndpoint(c.role, c.driver, plan, exposure{}); got != c.want {
 			t.Errorf("%s/%s: %q, want %q", c.role, c.driver, got, c.want)
@@ -92,7 +92,7 @@ func TestHealthEndpointFollowsAConfigThatMovesAPort(t *testing.T) {
 		{"messaging", "jetstream", "tcp:localhost:4333"},
 		{"vectors", "qdrant", "http://localhost:6444/readyz"},
 		{"inference", "ollama", "http://localhost:11555/api/version"},
-		{"gateway", driverSemiont, "http://localhost:4400/api/health"},
+		{"gateway", driverXynolog, "http://localhost:4400/api/health"},
 	} {
 		if got := healthEndpoint(c.role, c.driver, plan, exposure{}); got != c.want {
 			t.Errorf("%s moved its port: %q, want %q — the probe must follow the config's port", c.role, got, c.want)

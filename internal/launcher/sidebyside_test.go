@@ -15,7 +15,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/Xynoplex/cli/internal/launcher/harness"
+	"github.com/xynolog/cli/internal/launcher/harness"
 )
 
 // kbNamed: a knowledge base root whose project file declares domain, by the
@@ -26,7 +26,7 @@ func kbNamed(t *testing.T, domain string) string {
 	if err != nil {
 		t.Fatal(err)
 	}
-	dir := filepath.Join(root, ".semiont")
+	dir := filepath.Join(root, ".xynolog")
 	if err := os.MkdirAll(dir, 0o755); err != nil {
 		t.Fatal(err)
 	}

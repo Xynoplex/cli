@@ -14,10 +14,10 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/Xynoplex/sdk/go/api"
+	"github.com/xynolog/sdk/go/api"
 
-	"github.com/Xynoplex/cli/internal/launcher/harness"
-	"github.com/Xynoplex/cli/internal/launcher/stack"
+	"github.com/xynolog/cli/internal/launcher/harness"
+	"github.com/xynolog/cli/internal/launcher/stack"
 )
 
 // mustPlan derives st's plan as a start does: its worker, when it runs one,
@@ -291,7 +291,7 @@ func TestDerivePlanRunsADaemonFromTheImageItsDocumentNames(t *testing.T) {
 	}
 }
 
-// Each of Semiont's services the stack runs is run from the image its
+// Each of Xynolog's services the stack runs is run from the image its
 // document names, with the memory its document states: the plan carries one
 // of each for every such service and for nothing else, and a change to one
 // service's document changes that service alone. (A stack that runs no
@@ -313,7 +313,7 @@ func TestThePlanRunsEachServiceAsItsDocumentSays(t *testing.T) {
 
 	st := fixtureStack(t, "anthropic")
 	st.KnowledgeIndex.Spec.Smelter.Resources.Limits.Memory = "8G"
-	st.KnowledgeBase.Spec.Gateway.Image = "ghcr.io/the-ai-alliance/semiont-gateway:local"
+	st.KnowledgeBase.Spec.Gateway.Image = "ghcr.io/xynolog/xynolog-gateway:local"
 	after := mustPlan(t, st)
 	for svc := range before.Memory {
 		want := before.Memory[svc]
@@ -614,10 +614,10 @@ func TestStopFallbackVerifiesEveryFiatPortClaim(t *testing.T) {
 			}
 		}
 	}
-	if blockOne := blockPort(semiontDescriptor("archivist").ports[0].port, 1); slices.Contains(verified, blockOne) {
+	if blockOne := blockPort(xynologDescriptor("archivist").ports[0].port, 1); slices.Contains(verified, blockOne) {
 		t.Errorf("a stop with no record verifies %d, on port block 1, which a knowledge base it did not sweep keeps", blockOne)
 	}
-	worker := semiontDescriptor("worker").ports[0].port
+	worker := xynologDescriptor("worker").ports[0].port
 	if slices.Contains(fiatPorts(swept, false), worker) {
 		t.Errorf("a stop that left the shared containers verifies the worker's %d", worker)
 	}

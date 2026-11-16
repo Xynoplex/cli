@@ -12,7 +12,7 @@ package launcher
 import (
 	"encoding/json"
 
-	"github.com/Xynoplex/sdk/go/api"
+	"github.com/xynolog/sdk/go/api"
 )
 
 // dispatcherDocumentFile: the dispatcher is configured by a document, not a
@@ -22,7 +22,7 @@ const dispatcherDocumentFile = "dispatcher.json"
 // dispatcherDocumentTarget: where the dispatcher reads that document — the
 // path its image passes to `--config`. TestConfigDocumentsAreWhereTheImagesLook
 // holds the two together.
-const dispatcherDocumentTarget = "/etc/semiont/dispatcher.json"
+const dispatcherDocumentTarget = "/etc/xynolog/dispatcher.json"
 
 // dispatcherTiming: the clocks a deployed dispatcher runs with. The launcher
 // is the one decider: the dispatcher defaults none of them, and a test harness
@@ -68,7 +68,7 @@ func dispatcherDocument(p placement, served api.KbIdentity) ([]byte, error) {
 		external := kb.Messaging.External
 		doc.Queue.UserEnv, doc.Queue.PasswordEnv = &external.User.FromEnv, &external.Password.FromEnv
 	}
-	doc.Port = semiontDescriptor("dispatcher").ports[0].port
+	doc.Port = xynologDescriptor("dispatcher").ports[0].port
 
 	doc.Timing.TickMs = dispatcherTiming.tickMs
 	doc.Timing.StaleRunningMs = dispatcherTiming.staleRunningMs

@@ -10,7 +10,7 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	"github.com/Xynoplex/cli/internal/launcher/harness"
+	"github.com/xynolog/cli/internal/launcher/harness"
 )
 
 // ── the probe ───────────────────────────────────────────────────────────
@@ -20,20 +20,20 @@ import (
 // fallback, status prints "absent" beside a ✓.
 func TestBrowserTargetFallsBackToTheStableNameForAStaleID(t *testing.T) {
 	shim := t.TempDir()
-	// A docker that knows only `semiont-browser`, so a lookup by the stale
+	// A docker that knows only `xynolog-browser`, so a lookup by the stale
 	// recorded ID fails exactly as the real one would.
-	harness.StandIn(t, shim, "docker", harness.Says{Out: "running", OnlyGiven: "semiont-browser"})
+	harness.StandIn(t, shim, "docker", harness.Says{Out: "running", OnlyGiven: "xynolog-browser"})
 	t.Setenv("PATH", shim)
 
-	ss := &StackSet{Shared: map[string]*ServiceState{"semiont-browser": {
-		Container: "semiont-browser", ID: "0000deadbeef", Runtime: "docker", Endpoint: harness.LiveOrigin(t),
+	ss := &StackSet{Shared: map[string]*ServiceState{"xynolog-browser": {
+		Container: "xynolog-browser", ID: "0000deadbeef", Runtime: "docker", Endpoint: harness.LiveOrigin(t),
 	}}}
 	p := BrowserTarget(ss, "")
 	if !p.Running {
 		t.Errorf("Running = false for an endpoint that answers")
 	}
 	if p.State != "running" {
-		t.Errorf("State = %q, want %q from the semiont-browser fallback", p.State, "running")
+		t.Errorf("State = %q, want %q from the xynolog-browser fallback", p.State, "running")
 	}
 }
 
@@ -43,7 +43,7 @@ func TestBrowserTargetFallsBackToTheStableNameForAStaleID(t *testing.T) {
 func TestBrowserTargetPrefersTheOverrideOverTheRecord(t *testing.T) {
 	harness.NoRuntimes(t)
 	live := harness.LiveOrigin(t)
-	ss := &StackSet{Shared: map[string]*ServiceState{"semiont-browser": {Container: "semiont-browser", Endpoint: harness.DeadOrigin(t)}}}
+	ss := &StackSet{Shared: map[string]*ServiceState{"xynolog-browser": {Container: "xynolog-browser", Endpoint: harness.DeadOrigin(t)}}}
 
 	if p := BrowserTarget(ss, live); !p.Running || p.Endpoint != live {
 		t.Errorf("override ignored: endpoint %q running %v, want %q true", p.Endpoint, p.Running, live)

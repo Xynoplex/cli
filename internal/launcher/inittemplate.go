@@ -17,10 +17,10 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/Xynoplex/cli/internal/launcher/stack"
+	"github.com/xynolog/cli/internal/launcher/stack"
 )
 
-const defaultTemplateRepo = "https://github.com/The-AI-Alliance/semiont-template-kb"
+const defaultTemplateRepo = "https://github.com/xynolog/kb-template"
 
 // materializeTemplate returns a local directory holding the template tree:
 // the source itself when it is a directory, else a shallow clone in a temp
@@ -29,7 +29,7 @@ func materializeTemplate(u *UI, src, ref string) (dir string, cleanup func(), ok
 	if fi, err := os.Stat(src); err == nil && fi.IsDir() {
 		return src, func() {}, true
 	}
-	tmp, err := os.MkdirTemp("", "semiont-template-*")
+	tmp, err := os.MkdirTemp("", "xynolog-template-*")
 	if err != nil {
 		u.Fail("Creating a temp dir for the template clone: %v", err)
 		return "", nil, false
@@ -46,7 +46,7 @@ func materializeTemplate(u *UI, src, ref string) (dir string, cleanup func(), ok
 	return tmp, func() { _ = os.RemoveAll(tmp) }, true
 }
 
-// copyTemplateStack vets and copies the template's .semiont/stack: the three
+// copyTemplateStack vets and copies the template's .xynolog/stack: the three
 // documents a knowledge base shares and each Inference document beside them,
 // vetted together before any is written (writeVettedStack).
 func copyTemplateStack(u *UI, root, tplDir string) bool {

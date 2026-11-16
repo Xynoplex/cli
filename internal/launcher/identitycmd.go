@@ -15,7 +15,7 @@ import (
 	"slices"
 	"strings"
 
-	"github.com/Xynoplex/cli/internal/launcher/stack"
+	"github.com/xynolog/cli/internal/launcher/stack"
 )
 
 const identityUsage = `Usage: xynolog identity sync [--root <path>] [--config <name>]
@@ -45,7 +45,7 @@ sync
 grant
   Admit a worker someone else runs, by its key: the public half that
   ` + "`xynolog worker key`" + ` prints on the worker's machine, as a JWK Set or
-  a PEM, in <file>. It creates one client, semiont-worker-<label>, that proves
+  a PEM, in <file>. It creates one client, xynolog-worker-<label>, that proves
   itself with that key and carries the worker's roles, and prints what the
   worker's owner needs: this knowledge base's domain, its client id, and where
   the gateway is, which names the issuer to sign in at, and the one
@@ -143,7 +143,7 @@ func openAdminRealm(u *UI, flags map[string]string, elsewhere string) (adminReal
 	if err != nil {
 		u.Fail("%v", err)
 		if !projectFileRefused(err) {
-			fmt.Fprintln(os.Stderr, "  cd into a KB clone, or set SEMIONT_ROOT / pass --root.")
+			fmt.Fprintln(os.Stderr, "  cd into a KB clone, or set XYNOLOG_ROOT / pass --root.")
 		}
 		return adminRealm{}, false
 	}

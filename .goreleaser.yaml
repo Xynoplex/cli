@@ -1,4 +1,4 @@
-# GoReleaser config for Xynoplex's xynolog CLI.
+# GoReleaser config for Xynolog's xynolog CLI.
 #
 # Channels, deliberately minimal: GitHub Release archives (darwin/linux/
 # windows × arm64/amd64, static), Linux packages, checksums, and SBOMs.
@@ -22,9 +22,9 @@ builds:
       - arm64
     ldflags:
       - -s -w
-      - -X github.com/Xynoplex/cli/internal/launcher.BuildVersion={{.Version}}
-      - -X github.com/Xynoplex/cli/internal/launcher.BuildCommit={{.ShortCommit}}
-      - -X github.com/Xynoplex/cli/internal/launcher.BuildDate={{.Date}}
+      - -X github.com/xynolog/cli/internal/launcher.BuildVersion={{.Version}}
+      - -X github.com/xynolog/cli/internal/launcher.BuildCommit={{.ShortCommit}}
+      - -X github.com/xynolog/cli/internal/launcher.BuildDate={{.Date}}
     mod_timestamp: "{{ .CommitTimestamp }}"
 
 archives:
@@ -44,10 +44,10 @@ sboms:
 nfpms:
   - id: linux-packages
     package_name: xynolog
-    vendor: Xynoplex
-    homepage: https://github.com/Xynoplex/cli
-    maintainer: Xynoplex
-    description: "Host CLI for managing local Semiont stacks"
+    vendor: Xynolog
+    homepage: https://github.com/xynolog/cli
+    maintainer: Xynolog
+    description: "Host CLI for managing local Xynolog stacks"
     license: Apache-2.0
     formats: [deb, rpm]
     dependencies: [git]

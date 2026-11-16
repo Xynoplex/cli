@@ -8,9 +8,9 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/Xynoplex/sdk/go/api"
+	"github.com/xynolog/sdk/go/api"
 
-	"github.com/Xynoplex/cli/internal/launcher/stack"
+	"github.com/xynolog/cli/internal/launcher/stack"
 )
 
 func dispatcherDocumentFrom(t *testing.T, b []byte) api.DispatcherConfig {
@@ -59,7 +59,7 @@ func TestDispatcherDocumentStatesWhatThePlacementDecides(t *testing.T) {
 	if got := dispatcherSecrets(p); len(got) != 0 {
 		t.Errorf("the dispatcher is handed %v of the user's for the launcher's broker", got)
 	}
-	if doc.Port != semiontDescriptor("dispatcher").ports[0].port {
+	if doc.Port != xynologDescriptor("dispatcher").ports[0].port {
 		t.Errorf("port = %d, want the descriptor's", doc.Port)
 	}
 	if doc.LogLevel != api.LogLevelDebug || doc.LogFormat != api.LogFormatJson {
@@ -101,7 +101,7 @@ func TestDispatcherDocumentIsWhereTheImageLooks(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	args := strings.Join(dispatcherArgs("kb", "/stage", exposure{rt: "container", addr: "1.2.3.4"}, semiontDescriptor("dispatcher").ports[0].port, "client-secret", "v", semiontDescriptor("dispatcher").mem, nil, nil), " ")
+	args := strings.Join(dispatcherArgs("kb", "/stage", exposure{rt: "container", addr: "1.2.3.4"}, xynologDescriptor("dispatcher").ports[0].port, "client-secret", "v", xynologDescriptor("dispatcher").mem, nil, nil), " ")
 	if want := "/stage/" + dispatcherDocumentFile + ":" + dispatcherDocumentTarget + ":ro"; !strings.Contains(args, want) {
 		t.Errorf("the dispatcher's document is not mounted onto %s:\n%s", dispatcherDocumentTarget, args)
 	}

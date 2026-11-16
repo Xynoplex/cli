@@ -12,7 +12,7 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/Xynoplex/sdk/go/api"
+	"github.com/xynolog/sdk/go/api"
 )
 
 // connectionAllowance: the memory a gateway's capacity sets aside for each open

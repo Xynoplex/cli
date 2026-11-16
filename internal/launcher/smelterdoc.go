@@ -12,7 +12,7 @@ package launcher
 import (
 	"encoding/json"
 
-	"github.com/Xynoplex/sdk/go/api"
+	"github.com/xynolog/sdk/go/api"
 )
 
 // smelterDocumentFile: the Smelter is configured by a document, not a copy of
@@ -22,7 +22,7 @@ const smelterDocumentFile = "smelter.json"
 // smelterDocumentTarget: where the Smelter reads that document — the path its
 // image passes to `--config`. TestConfigDocumentsAreWhereTheImagesLook holds
 // the two together.
-const smelterDocumentTarget = "/etc/semiont/smelter.json"
+const smelterDocumentTarget = "/etc/xynolog/smelter.json"
 
 // voyageHost: where Voyage AI's API is. ONE statement: it is the address of
 // the plan's embedding role (derivePlan), and where the Smelter's document
@@ -136,7 +136,7 @@ func smelterDocument(p placement, served api.KbIdentity) ([]byte, error) {
 	doc.Chunking.ChunkSize, doc.Chunking.Overlap = index.Embedding.Chunking.ChunkSize, index.Embedding.Chunking.Overlap
 	doc.PdfsAtOnce = index.Smelter.PdfsAtOnce
 	doc.CursorsPath = cursorsPath("smelter")
-	doc.Port = semiontDescriptor("smelter").ports[0].port
+	doc.Port = xynologDescriptor("smelter").ports[0].port
 	doc.LogLevel = index.LogLevel
 	doc.LogFormat = api.LogFormatJson
 	return json.MarshalIndent(doc, "", "  ")

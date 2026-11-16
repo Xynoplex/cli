@@ -9,7 +9,7 @@ import (
 	"strings"
 	"testing"
 
-	xynoplex "github.com/Xynoplex/sdk/go"
+	xynolog "github.com/xynolog/sdk/go"
 )
 
 // A worker granted by its key, against a REAL Keycloak, in a throwaway realm.
@@ -24,18 +24,18 @@ import (
 //
 // Run as TestIdentitySyncLive is: by CI's "Launcher Tests (Go, Keycloak)" job
 // against the Keycloak the launcher starts (internal/launcher/scripts/keycloak-image.sh), and
-// skipped elsewhere unless SEMIONT_LIVE_KEYCLOAK names one.
+// skipped elsewhere unless XYNOLOG_LIVE_KEYCLOAK names one.
 //
 // It creates its own realm and deletes it, so no knowledge base's realm is
 // touched.
 func TestWorkerGrantLive(t *testing.T) {
-	base := os.Getenv("SEMIONT_LIVE_KEYCLOAK")
+	base := os.Getenv("XYNOLOG_LIVE_KEYCLOAK")
 	pw := os.Getenv("KC_BOOTSTRAP_ADMIN_PASSWORD")
 	if base == "" || pw == "" {
-		t.Skip("set SEMIONT_LIVE_KEYCLOAK and KC_BOOTSTRAP_ADMIN_PASSWORD to run")
+		t.Skip("set XYNOLOG_LIVE_KEYCLOAK and KC_BOOTSTRAP_ADMIN_PASSWORD to run")
 	}
 	base = strings.TrimSuffix(base, "/")
-	const realm = "semiont-granttest"
+	const realm = "xynolog-granttest"
 	const audience = "did:web:example.test:granttest"
 	const label = "granttest"
 
@@ -64,7 +64,7 @@ func TestWorkerGrantLive(t *testing.T) {
 		return k
 	}
 	signIn := func(k workerKey) (map[string]any, error) {
-		return clientCredentialsClaims(tokenEndpoint, xynoplex.KeyCredential{Issuer: issuer, ClientID: workerClientID(label), PrivateKey: k.signer})
+		return clientCredentialsClaims(tokenEndpoint, xynolog.KeyCredential{Issuer: issuer, ClientID: workerClientID(label), PrivateKey: k.signer})
 	}
 
 	// 1. A grant makes a client Keycloak admits the worker's assertion at, and

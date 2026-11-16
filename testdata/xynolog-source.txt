@@ -1,0 +1,12 @@
+Source revision: ddd58cb4673e06a022955d9041f261fb816a849f
+
+The service image recipes and the image tag script under images/, the
+documents under testdata/xynolog-docs/, the workflows under
+testdata/xynolog-workflows/ and the Desktop Control API schema under
+testdata/desktop/ are reference fixtures copied at that revision, with the
+project's names renamed to Xynolog since. Tests read every one of them. They
+are not xynolog's build or release workflows. Update them deliberately when
+the contracts they hold change.
+
+The Xynolog Go SDK remains an external dependency pinned in go.mod; the SDK
+source is not copied into this repository.

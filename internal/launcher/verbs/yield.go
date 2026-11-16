@@ -13,18 +13,18 @@ import (
 	"path/filepath"
 	"strings"
 
-	launcher "github.com/Xynoplex/cli/internal/launcher"
+	launcher "github.com/xynolog/cli/internal/launcher"
 
-	xynoplex "github.com/Xynoplex/sdk/go"
-	"github.com/Xynoplex/sdk/go/api"
-	"github.com/Xynoplex/sdk/go/mediatypes"
+	xynolog "github.com/xynolog/sdk/go"
+	"github.com/xynolog/sdk/go/api"
+	"github.com/xynolog/sdk/go/mediatypes"
 )
 
 const yieldUsage = `Usage: xynolog yield --upload <file> [--upload <file>...] [options]
 
 Register local files as resources in a running stack's KB. Files must live
 under the KB root: the storage URI is repo-relative, and the content
-belongs in the repo (commit it — and the .semiont/events it creates).
+belongs in the repo (commit it — and the .xynolog/events it creates).
 
 Options:
   --upload <file>      File to upload (repeatable)
@@ -225,7 +225,7 @@ options:
 			// A record can lack KBRoot; refuse plainly rather than let the
 			// path check babble about a KB root named "".
 			u.Fail("Cannot determine the KB root (the stack record predates root tracking, and the current directory is not inside a KB clone).")
-			fmt.Fprintln(os.Stderr, "  Run yield from inside the KB clone, or set SEMIONT_ROOT.")
+			fmt.Fprintln(os.Stderr, "  Run yield from inside the KB clone, or set XYNOLOG_ROOT.")
 			return 1
 		}
 	}
@@ -280,7 +280,7 @@ func yieldOne(u *launcher.UI, c *launcher.VerbClient, root, up, name string) int
 		format = "application/octet-stream"
 	}
 
-	created, err := c.Yield.Resource(c.Context(), xynoplex.PutBinaryRequest{
+	created, err := c.Yield.Resource(c.Context(), xynolog.PutBinaryRequest{
 		Name: name, Bytes: content, Format: format, StorageURI: "file://" + rel,
 	}).Wait(c.Context())
 	if err == nil {
@@ -288,12 +288,12 @@ func yieldOne(u *launcher.UI, c *launcher.VerbClient, root, up, name string) int
 		return 0
 	}
 	var rej *launcher.SessionRejected
-	var refused *xynoplex.TransportError
+	var refused *xynolog.TransportError
 	refusal := c.Refusal(err)
 	switch {
 	case errors.As(refusal, &rej):
 		return launcher.RejectedFail(u, "yield", rej)
-	case errors.As(refusal, &refused) && refused.Code == xynoplex.TransportErrorCodeBadRequest:
+	case errors.As(refusal, &refused) && refused.Code == xynolog.TransportErrorCodeBadRequest:
 		u.Fail("Gateway rejected %s: %s", up, refused.Message)
 	case errors.As(refusal, &refused):
 		if status, answered := refused.Status(); answered {

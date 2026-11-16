@@ -11,7 +11,7 @@ import (
 
 var stopUsage = fmt.Sprintf(`Usage: xynolog stop [--service <name> | --group <name>] [--root <path>] [--runtime container|docker|podman] [--repo <owner/name>] [--delete] [--dry-run]
 
-Stop a knowledge base's Semiont stack — its services and dependencies — and
+Stop a knowledge base's Xynolog stack — its services and dependencies — and
 clean up its staged configs. The shared containers (the issuer, the worker,
 the telemetry, the shared Ollama, the shared Qdrant and the Browser) serve
 every knowledge base here, so they stop with the last knowledge base's
@@ -620,7 +620,7 @@ func Stop(u *UI, args []string) int {
 			fmt.Printf("# the issuer proxy (pid %d) stops passing this knowledge base's realm, and ends when it passes no other\n", p.PID)
 		}
 		for _, rt := range strayRuntimes {
-			fmt.Println("# sweep stray Semiont containers under " + rt + ":")
+			fmt.Println("# sweep stray Xynolog containers under " + rt + ":")
 			for _, c := range names {
 				fmt.Println(renderCmd(rt, "stop", c))
 				fmt.Println(renderCmd(rt, "rm", c))
@@ -765,7 +765,7 @@ func Stop(u *UI, args []string) int {
 	// Say what actually happened: a stop that found nothing anywhere (the
 	// second stop in a row) is a no-op, not a teardown.
 	if totalRemoved == 0 && len(staged) == 0 && !shared.any {
-		fmt.Println("No Semiont containers found — nothing to stop.")
+		fmt.Println("No Xynolog containers found — nothing to stop.")
 		return 0
 	}
 	ports := recordedPorts
@@ -773,7 +773,7 @@ func Stop(u *UI, args []string) int {
 		ports = fiatPorts(scope.keys, sharedToo)
 	}
 	verifyPortsReleased(u, slices.Concat(ports, shared.ports))
-	fmt.Println("Semiont stack stopped.")
+	fmt.Println("Xynolog stack stopped.")
 	return 0
 }
 
@@ -956,7 +956,7 @@ func fiatPorts(keys []string, shared bool) []int {
 // forwarders especially), and a start right after a stop must not trip over
 // them. Poll briefly to absorb lazy teardown, then REPORT any survivor with
 // its holder. Never kills: after the sweeps above, a holder is provably not
-// a Semiont container.
+// a Xynolog container.
 func verifyPortsReleased(u *UI, ports []int) {
 	deadline := time.Now().Add(3 * time.Second)
 	var held []int
@@ -977,7 +977,7 @@ func verifyPortsReleased(u *UI, ports []int) {
 		return
 	}
 	for _, p := range held {
-		u.Warn("Port %d is still held by %s — not a Semiont container; the next start will fail on it.",
+		u.Warn("Port %d is still held by %s — not a Xynolog container; the next start will fail on it.",
 			p, describeProcs(listenersOn(p)))
 	}
 }

@@ -13,8 +13,8 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/Xynoplex/cli/internal/launcher/harness"
-	"github.com/Xynoplex/cli/internal/launcher/stack"
+	"github.com/xynolog/cli/internal/launcher/harness"
+	"github.com/xynolog/cli/internal/launcher/stack"
 )
 
 // It is kept in the state home, in stack/, beside the record of what runs.
@@ -97,12 +97,12 @@ func TestABrowserDocumentThatDoesNotHoldIsRefusedByLine(t *testing.T) {
 	if err := os.MkdirAll(filepath.Dir(path), 0o755); err != nil {
 		t.Fatal(err)
 	}
-	text := `apiVersion: semiont.the-ai-alliance.github.io/v1alpha1
+	text := `apiVersion: xynolog.org/v1alpha1
 kind: Browser
 metadata:
   name: browser
 spec:
-  image: ghcr.io/the-ai-alliance/semiont-browser:latest
+  image: ghcr.io/xynolog/xynolog-browser:latest
   resources:
     limits:
       memory: 1G

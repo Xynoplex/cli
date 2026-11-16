@@ -13,9 +13,9 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/Xynoplex/cli/internal/launcher/harness"
-	"github.com/Xynoplex/cli/internal/launcher/stack"
-	"github.com/Xynoplex/sdk/go/api"
+	"github.com/xynolog/cli/internal/launcher/harness"
+	"github.com/xynolog/cli/internal/launcher/stack"
+	"github.com/xynolog/sdk/go/api"
 )
 
 // It is kept in the state home, in stack/, beside the Browser's.
@@ -31,8 +31,8 @@ func TestTheWorkerDocumentIsKeptInTheStateHome(t *testing.T) {
 // descriptor's memory, logging at info.
 func TestTheCatalogWorkerIsTheLaunchersOwn(t *testing.T) {
 	spec := catalogWorkerPool().Spec
-	if spec.Worker.Image != semiontImage("worker", "latest") || spec.Worker.Resources.Limits.Memory != semiontDescriptor("worker").mem || spec.LogLevel != api.LogLevelInfo {
-		t.Errorf("the catalog's worker is %+v, want %s with %s at info", spec, semiontImage("worker", "latest"), semiontDescriptor("worker").mem)
+	if spec.Worker.Image != xynologImage("worker", "latest") || spec.Worker.Resources.Limits.Memory != xynologDescriptor("worker").mem || spec.LogLevel != api.LogLevelInfo {
+		t.Errorf("the catalog's worker is %+v, want %s with %s at info", spec, xynologImage("worker", "latest"), xynologDescriptor("worker").mem)
 	}
 }
 
@@ -56,7 +56,7 @@ func TestTheFirstNeedWritesTheWorkerDocumentFromTheCatalog(t *testing.T) {
 		t.Fatalf("the document written does not hold to its schema: %v %+v\n%s", err, refusals, text)
 	}
 
-	local := strings.Replace(string(text), "semiont-worker:latest", "semiont-worker:local", 1)
+	local := strings.Replace(string(text), "xynolog-worker:latest", "xynolog-worker:local", 1)
 	if local == string(text) {
 		t.Fatalf("the document written names no image: %s", text)
 	}
@@ -67,7 +67,7 @@ func TestTheFirstNeedWritesTheWorkerDocumentFromTheCatalog(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if again.fromCatalog || again.spec.Worker.Image != semiontImage("worker", "local") {
+	if again.fromCatalog || again.spec.Worker.Image != xynologImage("worker", "local") {
 		t.Errorf("an edited document read as %+v, want the local image from the file", again)
 	}
 }
@@ -96,11 +96,11 @@ func TestAPlanRunsTheWorkerAsItsDocumentSays(t *testing.T) {
 		t.Fatal(err)
 	}
 	doc := catalogWorkerPoolDocument
-	doc.spec.Worker.Image = semiontImage("worker", "local")
+	doc.spec.Worker.Image = xynologImage("worker", "local")
 	doc.spec.Worker.Resources = limits("3G")
 	doc.spec.LogLevel = api.LogLevelDebug
 	plan.runWorkerAs(doc)
-	if plan.Images["worker"] != semiontImage("worker", "local") || plan.Memory["worker"] != "3G" {
+	if plan.Images["worker"] != xynologImage("worker", "local") || plan.Memory["worker"] != "3G" {
 		t.Errorf("the plan runs the worker from %q with %q, want the document's local image with 3G", plan.Images["worker"], plan.Memory["worker"])
 	}
 	config := workerDocumentOf(t, placement{st: st, plan: plan, rt: "container", addr: "192.168.64.1"})
@@ -117,14 +117,14 @@ func brokenWorkerPoolDocument(t *testing.T) string {
 	if err := os.MkdirAll(filepath.Dir(path), 0o755); err != nil {
 		t.Fatal(err)
 	}
-	text := `apiVersion: semiont.the-ai-alliance.github.io/v1alpha1
+	text := `apiVersion: xynolog.org/v1alpha1
 kind: WorkerPool
 metadata:
   name: workers
 spec:
   logLevel: info
   worker:
-    image: ghcr.io/the-ai-alliance/semiont-worker:latest
+    image: ghcr.io/xynolog/xynolog-worker:latest
     resources:
       limits: { memory: 2GB }
 `

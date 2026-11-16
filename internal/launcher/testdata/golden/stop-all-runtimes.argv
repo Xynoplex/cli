@@ -1,138 +1,138 @@
-container stop semiont-example.github.io-test-kb-weaver
-container stop semiont-example.github.io-test-kb-smelter
-container stop semiont-example.github.io-test-kb-dispatcher
-container stop semiont-example.github.io-test-kb-librarian
-container stop semiont-example.github.io-test-kb-archivist
-container stop semiont-example.github.io-test-kb-qdrant
-container stop semiont-example.github.io-test-kb-neo4j
-container stop semiont-example.github.io-test-kb-gateway
-container stop semiont-example.github.io-test-kb-nats
-container logs semiont-example.github.io-test-kb-weaver
-container logs semiont-example.github.io-test-kb-smelter
-container logs semiont-example.github.io-test-kb-dispatcher
-container logs semiont-example.github.io-test-kb-librarian
-container logs semiont-example.github.io-test-kb-archivist
-container logs semiont-example.github.io-test-kb-qdrant
-container logs semiont-example.github.io-test-kb-neo4j
-container logs semiont-example.github.io-test-kb-gateway
-container logs semiont-example.github.io-test-kb-nats
-container rm semiont-example.github.io-test-kb-weaver
-container rm semiont-example.github.io-test-kb-smelter
-container rm semiont-example.github.io-test-kb-dispatcher
-container rm semiont-example.github.io-test-kb-librarian
-container rm semiont-example.github.io-test-kb-archivist
-container rm semiont-example.github.io-test-kb-qdrant
-container rm semiont-example.github.io-test-kb-neo4j
-container rm semiont-example.github.io-test-kb-gateway
-container rm semiont-example.github.io-test-kb-nats
-docker stop semiont-example.github.io-test-kb-weaver
-docker stop semiont-example.github.io-test-kb-smelter
-docker stop semiont-example.github.io-test-kb-dispatcher
-docker stop semiont-example.github.io-test-kb-librarian
-docker stop semiont-example.github.io-test-kb-archivist
-docker stop semiont-example.github.io-test-kb-qdrant
-docker stop semiont-example.github.io-test-kb-neo4j
-docker stop semiont-example.github.io-test-kb-gateway
-docker stop semiont-example.github.io-test-kb-nats
-docker logs --tail 5000 semiont-example.github.io-test-kb-weaver
-docker logs --tail 5000 semiont-example.github.io-test-kb-smelter
-docker logs --tail 5000 semiont-example.github.io-test-kb-dispatcher
-docker logs --tail 5000 semiont-example.github.io-test-kb-librarian
-docker logs --tail 5000 semiont-example.github.io-test-kb-archivist
-docker logs --tail 5000 semiont-example.github.io-test-kb-qdrant
-docker logs --tail 5000 semiont-example.github.io-test-kb-neo4j
-docker logs --tail 5000 semiont-example.github.io-test-kb-gateway
-docker logs --tail 5000 semiont-example.github.io-test-kb-nats
-docker rm semiont-example.github.io-test-kb-weaver
-docker rm semiont-example.github.io-test-kb-smelter
-docker rm semiont-example.github.io-test-kb-dispatcher
-docker rm semiont-example.github.io-test-kb-librarian
-docker rm semiont-example.github.io-test-kb-archivist
-docker rm semiont-example.github.io-test-kb-qdrant
-docker rm semiont-example.github.io-test-kb-neo4j
-docker rm semiont-example.github.io-test-kb-gateway
-docker rm semiont-example.github.io-test-kb-nats
-podman stop semiont-example.github.io-test-kb-weaver
-podman stop semiont-example.github.io-test-kb-smelter
-podman stop semiont-example.github.io-test-kb-dispatcher
-podman stop semiont-example.github.io-test-kb-librarian
-podman stop semiont-example.github.io-test-kb-archivist
-podman stop semiont-example.github.io-test-kb-qdrant
-podman stop semiont-example.github.io-test-kb-neo4j
-podman stop semiont-example.github.io-test-kb-gateway
-podman stop semiont-example.github.io-test-kb-nats
-podman logs --tail 5000 semiont-example.github.io-test-kb-weaver
-podman logs --tail 5000 semiont-example.github.io-test-kb-smelter
-podman logs --tail 5000 semiont-example.github.io-test-kb-dispatcher
-podman logs --tail 5000 semiont-example.github.io-test-kb-librarian
-podman logs --tail 5000 semiont-example.github.io-test-kb-archivist
-podman logs --tail 5000 semiont-example.github.io-test-kb-qdrant
-podman logs --tail 5000 semiont-example.github.io-test-kb-neo4j
-podman logs --tail 5000 semiont-example.github.io-test-kb-gateway
-podman logs --tail 5000 semiont-example.github.io-test-kb-nats
-podman rm semiont-example.github.io-test-kb-weaver
-podman rm semiont-example.github.io-test-kb-smelter
-podman rm semiont-example.github.io-test-kb-dispatcher
-podman rm semiont-example.github.io-test-kb-librarian
-podman rm semiont-example.github.io-test-kb-archivist
-podman rm semiont-example.github.io-test-kb-qdrant
-podman rm semiont-example.github.io-test-kb-neo4j
-podman rm semiont-example.github.io-test-kb-gateway
-podman rm semiont-example.github.io-test-kb-nats
-container stop semiont-worker
-container rm semiont-worker
-docker stop semiont-worker
-docker rm semiont-worker
-podman stop semiont-worker
-podman rm semiont-worker
-container stop semiont-keycloak
-container rm semiont-keycloak
-docker stop semiont-keycloak
-docker rm semiont-keycloak
-podman stop semiont-keycloak
-podman rm semiont-keycloak
-container stop semiont-postgres
-container rm semiont-postgres
-docker stop semiont-postgres
-docker rm semiont-postgres
-podman stop semiont-postgres
-podman rm semiont-postgres
-container stop semiont-otel-collector
-container rm semiont-otel-collector
-docker stop semiont-otel-collector
-docker rm semiont-otel-collector
-podman stop semiont-otel-collector
-podman rm semiont-otel-collector
-container stop semiont-prometheus
-container rm semiont-prometheus
-docker stop semiont-prometheus
-docker rm semiont-prometheus
-podman stop semiont-prometheus
-podman rm semiont-prometheus
-container stop semiont-jaeger
-container rm semiont-jaeger
-docker stop semiont-jaeger
-docker rm semiont-jaeger
-podman stop semiont-jaeger
-podman rm semiont-jaeger
-container stop semiont-ollama
-container rm semiont-ollama
-docker stop semiont-ollama
-docker rm semiont-ollama
-podman stop semiont-ollama
-podman rm semiont-ollama
-container stop semiont-browser
-container rm semiont-browser
-docker stop semiont-browser
-docker rm semiont-browser
-podman stop semiont-browser
-podman rm semiont-browser
-container stop semiont-qdrant
-container rm semiont-qdrant
-docker stop semiont-qdrant
-docker rm semiont-qdrant
-podman stop semiont-qdrant
-podman rm semiont-qdrant
+container stop xynolog-example.github.io-test-kb-weaver
+container stop xynolog-example.github.io-test-kb-smelter
+container stop xynolog-example.github.io-test-kb-dispatcher
+container stop xynolog-example.github.io-test-kb-librarian
+container stop xynolog-example.github.io-test-kb-archivist
+container stop xynolog-example.github.io-test-kb-qdrant
+container stop xynolog-example.github.io-test-kb-neo4j
+container stop xynolog-example.github.io-test-kb-gateway
+container stop xynolog-example.github.io-test-kb-nats
+container logs xynolog-example.github.io-test-kb-weaver
+container logs xynolog-example.github.io-test-kb-smelter
+container logs xynolog-example.github.io-test-kb-dispatcher
+container logs xynolog-example.github.io-test-kb-librarian
+container logs xynolog-example.github.io-test-kb-archivist
+container logs xynolog-example.github.io-test-kb-qdrant
+container logs xynolog-example.github.io-test-kb-neo4j
+container logs xynolog-example.github.io-test-kb-gateway
+container logs xynolog-example.github.io-test-kb-nats
+container rm xynolog-example.github.io-test-kb-weaver
+container rm xynolog-example.github.io-test-kb-smelter
+container rm xynolog-example.github.io-test-kb-dispatcher
+container rm xynolog-example.github.io-test-kb-librarian
+container rm xynolog-example.github.io-test-kb-archivist
+container rm xynolog-example.github.io-test-kb-qdrant
+container rm xynolog-example.github.io-test-kb-neo4j
+container rm xynolog-example.github.io-test-kb-gateway
+container rm xynolog-example.github.io-test-kb-nats
+docker stop xynolog-example.github.io-test-kb-weaver
+docker stop xynolog-example.github.io-test-kb-smelter
+docker stop xynolog-example.github.io-test-kb-dispatcher
+docker stop xynolog-example.github.io-test-kb-librarian
+docker stop xynolog-example.github.io-test-kb-archivist
+docker stop xynolog-example.github.io-test-kb-qdrant
+docker stop xynolog-example.github.io-test-kb-neo4j
+docker stop xynolog-example.github.io-test-kb-gateway
+docker stop xynolog-example.github.io-test-kb-nats
+docker logs --tail 5000 xynolog-example.github.io-test-kb-weaver
+docker logs --tail 5000 xynolog-example.github.io-test-kb-smelter
+docker logs --tail 5000 xynolog-example.github.io-test-kb-dispatcher
+docker logs --tail 5000 xynolog-example.github.io-test-kb-librarian
+docker logs --tail 5000 xynolog-example.github.io-test-kb-archivist
+docker logs --tail 5000 xynolog-example.github.io-test-kb-qdrant
+docker logs --tail 5000 xynolog-example.github.io-test-kb-neo4j
+docker logs --tail 5000 xynolog-example.github.io-test-kb-gateway
+docker logs --tail 5000 xynolog-example.github.io-test-kb-nats
+docker rm xynolog-example.github.io-test-kb-weaver
+docker rm xynolog-example.github.io-test-kb-smelter
+docker rm xynolog-example.github.io-test-kb-dispatcher
+docker rm xynolog-example.github.io-test-kb-librarian
+docker rm xynolog-example.github.io-test-kb-archivist
+docker rm xynolog-example.github.io-test-kb-qdrant
+docker rm xynolog-example.github.io-test-kb-neo4j
+docker rm xynolog-example.github.io-test-kb-gateway
+docker rm xynolog-example.github.io-test-kb-nats
+podman stop xynolog-example.github.io-test-kb-weaver
+podman stop xynolog-example.github.io-test-kb-smelter
+podman stop xynolog-example.github.io-test-kb-dispatcher
+podman stop xynolog-example.github.io-test-kb-librarian
+podman stop xynolog-example.github.io-test-kb-archivist
+podman stop xynolog-example.github.io-test-kb-qdrant
+podman stop xynolog-example.github.io-test-kb-neo4j
+podman stop xynolog-example.github.io-test-kb-gateway
+podman stop xynolog-example.github.io-test-kb-nats
+podman logs --tail 5000 xynolog-example.github.io-test-kb-weaver
+podman logs --tail 5000 xynolog-example.github.io-test-kb-smelter
+podman logs --tail 5000 xynolog-example.github.io-test-kb-dispatcher
+podman logs --tail 5000 xynolog-example.github.io-test-kb-librarian
+podman logs --tail 5000 xynolog-example.github.io-test-kb-archivist
+podman logs --tail 5000 xynolog-example.github.io-test-kb-qdrant
+podman logs --tail 5000 xynolog-example.github.io-test-kb-neo4j
+podman logs --tail 5000 xynolog-example.github.io-test-kb-gateway
+podman logs --tail 5000 xynolog-example.github.io-test-kb-nats
+podman rm xynolog-example.github.io-test-kb-weaver
+podman rm xynolog-example.github.io-test-kb-smelter
+podman rm xynolog-example.github.io-test-kb-dispatcher
+podman rm xynolog-example.github.io-test-kb-librarian
+podman rm xynolog-example.github.io-test-kb-archivist
+podman rm xynolog-example.github.io-test-kb-qdrant
+podman rm xynolog-example.github.io-test-kb-neo4j
+podman rm xynolog-example.github.io-test-kb-gateway
+podman rm xynolog-example.github.io-test-kb-nats
+container stop xynolog-worker
+container rm xynolog-worker
+docker stop xynolog-worker
+docker rm xynolog-worker
+podman stop xynolog-worker
+podman rm xynolog-worker
+container stop xynolog-keycloak
+container rm xynolog-keycloak
+docker stop xynolog-keycloak
+docker rm xynolog-keycloak
+podman stop xynolog-keycloak
+podman rm xynolog-keycloak
+container stop xynolog-postgres
+container rm xynolog-postgres
+docker stop xynolog-postgres
+docker rm xynolog-postgres
+podman stop xynolog-postgres
+podman rm xynolog-postgres
+container stop xynolog-otel-collector
+container rm xynolog-otel-collector
+docker stop xynolog-otel-collector
+docker rm xynolog-otel-collector
+podman stop xynolog-otel-collector
+podman rm xynolog-otel-collector
+container stop xynolog-prometheus
+container rm xynolog-prometheus
+docker stop xynolog-prometheus
+docker rm xynolog-prometheus
+podman stop xynolog-prometheus
+podman rm xynolog-prometheus
+container stop xynolog-jaeger
+container rm xynolog-jaeger
+docker stop xynolog-jaeger
+docker rm xynolog-jaeger
+podman stop xynolog-jaeger
+podman rm xynolog-jaeger
+container stop xynolog-ollama
+container rm xynolog-ollama
+docker stop xynolog-ollama
+docker rm xynolog-ollama
+podman stop xynolog-ollama
+podman rm xynolog-ollama
+container stop xynolog-browser
+container rm xynolog-browser
+docker stop xynolog-browser
+docker rm xynolog-browser
+podman stop xynolog-browser
+podman rm xynolog-browser
+container stop xynolog-qdrant
+container rm xynolog-qdrant
+docker stop xynolog-qdrant
+docker rm xynolog-qdrant
+podman stop xynolog-qdrant
+podman rm xynolog-qdrant
 lsof -nP -iTCP:24100 -sTCP:LISTEN
 lsof -nP -iTCP:4318 -sTCP:LISTEN
 lsof -nP -iTCP:24110 -sTCP:LISTEN

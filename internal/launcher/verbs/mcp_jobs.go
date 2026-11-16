@@ -17,8 +17,8 @@ import (
 
 	"github.com/modelcontextprotocol/go-sdk/mcp"
 
-	xynoplex "github.com/Xynoplex/sdk/go"
-	"github.com/Xynoplex/sdk/go/api"
+	xynolog "github.com/xynolog/sdk/go"
+	"github.com/xynolog/sdk/go/api"
 )
 
 // jobCancelWithin is how long a cancelled call waits for the queue to take
@@ -29,7 +29,7 @@ const jobCancelWithin = 10 * time.Second
 // A job that fails, or one whose call is cancelled, is the tool's error; a
 // cancelled call cancels its job, which the queue does cooperatively: a
 // running job stops when its worker does.
-func followDelegation[C any](ctx context.Context, call mcpCall, job *xynoplex.Delegation[C]) (C, error) {
+func followDelegation[C any](ctx context.Context, call mcpCall, job *xynolog.Delegation[C]) (C, error) {
 	var done C
 	c := call.client()
 	following, stop := context.WithCancel(ctx)
@@ -39,7 +39,7 @@ func followDelegation[C any](ctx context.Context, call mcpCall, job *xynoplex.De
 	var jobID api.JobId
 	for event, err := range job.Events(following) {
 		if err != nil {
-			var failed *xynoplex.JobError
+			var failed *xynolog.JobError
 			switch {
 			case ctx.Err() != nil && !jobID.IsZero():
 				asked, cancelled := context.WithTimeout(context.WithoutCancel(ctx), jobCancelWithin)
@@ -55,16 +55,16 @@ func followDelegation[C any](ctx context.Context, call mcpCall, job *xynoplex.De
 			return done, err
 		}
 		switch e := event.(type) {
-		case xynoplex.JobCreated:
+		case xynolog.JobCreated:
 			jobID = e.Data.JobId
 			notify(fmt.Sprintf("Job %s created", jobID))
-		case xynoplex.JobProgressed:
+		case xynolog.JobProgressed:
 			if text := progressText(e.Data.Message); text != "" {
 				notify(text)
 			}
-		case xynoplex.JobAttemptFailed:
+		case xynolog.JobAttemptFailed:
 			notify(fmt.Sprintf("An attempt failed (%s); the queue is running the job again", e.Data.Error))
-		case xynoplex.JobCompleted[C]:
+		case xynolog.JobCompleted[C]:
 			return e.Data, nil
 		}
 	}
@@ -96,8 +96,8 @@ func progressNotifier(ctx context.Context, call mcpCall) func(said string) {
 // was not given reveals nothing about it.
 func callersJob(ctx context.Context, call mcpCall, jobID api.JobId) (api.JobStatusResponse, error) {
 	status, err := call.client().Job.Status(ctx, jobID)
-	var failed *xynoplex.BusRequestError
-	if errors.As(err, &failed) && failed.Code == xynoplex.BusRequestErrorCodeNotFound {
+	var failed *xynolog.BusRequestError
+	if errors.As(err, &failed) && failed.Code == xynolog.BusRequestErrorCodeNotFound {
 		return status, unknownJob(jobID)
 	}
 	if err != nil {

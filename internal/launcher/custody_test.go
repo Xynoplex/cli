@@ -7,7 +7,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/Xynoplex/cli/internal/launcher/harness"
+	"github.com/xynolog/cli/internal/launcher/harness"
 )
 
 // Two mechanisms share the word "secret".
@@ -259,13 +259,13 @@ func TestResolutionValueReachesNoDisk(t *testing.T) {
 // prompt followed by a silent no-op is the one outcome the launcher refuses
 // everywhere else (see stop's --runtime mismatch).
 func TestCustodyOwnedNamesCannotBeResolved(t *testing.T) {
-	for _, name := range []string{"JWT_SECRET", "KC_BOOTSTRAP_ADMIN_PASSWORD", "SEMIONT_OIDC_CLIENT_SECRET", "SEMIONT_OIDC_CLIENT_SECRET_WEAVER"} {
+	for _, name := range []string{"JWT_SECRET", "KC_BOOTSTRAP_ADMIN_PASSWORD", "XYNOLOG_OIDC_CLIENT_SECRET", "XYNOLOG_OIDC_CLIENT_SECRET_WEAVER"} {
 		if !custodyOwned(name) {
 			t.Errorf("%s is minted and kept by the launcher, but nothing stops a config sourcing it from a provider — the resolved value would be overridden without a word", name)
 		}
 	}
 	// Everything else is the config's to source.
-	for _, name := range []string{"ANTHROPIC_API_KEY", "VOYAGE_API_KEY", "SEMIONT_OIDC_CLIENT_ID"} {
+	for _, name := range []string{"ANTHROPIC_API_KEY", "VOYAGE_API_KEY", "XYNOLOG_OIDC_CLIENT_ID"} {
 		if custodyOwned(name) {
 			t.Errorf("%s is the config's to source, but custody claims it", name)
 		}

@@ -12,7 +12,7 @@ import (
 	"sort"
 	"strings"
 
-	xynoplex "github.com/Xynoplex/sdk/go"
+	xynolog "github.com/xynolog/sdk/go"
 )
 
 const (
@@ -24,7 +24,7 @@ const (
 	// Keycloak structure, so an operator federating another issuer maps their
 	// own groups into the same claim. Must equal SERVICE_ROLE in
 	// packages/rust/sdk/src/roles.rs (npm run lint:service-role holds them together).
-	serviceRole = "semiont-service"
+	serviceRole = "xynolog-service"
 
 	// workerRole: the realm role marking a client permitted to CLAIM JOBS.
 	// Granted only to the worker client here; a deployment running FOREIGN
@@ -34,7 +34,7 @@ const (
 	// finer grant. Authorizing a job:claim by this ROLE — not by matching the
 	// worker's client id — is what lets a foreign worker claim. Must equal
 	// WORKER_ROLE in packages/rust/sdk/src/roles.rs (held by lint:service-role).
-	workerRole = "semiont-worker"
+	workerRole = "xynolog-worker"
 
 	// kindClaim, agentKind: the claim that marks an agent's account, and what
 	// it holds there. Every service's account and every worker's carries it;
@@ -49,7 +49,7 @@ const (
 	// stays valid, in seconds.
 	//
 	// This is the revocation window for every person using the knowledge base.
-	// Semiont holds no per-user admission flag: disabling an account here stops
+	// Xynolog holds no per-user admission flag: disabling an account here stops
 	// the realm minting and stops it refreshing, but a token already in someone's
 	// hand keeps working until it expires. That expiry is this number.
 	//
@@ -150,7 +150,7 @@ func sharedKeycloakAdmin(u *UI, ss *StackSet) (base, password, source string, ok
 
 // secretClients: the realm's view of `stackServices`, every one of which
 // proves itself with a secret — every process that PRESENTS a token to
-// another Semiont service, and so needs an account, but the shared worker,
+// another Xynolog service, and so needs an account, but the shared worker,
 // which proves itself with the worker key (workerkey.go). The Browser
 // presents none: it is a viewer, and the only one of ours without an account.
 //
@@ -176,7 +176,7 @@ func serviceClientID(svc string) string {
 	if svc == "worker" {
 		return workerClientID(localWorkerLabel)
 	}
-	return "semiont-" + svc
+	return "xynolog-" + svc
 }
 
 // serviceRoles: the flat `roles` a service client's token carries. Every
@@ -223,7 +223,7 @@ const agentKindMapperName = "xynolog agent kind"
 // claim says that without needing a realm role created and assigned in the
 // same import. The kind mapper marks the account an agent's (kindClaim).
 func serviceAccountClient(svc, secret, audience string) map[string]any {
-	return accountClient(serviceClientID(svc), "Semiont "+svc, map[string]any{"secret": secret}, audience, serviceRolesClaim(svc))
+	return accountClient(serviceClientID(svc), "Xynolog "+svc, map[string]any{"secret": secret}, audience, serviceRolesClaim(svc))
 }
 
 // accountClient: a confidential client that obtains a token for itself and
@@ -289,7 +289,7 @@ func accountClient(clientID, name string, proof map[string]any, audience, rolesC
 
 // natsConfPath: where the staged broker config is mounted. Fixed, so the plan
 // can name it without knowing where the launcher staged the file.
-const natsConfPath = "/etc/nats/semiont.conf"
+const natsConfPath = "/etc/nats/xynolog.conf"
 
 // natsConf: the broker's authorization block, and the largest message it takes.
 //
@@ -303,12 +303,12 @@ const natsConfPath = "/etc/nats/semiont.conf"
 // this file has to exist at all.
 //
 // max_payload is 8 MiB, twice the largest emit the gateway takes
-// (`x-semiont-limits.maxBodyBytes` of POST /bus/emit), so a frame and the
+// (`x-xynolog-limits.maxBodyBytes` of POST /bus/emit), so a frame and the
 // envelope it is published in always fit. The broker's default is 1 MiB, and a
 // broker that takes less than the gateway refuses the publish of an emit the
 // gateway accepted.
 func natsConf() []byte {
-	return []byte(`# Rendered by the Semiont launcher. Contains no secret: the values are
+	return []byte(`# Rendered by the Xynolog launcher. Contains no secret: the values are
 # interpolated from this daemon's own environment at startup.
 authorization {
   user: $NATS_USER
@@ -344,7 +344,7 @@ func natsConfString(text string) string {
 // runs their own Browser, at their own loopback, which these entries match
 // too (LOCAL-ONLY-STACK D3): no Browser is ever reached at a network address.
 func browserClient(audience string, browserPort int) map[string]any {
-	c := publicClient(xynoplex.BrowserClientID, "Semiont Browser", audience)
+	c := publicClient(xynolog.BrowserClientID, "Xynolog Browser", audience)
 	c["standardFlowEnabled"] = true
 	c["redirectUris"] = loopbackRedirectUris()
 	c["webOrigins"] = loopbackWebOrigins(browserPort)
@@ -401,7 +401,7 @@ func loopbackRedirectUris() []string {
 }
 
 func cliClient(audience string) map[string]any {
-	c := publicClient(xynoplex.ScriptClientID, "Semiont launcher", audience)
+	c := publicClient(xynolog.ScriptClientID, "Xynolog launcher", audience)
 	c["standardFlowEnabled"] = false
 	c["attributes"] = map[string]string{
 		"oauth2.device.authorization.grant.enabled": "true",
@@ -470,7 +470,7 @@ func keycloakRealmJSON(realm, audience string, browserPort, accessTokenLifespan 
 // This is Keycloak's own default written out. It is
 // pinned for the reason keycloakAccessTokenLifespan is: inherited, the first-run
 // experience moves with a Keycloak upgrade and differs on any other issuer, with
-// no line to read back. An operator federating a different issuer owes Semiont
+// no line to read back. An operator federating a different issuer owes Xynolog
 // the `subjectClaim` claim and an `email` — the gateway refuses a token lacking
 // either, or carrying `email_verified` false.
 func keycloakUserProfile() string {
@@ -516,7 +516,7 @@ func keycloakUserProfile() string {
 	return string(b)
 }
 
-// publicClient: the shape both of Semiont's clients share — public (no
+// publicClient: the shape both of Xynolog's clients share — public (no
 // secret, PKCE or device grant), no implicit or password grants, and the
 // gateway audience stamped into access tokens.
 func publicClient(clientID, name, audience string) map[string]any {

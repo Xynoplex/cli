@@ -11,8 +11,8 @@ import (
 	"strings"
 	"testing"
 
-	launcher "github.com/Xynoplex/cli/internal/launcher"
-	"github.com/Xynoplex/cli/internal/launcher/harness"
+	launcher "github.com/xynolog/cli/internal/launcher"
+	"github.com/xynolog/cli/internal/launcher/harness"
 )
 
 func recordBrowserFixture(t *testing.T, b *launcher.ServiceState) {
@@ -26,7 +26,7 @@ func recordBrowserFixture(t *testing.T, b *launcher.ServiceState) {
 	if err := json.Unmarshal(raw, &ss); err != nil {
 		t.Fatal(err)
 	}
-	b.Container = "semiont-browser"
+	b.Container = "xynolog-browser"
 	ss.Shared = map[string]*launcher.ServiceState{b.Container: b}
 	out, _ := json.MarshalIndent(&ss, "", "  ")
 	if err := os.WriteFile(path, out, 0o600); err != nil {

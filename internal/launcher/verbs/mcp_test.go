@@ -20,11 +20,11 @@ import (
 
 	"github.com/modelcontextprotocol/go-sdk/mcp"
 
-	launcher "github.com/Xynoplex/cli/internal/launcher"
+	launcher "github.com/xynolog/cli/internal/launcher"
 
-	xynoplex "github.com/Xynoplex/sdk/go"
-	"github.com/Xynoplex/sdk/go/bus"
-	"github.com/Xynoplex/sdk/go/xynoplextest"
+	xynolog "github.com/xynolog/sdk/go"
+	"github.com/xynolog/sdk/go/bus"
+	"github.com/xynolog/sdk/go/xynologtest"
 )
 
 // mcpClient is an MCP client of `xynolog mcp`'s server, in process.
@@ -58,12 +58,12 @@ func mcpClientWith(t *testing.T, options *mcp.ClientOptions) *mcp.ClientSession 
 // mcpFixture is a recorded local stack signed in to, whose gateway says who
 // the token is (did:web:example.org:users:t) and whose bus is fake, and an
 // MCP client of the server over it.
-func mcpFixture(t *testing.T) (*mcp.ClientSession, *xynoplextest.FaultyTransport, *gatewayStub) {
+func mcpFixture(t *testing.T) (*mcp.ClientSession, *xynologtest.FaultyTransport, *gatewayStub) {
 	t.Helper()
 	gateway := newGatewayStub(t, func(string) bool { return true })
 	gatewayFixture(t, gateway)
-	fake := xynoplextest.NewFaultyTransport(xynoplextest.FaultyConfig{Channels: bus.BridgedChannels})
-	t.Cleanup(launcher.UseTransport(func(xynoplex.HTTPTransportConfig) xynoplex.Transport { return fake }))
+	fake := xynologtest.NewFaultyTransport(xynologtest.FaultyConfig{Channels: bus.BridgedChannels})
+	t.Cleanup(launcher.UseTransport(func(xynolog.HTTPTransportConfig) xynolog.Transport { return fake }))
 	return mcpClient(t), fake, gateway
 }
 

@@ -30,7 +30,7 @@ jobs:
           test "$(git -C protocol rev-parse HEAD)" = "$EXPECTED_PROTOCOL"
       - name: Download verified SDK artifacts
         id: sdk
-        uses: Xynoplex/sdk/.github/actions/download-bundle@e15cfe2996b0da2e115cdc2e2e8f9bb1551c208d
+        uses: xynolog/sdk/.github/actions/download-bundle@e15cfe2996b0da2e115cdc2e2e8f9bb1551c208d
         with:
           tag: ${{ steps.sdk-pin.outputs.tag }}
           commit: ${{ steps.sdk-pin.outputs.commit }}
@@ -44,7 +44,7 @@ jobs:
         run: |
           proxy="$(node -e 'const { pathToFileURL } = require("node:url"); const { join } = require("node:path"); process.stdout.write(pathToFileURL(join(process.argv[1], "go", "go-proxy")).href)' "$SDK_ARTIFACTS")"
           echo "GOPROXY=$proxy,https://proxy.golang.org" >> "$GITHUB_ENV"
-          echo 'GONOSUMDB=github.com/Xynoplex/sdk/go' >> "$GITHUB_ENV"
+          echo 'GONOSUMDB=github.com/xynolog/sdk/go' >> "$GITHUB_ENV"
       - uses: actions/setup-go@v5
         with:
           go-version-file: go.mod

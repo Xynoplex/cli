@@ -11,9 +11,9 @@ import (
 	"go.yaml.in/yaml/v3"
 )
 
-// workflowsDir: the Semiont service-image workflow fixtures. These are
+// workflowsDir: the Xynolog service-image workflow fixtures. These are
 // source contracts, not xynolog workflows.
-var workflowsDir = filepath.Join("..", "..", "testdata", "semiont-workflows")
+var workflowsDir = filepath.Join("..", "..", "testdata", "xynolog-workflows")
 
 // actionsWorkflow: what a workflow file says about what its jobs attest.
 type actionsWorkflow struct {
@@ -133,9 +133,9 @@ func attestedImages(t *testing.T) map[string][]string {
 }
 
 // THE GATE ON THE SIGNER THE LAUNCHER TRUSTS: the launcher runs an image of
-// Semiont's only when the workflow semiontWorkflow names signed its build
+// Xynolog's only when the workflow xynologWorkflow names signed its build
 // provenance, and a compiled launcher cannot read the workflows to ask. So
-// they are asked here: each of Semiont's images is attested by exactly one
+// they are asked here: each of Xynolog's images is attested by exactly one
 // workflow, the one the launcher names. A publish workflow renamed, an image
 // moved to another workflow, or a second workflow attesting it fails here,
 // not as a launcher that refuses the release's images.
@@ -143,17 +143,17 @@ func TestEachImageIsAttestedByTheWorkflowTheLauncherTrusts(t *testing.T) {
 	attested := attestedImages(t)
 	images := 0
 	for _, d := range serviceDescriptors {
-		if d.driver != driverSemiont {
+		if d.driver != driverXynolog {
 			continue
 		}
 		images++
-		image := strings.TrimSuffix(semiontImage(d.role, "latest"), ":latest")
-		want := semiontWorkflow(d.role)
+		image := strings.TrimSuffix(xynologImage(d.role, "latest"), ":latest")
+		want := xynologWorkflow(d.role)
 		if got := attested[image]; !slices.Equal(got, []string{want}) {
 			t.Errorf("the launcher runs %s only when %s signed it, and the workflows attesting it are %v", image, want, got)
 		}
 	}
 	if images == 0 {
-		t.Fatal("the table names none of Semiont's images: the census read nothing")
+		t.Fatal("the table names none of Xynolog's images: the census read nothing")
 	}
 }

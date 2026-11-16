@@ -29,8 +29,8 @@ func ran(t *testing.T, dir, name string, args ...string) (string, int) {
 func TestAStandInDoesWhatItIsTold(t *testing.T) {
 	dir := t.TempDir()
 
-	StandIn(t, dir, "knows-one", Says{Out: "running", OnlyGiven: "semiont-browser"})
-	if out, code := ran(t, dir, "knows-one", "inspect", "semiont-browser"); out != "running\n" || code != 0 {
+	StandIn(t, dir, "knows-one", Says{Out: "running", OnlyGiven: "xynolog-browser"})
+	if out, code := ran(t, dir, "knows-one", "inspect", "xynolog-browser"); out != "running\n" || code != 0 {
 		t.Errorf("given the argument it knows: %q, exit %d; want the line and 0", out, code)
 	}
 	if out, code := ran(t, dir, "knows-one", "inspect", "0000deadbeef"); out != "" || code != 1 {

@@ -1,7 +1,7 @@
 package launcher
 
 // control_census_test.go — the census gates of the control API: each
-// hand-written statement of a shape the pinned Semiont Control API schemas
+// hand-written statement of a shape the pinned Xynolog Control API schemas
 // own, held to them so either side growing without the other fails.
 
 import (

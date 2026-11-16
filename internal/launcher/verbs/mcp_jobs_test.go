@@ -13,8 +13,8 @@ import (
 
 	"github.com/modelcontextprotocol/go-sdk/mcp"
 
-	xynoplex "github.com/Xynoplex/sdk/go"
-	"github.com/Xynoplex/sdk/go/bus"
+	xynolog "github.com/xynolog/sdk/go"
+	"github.com/xynolog/sdk/go/bus"
 )
 
 // statusOf is job-1's status, as the dispatcher answers it, the fixture's
@@ -163,11 +163,11 @@ func TestMCPADelegationAnswersItsCompletionAndACancelledCallCancelsItsJob(t *tes
 }
 
 // markJobEnd is a frame of job-1's lifecycle, a mark job's on res-1.
-func markJobEnd(t *testing.T, channel bus.Channel) xynoplex.Frame {
+func markJobEnd(t *testing.T, channel bus.Channel) xynolog.Frame {
 	t.Helper()
 	written, err := json.Marshal(map[string]any{"resourceId": "res-1", "jobId": "job-1", "jobType": "mark"})
 	if err != nil {
 		t.Fatal(err)
 	}
-	return xynoplex.Frame{Channel: channel, Payload: written}
+	return xynolog.Frame{Channel: channel, Payload: written}
 }

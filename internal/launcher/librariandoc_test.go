@@ -10,9 +10,9 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/Xynoplex/sdk/go/api"
+	"github.com/xynolog/sdk/go/api"
 
-	"github.com/Xynoplex/cli/internal/launcher/stack"
+	"github.com/xynolog/cli/internal/launcher/stack"
 )
 
 // mixedActors: the ollama-gemma fixture with its matcher asking Anthropic's
@@ -59,7 +59,7 @@ func TestLibrarianDocumentStatesWhatThePlacementDecides(t *testing.T) {
 	if doc.Identity.Issuer != "http://192.168.64.1:8080/realms/example.github.io-test-kb" {
 		t.Errorf("identity.issuer = %q", doc.Identity.Issuer)
 	}
-	if doc.Archivist.Host != "192.168.64.1" || doc.Archivist.Port != semiontDescriptor("archivist").ports[0].port {
+	if doc.Archivist.Host != "192.168.64.1" || doc.Archivist.Port != xynologDescriptor("archivist").ports[0].port {
 		t.Errorf("archivist = %+v, want where this start places the Archivist", doc.Archivist)
 	}
 	wantGraph := api.Neo4jGraphConfig{
@@ -94,7 +94,7 @@ func TestLibrarianDocumentStatesWhatThePlacementDecides(t *testing.T) {
 	if doc.Gather.SettleTimeoutMs != 15_000 || doc.Search.SemanticFloor != 0.6 {
 		t.Errorf("gather, search = %+v, %+v, want the KnowledgeIndex's 15000 and 0.6", doc.Gather, doc.Search)
 	}
-	if doc.Port != semiontDescriptor("librarian").ports[0].port {
+	if doc.Port != xynologDescriptor("librarian").ports[0].port {
 		t.Errorf("port = %d, want the descriptor's", doc.Port)
 	}
 	if doc.LogLevel != api.LogLevelDebug || doc.LogFormat != api.LogFormatJson {
@@ -272,7 +272,7 @@ func TestLibrarianDocumentIsWhereTheImageLooks(t *testing.T) {
 	}
 	doc := librarianDocumentOf(t, placed(t, fixtureStack(t, "ollama-gemma")))
 
-	args := strings.Join(librarianArgs("kb", "/stage", exposure{rt: "container", addr: "1.2.3.4"}, semiontDescriptor("librarian").ports[0].port, "client-secret", "v", semiontDescriptor("librarian").mem, []string{"--env", "NEO4J_PASSWORD", "--env", "ANTHROPIC_API_KEY"}, nil, nil), " ")
+	args := strings.Join(librarianArgs("kb", "/stage", exposure{rt: "container", addr: "1.2.3.4"}, xynologDescriptor("librarian").ports[0].port, "client-secret", "v", xynologDescriptor("librarian").mem, []string{"--env", "NEO4J_PASSWORD", "--env", "ANTHROPIC_API_KEY"}, nil, nil), " ")
 	if want := "/stage/" + librarianDocumentFile + ":" + librarianDocumentTarget + ":ro"; !strings.Contains(args, want) {
 		t.Errorf("the Librarian's document is not mounted onto %s:\n%s", librarianDocumentTarget, args)
 	}
@@ -281,7 +281,7 @@ func TestLibrarianDocumentIsWhereTheImageLooks(t *testing.T) {
 			t.Errorf("the Librarian is handed %s, which it does not read:\n%s", unread, args)
 		}
 	}
-	for _, handed := range []string{"SEMIONT_OIDC_CLIENT_ID=" + serviceClientID("librarian"), "SEMIONT_OIDC_CLIENT_SECRET=client-secret", "--env NEO4J_PASSWORD", "--env ANTHROPIC_API_KEY"} {
+	for _, handed := range []string{"XYNOLOG_OIDC_CLIENT_ID=" + serviceClientID("librarian"), "XYNOLOG_OIDC_CLIENT_SECRET=client-secret", "--env NEO4J_PASSWORD", "--env ANTHROPIC_API_KEY"} {
 		if !strings.Contains(args, handed) {
 			t.Errorf("the Librarian is not handed %s:\n%s", handed, args)
 		}

@@ -194,7 +194,7 @@ func (s *controlServer) carry(r io.Reader) {
 
 // controlTurnMark begins the line that marks the end of a turn's output in
 // each captured stream.
-const controlTurnMark = "\x00semiont-control-turn "
+const controlTurnMark = "\x00xynolog-control-turn "
 
 // drain waits until everything printed before it has been carried: a mark
 // written to each captured stream comes out after all of it.

@@ -35,12 +35,12 @@ import (
 	"testing"
 	"time"
 
-	launcher "github.com/Xynoplex/cli/internal/launcher"
-	"github.com/Xynoplex/cli/internal/launcher/harness"
+	launcher "github.com/xynolog/cli/internal/launcher"
+	"github.com/xynolog/cli/internal/launcher/harness"
 
-	xynoplex "github.com/Xynoplex/sdk/go"
+	xynolog "github.com/xynolog/sdk/go"
 
-	"github.com/Xynoplex/sdk/go/bus"
+	"github.com/xynolog/sdk/go/bus"
 )
 
 // issuerStub is the token endpoint: it answers the refresh grant as scripted
@@ -78,7 +78,7 @@ func (s *issuerStub) refreshGrants() []url.Values {
 func tokenTagged(tag string, lifetime time.Duration) string {
 	now := time.Now()
 	claims, _ := json.Marshal(map[string]any{
-		"tag": tag, "email": "t@example.com", "iss": "http://issuer.test/realms/semiont",
+		"tag": tag, "email": "t@example.com", "iss": "http://issuer.test/realms/xynolog",
 		"iat": now.Unix(), "exp": now.Add(lifetime).Unix(),
 	})
 	return "eyJhbGciOiJub25lIn0." + base64.RawURLEncoding.EncodeToString(claims) + ".c2ln"
@@ -113,17 +113,17 @@ func renewed() string {
 // negative), refresh token refresh-1, the stub as its issuer.
 func storeSession(t *testing.T, issuer *issuerStub, lifetime time.Duration) {
 	t.Helper()
-	store := xynoplex.NewSignInStore(filepath.Join(launcher.StateDir(), xynoplex.SignInFile))
-	if err := store.Entry(localKey).Keep(context.Background(), xynoplex.HeldSignIn{
+	store := xynolog.NewSignInStore(filepath.Join(launcher.StateDir(), xynolog.SignInFile))
+	if err := store.Entry(localKey).Keep(context.Background(), xynolog.HeldSignIn{
 		Access: tokenTagged("token-1", lifetime), Refresh: "refresh-1",
-		ClientID: xynoplex.ScriptClientID, TokenEndpoint: issuer.URL + "/token",
+		ClientID: xynolog.ScriptClientID, TokenEndpoint: issuer.URL + "/token",
 	}); err != nil {
 		t.Fatal(err)
 	}
 }
 
 // kept is the sign-in the store holds for the local stack; false when none.
-func kept(t *testing.T) (xynoplex.SignIn, bool) {
+func kept(t *testing.T) (xynolog.SignIn, bool) {
 	t.Helper()
 	signIn, ok := launcher.LoadTokens()[localKey]
 	return signIn, ok
@@ -349,7 +349,7 @@ func TestBusVerbRenewsARejectedSessionAndGoesOn(t *testing.T) {
 	if len(grants) != 1 {
 		t.Fatalf("want exactly one refresh grant at the issuer, got %d", len(grants))
 	}
-	if g := grants[0]; g.Get("grant_type") != "refresh_token" || g.Get("client_id") != xynoplex.ScriptClientID || g.Get("refresh_token") != "refresh-1" {
+	if g := grants[0]; g.Get("grant_type") != "refresh_token" || g.Get("client_id") != xynolog.ScriptClientID || g.Get("refresh_token") != "refresh-1" {
 		t.Errorf("the grant was not the public client's refresh_token grant carrying the stored refresh token")
 	}
 

@@ -6,10 +6,10 @@ import (
 	"path/filepath"
 	"testing"
 
-	"github.com/Xynoplex/sdk/go/api"
-	"github.com/Xynoplex/sdk/go/bus"
+	"github.com/xynolog/sdk/go/api"
+	"github.com/xynolog/sdk/go/bus"
 
-	"github.com/Xynoplex/cli/internal/launcher/stack"
+	"github.com/xynolog/cli/internal/launcher/stack"
 )
 
 // Ollama reports an untagged model as ":latest". A config naming it without

@@ -20,7 +20,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/Xynoplex/cli/internal/launcher/harness"
+	"github.com/xynolog/cli/internal/launcher/harness"
 )
 
 // heldPort: a loopback port this test holds open until it ends.
@@ -102,13 +102,13 @@ func namedByTheFake(s *scenario, pid string) (string, error) {
 func TestFakeRuntimeRefusesAPortAlreadyHeld(t *testing.T) {
 	s := newScenario(t, "docker")
 	port := heldPort(t)
-	out, err := shimCmd(s, "docker", "run", "-d", "--name", "semiont-gateway", "-p", port+":4000", "img").CombinedOutput()
+	out, err := shimCmd(s, "docker", "run", "-d", "--name", "xynolog-gateway", "-p", port+":4000", "img").CombinedOutput()
 	var exit *exec.ExitError
 	if !errors.As(err, &exit) || exit.ExitCode() != 125 {
 		t.Fatalf("run -d on a held port: err %v, want exit 125\n%s", err, out)
 	}
 	mustContain(t, "run -d", string(out), "port is already allocated", port)
-	if _, err := os.Stat(filepath.Join(s.fakertDir, "serve-semiont-gateway.pid")); err == nil {
+	if _, err := os.Stat(filepath.Join(s.fakertDir, "serve-xynolog-gateway.pid")); err == nil {
 		t.Error("a container that never started was recorded as running")
 	}
 }
@@ -134,7 +134,7 @@ func TestKillServesNamesAPortItCouldNotFree(t *testing.T) {
 		t.Fatal(err)
 	}
 	t.Cleanup(func() { _ = child.Process.Kill(); _, _ = child.Process.Wait() })
-	pidfile := filepath.Join(s.fakertDir, "serve-semiont-leaky.pid")
+	pidfile := filepath.Join(s.fakertDir, "serve-xynolog-leaky.pid")
 	if err := os.WriteFile(pidfile, []byte(strconv.Itoa(child.Process.Pid)+"\n"+port), 0o644); err != nil {
 		t.Fatal(err)
 	}
@@ -143,7 +143,7 @@ func TestKillServesNamesAPortItCouldNotFree(t *testing.T) {
 	if len(rec.errors) != 1 {
 		t.Fatalf("killServes reported %d errors, want one naming port %s: %v", len(rec.errors), port, rec.errors)
 	}
-	mustContain(t, "killServes's report", rec.errors[0], port, "serve-semiont-leaky.pid")
+	mustContain(t, "killServes's report", rec.errors[0], port, "serve-xynolog-leaky.pid")
 }
 
 // A codespace forward's pidfile records the port it holds, as `run -d`'s do,
@@ -224,12 +224,12 @@ func TestUnnamedRunWithAPortIsRefused(t *testing.T) {
 func TestServeThatCannotStartFailsTheRun(t *testing.T) {
 	s := newScenario(t, "docker")
 	port := freePort(t)
-	out, err := shimCmd(s, "docker", "run", "-d", "--name", "semiont-nonesuch", "-p", port+":80", "img").CombinedOutput()
+	out, err := shimCmd(s, "docker", "run", "-d", "--name", "xynolog-nonesuch", "-p", port+":80", "img").CombinedOutput()
 	if err == nil {
 		t.Fatalf("run -d of a service with no image succeeded:\n%s", out)
 	}
-	mustContain(t, "run -d", string(out), "semiont-nonesuch")
-	if _, err := os.Stat(filepath.Join(s.fakertDir, "serve-semiont-nonesuch.pid")); err == nil {
+	mustContain(t, "run -d", string(out), "xynolog-nonesuch")
+	if _, err := os.Stat(filepath.Join(s.fakertDir, "serve-xynolog-nonesuch.pid")); err == nil {
 		t.Error("a container whose listener never started was recorded as running")
 	}
 }
@@ -242,7 +242,7 @@ func TestServeThatCannotStartFailsTheRun(t *testing.T) {
 func TestFakeGatewaySurvivesConcurrentRequests(t *testing.T) {
 	s := newScenario(t, "docker")
 	port := freePort(t)
-	if out, err := shimCmd(s, "docker", "run", "-d", "--name", "semiont-gateway", "-p", port+":4000", "img").CombinedOutput(); err != nil {
+	if out, err := shimCmd(s, "docker", "run", "-d", "--name", "xynolog-gateway", "-p", port+":4000", "img").CombinedOutput(); err != nil {
 		t.Fatalf("run -d: %v\n%s", err, out)
 	}
 	whoami := func() (int, error) {

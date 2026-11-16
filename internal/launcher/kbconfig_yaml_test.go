@@ -7,21 +7,21 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/Xynoplex/cli/internal/launcher/stack"
+	"github.com/xynolog/cli/internal/launcher/stack"
 )
 
 // A root whose config.yaml does not hold is refused however a command finds
-// it — by --root, by SEMIONT_ROOT, from the working directory — naming the
+// it — by --root, by XYNOLOG_ROOT, from the working directory — naming the
 // line of each place, and the working directory's refusal is no "not inside
 // a knowledge base".
 func TestABrokenProjectFileIsRefusedAtItsLine(t *testing.T) {
 	root := t.TempDir()
-	semiont := filepath.Join(root, ".semiont")
-	if err := os.MkdirAll(semiont, 0o755); err != nil {
+	xynolog := filepath.Join(root, ".xynolog")
+	if err := os.MkdirAll(xynolog, 0o755); err != nil {
 		t.Fatal(err)
 	}
 	yamlFile := "project:\n  name: kb\ngit:\n  sync: true\nsite:\n  domian: example.org:kb\n  siteName: KB\n"
-	if err := os.WriteFile(filepath.Join(semiont, projectFileYAML), []byte(yamlFile), 0o644); err != nil {
+	if err := os.WriteFile(filepath.Join(xynolog, projectFileYAML), []byte(yamlFile), 0o644); err != nil {
 		t.Fatal(err)
 	}
 	_, _, err := resolveRootArg(root)
@@ -37,16 +37,16 @@ func TestABrokenProjectFileIsRefusedAtItsLine(t *testing.T) {
 		t.Errorf("the misspelled domain is on line 6, in the site on line 5: %+v", refused.Refusals)
 	}
 
-	t.Setenv("SEMIONT_ROOT", root)
+	t.Setenv("XYNOLOG_ROOT", root)
 	if _, _, _, err := resolveKBRoot(); !errors.As(err, &refused) {
-		t.Errorf("SEMIONT_ROOT naming a broken config.yaml must be refused, and resolving it said %v", err)
+		t.Errorf("XYNOLOG_ROOT naming a broken config.yaml must be refused, and resolving it said %v", err)
 	}
 	if found, err := CwdKBRoot(); !projectFileRefused(err) {
 		t.Errorf("the working directory's broken config.yaml read as %q, %v: a refusal, not \"not inside a clone\"", found, err)
 	}
 
-	t.Setenv("SEMIONT_ROOT", "")
-	t.Chdir(semiont)
+	t.Setenv("XYNOLOG_ROOT", "")
+	t.Chdir(xynolog)
 	if _, _, _, err := resolveKBRoot(); !errors.As(err, &refused) {
 		t.Errorf("a broken config.yaml found from the working directory must be refused, and resolving it said %v", err)
 	}
@@ -56,11 +56,11 @@ func TestABrokenProjectFileIsRefusedAtItsLine(t *testing.T) {
 // does not hold to its schema is.
 func TestAProjectFileThatIsNotYAMLIsRefused(t *testing.T) {
 	root := t.TempDir()
-	semiont := filepath.Join(root, ".semiont")
-	if err := os.MkdirAll(semiont, 0o755); err != nil {
+	xynolog := filepath.Join(root, ".xynolog")
+	if err := os.MkdirAll(xynolog, 0o755); err != nil {
 		t.Fatal(err)
 	}
-	if err := os.WriteFile(filepath.Join(semiont, projectFileYAML), []byte("project: [\n"), 0o644); err != nil {
+	if err := os.WriteFile(filepath.Join(xynolog, projectFileYAML), []byte("project: [\n"), 0o644); err != nil {
 		t.Fatal(err)
 	}
 	if _, _, err := resolveRootArg(root); !projectFileRefused(err) || !strings.Contains(err.Error(), projectFileYAML) {

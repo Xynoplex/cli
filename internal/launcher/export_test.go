@@ -17,11 +17,11 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/Xynoplex/cli/internal/launcher/harness"
+	"github.com/xynolog/cli/internal/launcher/harness"
 )
 
 // fakeKB builds a KB root: content at natural paths, a committed-looking event
-// log, a .semiont/config.yaml, and a .git that must NOT ride along.
+// log, a .xynolog/config.yaml, and a .git that must NOT ride along.
 func fakeKB(t *testing.T) string {
 	t.Helper()
 	root := t.TempDir()
@@ -36,9 +36,9 @@ func fakeKB(t *testing.T) string {
 	}
 	write("docs/overview.md", "# Overview\n")
 	write("notes/thesis.md", "# Thesis\n")
-	write(".semiont/config.yaml", "project:\n  name: testkb\ngit:\n  sync: false\nsite:\n  domain: example.org\n  siteName: Test KB\n")
-	write(".semiont/events/res-1/events-000001.jsonl", `{"type":"yield:created"}`+"\n")
-	write(".semiont/events/__system__/events-000001.jsonl", `{"type":"frame:entity-type-added"}`+"\n")
+	write(".xynolog/config.yaml", "project:\n  name: testkb\ngit:\n  sync: false\nsite:\n  domain: example.org\n  siteName: Test KB\n")
+	write(".xynolog/events/res-1/events-000001.jsonl", `{"type":"yield:created"}`+"\n")
+	write(".xynolog/events/__system__/events-000001.jsonl", `{"type":"frame:entity-type-added"}`+"\n")
 	// The file-edit history. Excluded by default — the event log is the KB's
 	// history.
 	write(".git/HEAD", "ref: refs/heads/main\n")
@@ -84,9 +84,9 @@ func TestExportCarriesTheDurableKBAndExcludesGit(t *testing.T) {
 	for _, want := range []string{
 		"docs/overview.md",
 		"notes/thesis.md",
-		".semiont/config.yaml",
-		".semiont/events/res-1/events-000001.jsonl",
-		".semiont/events/__system__/events-000001.jsonl",
+		".xynolog/config.yaml",
+		".xynolog/events/res-1/events-000001.jsonl",
+		".xynolog/events/__system__/events-000001.jsonl",
 	} {
 		if !strings.Contains(got, want) {
 			t.Errorf("archive is missing %q; it holds:\n%s", want, got)
@@ -110,7 +110,7 @@ func TestExportFromInsideTheKBArchivesTheKBAlone(t *testing.T) {
 		t.Fatalf("export to a path outside the KB: exit %d", code)
 	}
 
-	t.Setenv("SEMIONT_ROOT", "")
+	t.Setenv("XYNOLOG_ROOT", "")
 	t.Chdir(root)
 	if code := Export(nil); code != 0 {
 		t.Fatalf("export inside the KB: exit %d", code)
@@ -191,7 +191,7 @@ func TestExportWithGitIncludesTheRepo(t *testing.T) {
 		}
 	}
 	// The durable KB is in BOTH — the flag adds, it never substitutes.
-	for _, always := range []string{".semiont/config.yaml", ".semiont/events/res-1/events-000001.jsonl", "docs/overview.md"} {
+	for _, always := range []string{".xynolog/config.yaml", ".xynolog/events/res-1/events-000001.jsonl", "docs/overview.md"} {
 		if !strings.Contains(withGit, always) || !strings.Contains(without, always) {
 			t.Errorf("%q must be in both archives", always)
 		}
@@ -223,10 +223,10 @@ func TestExportWritesAnAdvisoryMarker(t *testing.T) {
 	if code := Export([]string{"--root", root, "-o", out}); code != 0 {
 		t.Fatalf("export: exit %d", code)
 	}
-	if !strings.Contains(strings.Join(archiveEntries(t, out), "\n"), ".semiont/export.json") {
+	if !strings.Contains(strings.Join(archiveEntries(t, out), "\n"), ".xynolog/export.json") {
 		t.Error("no marker in the archive")
 	}
-	// It lives inside .semiont/ so it cannot collide with a KB's own content.
+	// It lives inside .xynolog/ so it cannot collide with a KB's own content.
 	for _, n := range archiveEntries(t, out) {
 		if n == "export.json" {
 			t.Error("marker sits at the archive root, where it could collide with content")
@@ -283,7 +283,7 @@ func TestExportRefusals(t *testing.T) {
 		{"root without a value", []string{"--root"}, "Missing value for --root"},
 		{"repo without a value", []string{"--repo"}, "Missing value for --repo"},
 		{"output without a value", []string{"-o"}, "Missing value for -o"},
-		{"root is not a KB", []string{"--root", os.TempDir()}, ".semiont"},
+		{"root is not a KB", []string{"--root", os.TempDir()}, ".xynolog"},
 	} {
 		t.Run(c.name, func(t *testing.T) {
 			_, errOut := harness.CaptureOutput(t, func() {

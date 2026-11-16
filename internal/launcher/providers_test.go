@@ -5,9 +5,9 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/Xynoplex/sdk/go/api"
+	"github.com/xynolog/sdk/go/api"
 
-	"github.com/Xynoplex/cli/internal/launcher/stack"
+	"github.com/xynolog/cli/internal/launcher/stack"
 )
 
 // assessingWith: the anthropic fixture with the `mark` jobs of assessing given

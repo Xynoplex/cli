@@ -10,9 +10,9 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/Xynoplex/sdk/go/api"
+	"github.com/xynolog/sdk/go/api"
 
-	"github.com/Xynoplex/cli/internal/launcher/stack"
+	"github.com/xynolog/cli/internal/launcher/stack"
 )
 
 // anthropicHaiku: Anthropic's haiku, as an engine.
@@ -178,10 +178,10 @@ func TestWorkerDocumentStatesWhatThePlacementDecides(t *testing.T) {
 	if kb.Identity.ClientId != serviceClientID("worker") {
 		t.Errorf("clientId = %q, want the shared worker's, %s", kb.Identity.ClientId, serviceClientID("worker"))
 	}
-	if doc.ModelCatalogue != "/usr/share/semiont/model-catalogue.json" {
+	if doc.ModelCatalogue != "/usr/share/xynolog/model-catalogue.json" {
 		t.Errorf("modelCatalogue = %q, want where the image carries it", doc.ModelCatalogue)
 	}
-	if doc.Port != semiontDescriptor("worker").ports[0].port {
+	if doc.Port != xynologDescriptor("worker").ports[0].port {
 		t.Errorf("port = %d, want the descriptor's", doc.Port)
 	}
 	if doc.LogLevel != api.LogLevelDebug || doc.LogFormat != api.LogFormatJson {
@@ -435,7 +435,7 @@ func TestWorkerDocumentIsWhereTheImageLooks(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	args := strings.Join(workerArgs("/state/shared/worker.json", exposure{rt: "container", addr: "1.2.3.4"}, "client-key", "v", semiontDescriptor("worker").mem, nil, nil), " ")
+	args := strings.Join(workerArgs("/state/shared/worker.json", exposure{rt: "container", addr: "1.2.3.4"}, "client-key", "v", xynologDescriptor("worker").mem, nil, nil), " ")
 	if want := "/state/shared/" + workerDocumentFile + ":" + workerDocumentTarget + ":ro"; !strings.Contains(args, want) {
 		t.Errorf("the worker's document is not mounted onto %s:\n%s", workerDocumentTarget, args)
 	}
@@ -444,13 +444,13 @@ func TestWorkerDocumentIsWhereTheImageLooks(t *testing.T) {
 			t.Errorf("the worker is handed %s, which it does not read:\n%s", unread, args)
 		}
 	}
-	if !strings.Contains(args, "SEMIONT_OIDC_CLIENT_KEY=client-key") {
+	if !strings.Contains(args, "XYNOLOG_OIDC_CLIENT_KEY=client-key") {
 		t.Errorf("the worker is not handed the worker key it signs in with:\n%s", args)
 	}
-	if strings.Contains(args, "SEMIONT_OIDC_CLIENT_SECRET") {
+	if strings.Contains(args, "XYNOLOG_OIDC_CLIENT_SECRET") {
 		t.Errorf("the worker is handed a secret; it proves itself with the worker key:\n%s", args)
 	}
-	if strings.Contains(args, "SEMIONT_OIDC_CLIENT_ID") {
+	if strings.Contains(args, "XYNOLOG_OIDC_CLIENT_ID") {
 		t.Errorf("the worker is handed a client id; each knowledge base's entry in its document names the client it signs in as there:\n%s", args)
 	}
 

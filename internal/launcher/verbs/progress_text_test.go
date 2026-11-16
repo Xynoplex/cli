@@ -13,7 +13,7 @@ import (
 	"encoding/json"
 	"testing"
 
-	"github.com/Xynoplex/sdk/go/api"
+	"github.com/xynolog/sdk/go/api"
 )
 
 func TestProgressTextCoversEveryCode(t *testing.T) {

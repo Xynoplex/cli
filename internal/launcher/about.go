@@ -25,9 +25,9 @@ func About(args []string) int {
 		}
 	}
 
-	fmt.Println(u.Bold("Xynoplex · xynolog"))
+	fmt.Println(u.Bold("Xynolog · xynolog"))
 	fmt.Println()
-	fmt.Println("Xynoplex's command-line tool for running and managing local Semiont stacks.")
+	fmt.Println("Xynolog's command-line tool for running and managing local Xynolog stacks.")
 	fmt.Println()
 
 	runtimes := "none found — install Apple container, Docker, or Podman"
@@ -38,16 +38,16 @@ func About(args []string) int {
 		fmt.Printf("  %s %s\n", u.Bold(fmt.Sprintf("%-9s", label)), value)
 	}
 	row("Version", fmt.Sprintf("%s %s", BuildVersion, u.Dim(fmt.Sprintf("(commit %s, built %s)", BuildCommit, BuildDate))))
-	row("Source", "https://github.com/Xynoplex/cli")
-	row("Issues", "https://github.com/Xynoplex/cli/issues")
+	row("Source", "https://github.com/xynolog/cli")
+	row("Issues", "https://github.com/xynolog/cli/issues")
 	row("Images", imageRegistry+" "+u.Dim("(each knowledge base's documents name the tags it runs)"))
 	row("License", "Apache-2.0")
 	row("Runtimes", runtimes)
 
 	fmt.Println()
-	fmt.Println(u.Dim("This launcher runs the local Semiont stack — graph (Neo4j), vectors"))
+	fmt.Println(u.Dim("This launcher runs the local Xynolog stack — graph (Neo4j), vectors"))
 	fmt.Println(u.Dim("(Qdrant), inference (Ollama), identity-store (PostgreSQL), traces"))
-	fmt.Println(u.Dim("(Jaeger), and the Semiont gateway, worker, smelter, weaver, and Browser —"))
+	fmt.Println(u.Dim("(Jaeger), and the Xynolog gateway, worker, smelter, weaver, and Browser —"))
 	fmt.Println(u.Dim("by driving your container runtime directly. Try: xynolog start --help"))
 	return 0
 }

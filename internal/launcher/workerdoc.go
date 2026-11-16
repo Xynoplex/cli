@@ -16,7 +16,7 @@ import (
 	"reflect"
 	"strings"
 
-	"github.com/Xynoplex/sdk/go/api"
+	"github.com/xynolog/sdk/go/api"
 )
 
 // workerDocumentFile: the worker is configured by a document, not a copy of
@@ -26,7 +26,7 @@ const workerDocumentFile = "worker.json"
 // workerDocumentTarget: where the worker reads that document — the path its
 // image passes to `--config`. TestConfigDocumentsAreWhereTheImagesLook holds
 // the two together.
-const workerDocumentTarget = "/etc/semiont/worker.json"
+const workerDocumentTarget = "/etc/xynolog/worker.json"
 
 // jobFilter: the filter naming one job of the engines' `jobs`, as a claim
 // states it: "mark.<motivation>" is the `mark` jobs of that motivation, and
@@ -81,7 +81,7 @@ func providerKeyName(p placement, provider api.EngineProvider) *string {
 // reads the file only for a provider whose own API leaves a model's facts
 // unsaid, and which those are is the service's to know, not the launcher's.
 // TestModelCatalogueIsWhereTheImagesCarryIt holds this to the two Dockerfiles.
-const modelCatalogueTarget = "/usr/share/semiont/model-catalogue.json"
+const modelCatalogueTarget = "/usr/share/xynolog/model-catalogue.json"
 
 // workerSecrets: the variables the worker's document names, and so the ones
 // the worker is handed — the key of each provider an engine names: this
@@ -182,7 +182,7 @@ func workerDocument(entries []api.WorkerKnowledgeBaseConfig, pool workerPoolDocu
 	var doc api.WorkerConfig
 	doc.KnowledgeBases = entries
 	doc.ModelCatalogue = modelCatalogueTarget
-	doc.Port = semiontDescriptor("worker").ports[0].port
+	doc.Port = xynologDescriptor("worker").ports[0].port
 	doc.LogLevel = pool.spec.LogLevel
 	doc.LogFormat = api.LogFormatJson
 	return json.MarshalIndent(doc, "", "  ")

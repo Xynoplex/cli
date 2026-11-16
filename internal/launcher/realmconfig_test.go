@@ -3,7 +3,7 @@ package launcher
 import (
 	"testing"
 
-	"github.com/Xynoplex/cli/internal/launcher/harness"
+	"github.com/xynolog/cli/internal/launcher/harness"
 )
 
 // The documented first run is `xynolog start` then `xynolog useradd`. It

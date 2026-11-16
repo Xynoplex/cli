@@ -11,11 +11,11 @@ import (
 	"sync"
 	"testing"
 
-	"github.com/Xynoplex/cli/internal/launcher/harness"
+	"github.com/xynolog/cli/internal/launcher/harness"
 )
 
 // The realm's ACCOUNT surface. `identitysync.go` reconciles clients,
-// mappers and realm settings; these four calls are the rest of what `semiont
+// mappers and realm settings; these four calls are the rest of what `xynolog
 // useradd` needs, so the launcher administers the realm through one client
 // instead of exec-ing a second one written in TypeScript.
 //
@@ -106,10 +106,10 @@ func TestFindUserByEmailAsksForAnExactMatch(t *testing.T) {
 	// `exact=true` or the realm answers substring matches: searching for
 	// "sam@x.co" would find "samantha@x.co" and useradd would update the
 	// wrong account.
-	s := newStubUsers(t, "semiont", []map[string]any{
+	s := newStubUsers(t, "xynolog", []map[string]any{
 		{"id": "abc-123", "email": "sam@x.co", "enabled": true},
 	})
-	u, err := findUserByEmail(s.srv.URL, "semiont", "admin-token", "sam@x.co")
+	u, err := findUserByEmail(s.srv.URL, "xynolog", "admin-token", "sam@x.co")
 	if err != nil {
 		t.Fatalf("find: %v", err)
 	}
@@ -125,8 +125,8 @@ func TestFindUserByEmailAsksForAnExactMatch(t *testing.T) {
 }
 
 func TestFindUserByEmailReportsAbsenceAsNilNotError(t *testing.T) {
-	s := newStubUsers(t, "semiont", []map[string]any{})
-	u, err := findUserByEmail(s.srv.URL, "semiont", "admin-token", "nobody@x.co")
+	s := newStubUsers(t, "xynolog", []map[string]any{})
+	u, err := findUserByEmail(s.srv.URL, "xynolog", "admin-token", "nobody@x.co")
 	if err != nil {
 		t.Fatalf("an empty realm is not an error: %v", err)
 	}
@@ -136,9 +136,9 @@ func TestFindUserByEmailReportsAbsenceAsNilNotError(t *testing.T) {
 }
 
 func TestFindUserByEmailReportsARefusal(t *testing.T) {
-	s := newStubUsers(t, "semiont", nil)
-	s.status["/admin/realms/semiont/users"] = http.StatusForbidden
-	if _, err := findUserByEmail(s.srv.URL, "semiont", "admin-token", "sam@x.co"); err == nil {
+	s := newStubUsers(t, "xynolog", nil)
+	s.status["/admin/realms/xynolog/users"] = http.StatusForbidden
+	if _, err := findUserByEmail(s.srv.URL, "xynolog", "admin-token", "sam@x.co"); err == nil {
 		t.Fatal("a 403 search was reported as success")
 	}
 }
@@ -146,7 +146,7 @@ func TestFindUserByEmailReportsARefusal(t *testing.T) {
 func TestListRealmUsersPagesAndSortsAccounts(t *testing.T) {
 	var pages []string
 	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		if r.Method != http.MethodGet || r.URL.Path != "/admin/realms/semiont/users" {
+		if r.Method != http.MethodGet || r.URL.Path != "/admin/realms/xynolog/users" {
 			t.Errorf("unexpected request: %s %s", r.Method, r.URL)
 		}
 		pages = append(pages, r.URL.Query().Get("first"))
@@ -168,7 +168,7 @@ func TestListRealmUsersPagesAndSortsAccounts(t *testing.T) {
 	}))
 	defer srv.Close()
 
-	users, err := listRealmUsers(srv.URL, "semiont", "admin-token")
+	users, err := listRealmUsers(srv.URL, "xynolog", "admin-token")
 	if err != nil {
 		t.Fatalf("list: %v", err)
 	}
@@ -188,7 +188,7 @@ func TestListRealmUsersPagesAndSortsAccounts(t *testing.T) {
 
 func TestListRealmUsersReportsFailures(t *testing.T) {
 	t.Run("invalid URL", func(t *testing.T) {
-		if _, err := listRealmUsers("http://[::1", "semiont", "token"); err == nil {
+		if _, err := listRealmUsers("http://[::1", "xynolog", "token"); err == nil {
 			t.Fatal("invalid request URL succeeded")
 		}
 	})
@@ -196,21 +196,21 @@ func TestListRealmUsersReportsFailures(t *testing.T) {
 		srv := httptest.NewServer(http.HandlerFunc(func(http.ResponseWriter, *http.Request) {}))
 		url := srv.URL
 		srv.Close()
-		if _, err := listRealmUsers(url, "semiont", "token"); err == nil || !strings.Contains(err.Error(), "listing accounts") {
+		if _, err := listRealmUsers(url, "xynolog", "token"); err == nil || !strings.Contains(err.Error(), "listing accounts") {
 			t.Fatalf("error = %v, want transport error", err)
 		}
 	})
 	t.Run("HTTP refusal", func(t *testing.T) {
 		srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) { w.WriteHeader(http.StatusForbidden) }))
 		defer srv.Close()
-		if _, err := listRealmUsers(srv.URL, "semiont", "token"); err == nil || !strings.Contains(err.Error(), "HTTP 403") {
+		if _, err := listRealmUsers(srv.URL, "xynolog", "token"); err == nil || !strings.Contains(err.Error(), "HTTP 403") {
 			t.Fatalf("error = %v, want HTTP 403", err)
 		}
 	})
 	t.Run("invalid response", func(t *testing.T) {
 		srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) { _, _ = io.WriteString(w, "not-json") }))
 		defer srv.Close()
-		if _, err := listRealmUsers(srv.URL, "semiont", "token"); err == nil || !strings.Contains(err.Error(), "returned no list") {
+		if _, err := listRealmUsers(srv.URL, "xynolog", "token"); err == nil || !strings.Contains(err.Error(), "returned no list") {
 			t.Fatalf("error = %v, want decode error", err)
 		}
 	})
@@ -222,8 +222,8 @@ func TestCreateUserSetsTheClaimsSignInRequires(t *testing.T) {
 	// administrator just granted. temporary:false: the password the
 	// administrator set is the one that works, with no reset step on top of
 	// the profile form the realm already asks for.
-	s := newStubUsers(t, "semiont", nil)
-	id, err := createUser(s.srv.URL, "semiont", "admin-token", "sam@x.co", "hunter2hunter2", true)
+	s := newStubUsers(t, "xynolog", nil)
+	id, err := createUser(s.srv.URL, "xynolog", "admin-token", "sam@x.co", "hunter2hunter2", true)
 	if err != nil {
 		t.Fatalf("create: %v", err)
 	}
@@ -253,10 +253,10 @@ func TestCreateUserSetsTheClaimsSignInRequires(t *testing.T) {
 }
 
 func TestCreateUserNamesTheConflict(t *testing.T) {
-	s := newStubUsers(t, "semiont", nil)
-	s.status["/admin/realms/semiont/users"] = http.StatusConflict
+	s := newStubUsers(t, "xynolog", nil)
+	s.status["/admin/realms/xynolog/users"] = http.StatusConflict
 	err := func() error {
-		_, e := createUser(s.srv.URL, "semiont", "admin-token", "sam@x.co", "pw", true)
+		_, e := createUser(s.srv.URL, "xynolog", "admin-token", "sam@x.co", "pw", true)
 		return e
 	}()
 	if err == nil {
@@ -268,11 +268,11 @@ func TestCreateUserNamesTheConflict(t *testing.T) {
 }
 
 func TestSetUserPasswordIsNotTemporary(t *testing.T) {
-	s := newStubUsers(t, "semiont", nil)
-	if err := setUserPassword(s.srv.URL, "semiont", "admin-token", "abc-123", "newpassword1"); err != nil {
+	s := newStubUsers(t, "xynolog", nil)
+	if err := setUserPassword(s.srv.URL, "xynolog", "admin-token", "abc-123", "newpassword1"); err != nil {
 		t.Fatalf("setPassword: %v", err)
 	}
-	body, _ := s.puts["/admin/realms/semiont/users/abc-123/reset-password"].(map[string]any)
+	body, _ := s.puts["/admin/realms/xynolog/users/abc-123/reset-password"].(map[string]any)
 	if body == nil {
 		t.Fatalf("no reset-password PUT; saw %v", s.requests)
 	}
@@ -285,11 +285,11 @@ func TestSetUserEnabledGoesBothWays(t *testing.T) {
 	// A control with no way back is one administrators avoid using: whatever
 	// can disable an account must be able to restore it.
 	for _, want := range []bool{false, true} {
-		s := newStubUsers(t, "semiont", nil)
-		if err := setUserEnabled(s.srv.URL, "semiont", "admin-token", "abc-123", want); err != nil {
+		s := newStubUsers(t, "xynolog", nil)
+		if err := setUserEnabled(s.srv.URL, "xynolog", "admin-token", "abc-123", want); err != nil {
 			t.Fatalf("setEnabled(%v): %v", want, err)
 		}
-		body, _ := s.puts["/admin/realms/semiont/users/abc-123"].(map[string]any)
+		body, _ := s.puts["/admin/realms/xynolog/users/abc-123"].(map[string]any)
 		if body == nil {
 			t.Fatalf("no PUT for enabled=%v; saw %v", want, s.requests)
 		}
@@ -300,9 +300,9 @@ func TestSetUserEnabledGoesBothWays(t *testing.T) {
 }
 
 func TestUserCallsReportARefusedPut(t *testing.T) {
-	s := newStubUsers(t, "semiont", nil)
-	s.status["/admin/realms/semiont/users/abc-123"] = http.StatusUnauthorized
-	if err := setUserEnabled(s.srv.URL, "semiont", "admin-token", "abc-123", false); err == nil {
+	s := newStubUsers(t, "xynolog", nil)
+	s.status["/admin/realms/xynolog/users/abc-123"] = http.StatusUnauthorized
+	if err := setUserEnabled(s.srv.URL, "xynolog", "admin-token", "abc-123", false); err == nil {
 		t.Fatal("a 401 PUT was reported as success")
 	}
 	_ = fmt.Sprint(s.requests)
@@ -315,21 +315,21 @@ func TestUserCallsReportARefusedPut(t *testing.T) {
 
 func applyAgainst(t *testing.T, s *stubUsers, o useraddOpts, password string) int {
 	t.Helper()
-	_, code := applyUseradd(NewUI(false), realmAdmin{base: s.srv.URL, realm: "semiont", token: "admin-token", domain: "kb.example", subjectClaim: "sub"}, o, password)
+	_, code := applyUseradd(NewUI(false), realmAdmin{base: s.srv.URL, realm: "xynolog", token: "admin-token", domain: "kb.example", subjectClaim: "sub"}, o, password)
 	return code
 }
 
 // The account block names the identity the person will act under — the DID the
 // gateway builds from the claim identity.subjectClaim names — rather than the
-// realm's bare account id, which nothing else in Semiont shows.
+// realm's bare account id, which nothing else in Xynolog shows.
 func TestUseraddNamesTheIdentityItCreated(t *testing.T) {
 	for _, c := range []struct{ claim, want string }{
 		{"sub", "did:web:kb.example:users:new-user-uuid"},
 		{"email", "did:web:kb.example:users:sam%40x.co"},
 		{"preferred_username", "did:web:kb.example:users:sam%40x.co"},
 	} {
-		s := newStubUsers(t, "semiont", []map[string]any{})
-		result, code := applyUseradd(NewUI(false), realmAdmin{base: s.srv.URL, realm: "semiont", token: "admin-token", domain: "kb.example", subjectClaim: c.claim}, useraddOpts{email: "sam@x.co"}, "hunter2hunter2")
+		s := newStubUsers(t, "xynolog", []map[string]any{})
+		result, code := applyUseradd(NewUI(false), realmAdmin{base: s.srv.URL, realm: "xynolog", token: "admin-token", domain: "kb.example", subjectClaim: c.claim}, useraddOpts{email: "sam@x.co"}, "hunter2hunter2")
 		if code != 0 || !result.created {
 			t.Fatalf("%s: create: exit %d, created %v", c.claim, code, result.created)
 		}
@@ -361,7 +361,7 @@ func TestUseraddNextStepsNameTheSelectedStack(t *testing.T) {
 }
 
 func TestUseraddCreatesWhenTheRealmHoldsNothing(t *testing.T) {
-	s := newStubUsers(t, "semiont", []map[string]any{})
+	s := newStubUsers(t, "xynolog", []map[string]any{})
 	if code := applyAgainst(t, s, useraddOpts{email: "sam@x.co"}, "hunter2hunter2"); code != 0 {
 		t.Fatalf("create: exit %d", code)
 	}
@@ -374,7 +374,7 @@ func TestUseraddCreatesWhenTheRealmHoldsNothing(t *testing.T) {
 }
 
 func TestUseraddInactiveCreatesDisabled(t *testing.T) {
-	s := newStubUsers(t, "semiont", []map[string]any{})
+	s := newStubUsers(t, "xynolog", []map[string]any{})
 	if code := applyAgainst(t, s, useraddOpts{email: "sam@x.co", inactive: true}, "hunter2hunter2"); code != 0 {
 		t.Fatalf("create --inactive: exit %d", code)
 	}
@@ -387,8 +387,8 @@ func TestUseraddInactiveCreatesDisabled(t *testing.T) {
 // password, sets it, and shows it once. A flag parsed and never read would
 // refuse every such call with "Password required".
 func TestUseraddGeneratesAPasswordForACreate(t *testing.T) {
-	s := newStubUsers(t, "semiont", []map[string]any{})
-	result, code := applyUseradd(NewUI(false), realmAdmin{base: s.srv.URL, realm: "semiont", token: "admin-token", domain: "kb.example", subjectClaim: "sub"}, useraddOpts{email: "sam@x.co", generate: true}, "")
+	s := newStubUsers(t, "xynolog", []map[string]any{})
+	result, code := applyUseradd(NewUI(false), realmAdmin{base: s.srv.URL, realm: "xynolog", token: "admin-token", domain: "kb.example", subjectClaim: "sub"}, useraddOpts{email: "sam@x.co", generate: true}, "")
 	out := harness.CaptureStdout(t, func() { printUseraddResult(NewUI(false), result, useraddOpts{email: "sam@x.co", generate: true}) })
 	if code != 0 {
 		t.Fatalf("create --generate-password: exit %d\n%s", code, out)
@@ -407,14 +407,14 @@ func TestUseraddGeneratesAPasswordForACreate(t *testing.T) {
 }
 
 func TestUseraddGeneratesAPasswordForAnUpdate(t *testing.T) {
-	s := newStubUsers(t, "semiont", []map[string]any{{"id": "abc-123", "email": "sam@x.co"}})
+	s := newStubUsers(t, "xynolog", []map[string]any{{"id": "abc-123", "email": "sam@x.co"}})
 	o := useraddOpts{email: "sam@x.co", update: true, generate: true}
-	result, code := applyUseradd(NewUI(false), realmAdmin{base: s.srv.URL, realm: "semiont", token: "admin-token", domain: "kb.example", subjectClaim: "sub"}, o, "")
+	result, code := applyUseradd(NewUI(false), realmAdmin{base: s.srv.URL, realm: "xynolog", token: "admin-token", domain: "kb.example", subjectClaim: "sub"}, o, "")
 	out := harness.CaptureStdout(t, func() { printUseraddResult(NewUI(false), result, o) })
 	if code != 0 {
 		t.Fatalf("update --generate-password: exit %d\n%s", code, out)
 	}
-	body, _ := s.puts["/admin/realms/semiont/users/abc-123/reset-password"].(map[string]any)
+	body, _ := s.puts["/admin/realms/xynolog/users/abc-123/reset-password"].(map[string]any)
 	pw, _ := body["value"].(string)
 	if len(pw) != 16 {
 		t.Fatalf("reset-password body %v: want a generated 16-character value", body)
@@ -425,7 +425,7 @@ func TestUseraddGeneratesAPasswordForAnUpdate(t *testing.T) {
 }
 
 func TestUseraddRefusesToCreateWithoutAPassword(t *testing.T) {
-	s := newStubUsers(t, "semiont", []map[string]any{})
+	s := newStubUsers(t, "xynolog", []map[string]any{})
 	if code := applyAgainst(t, s, useraddOpts{email: "sam@x.co"}, ""); code != 1 {
 		t.Fatalf("a create with no password should refuse, got %d", code)
 	}
@@ -435,7 +435,7 @@ func TestUseraddRefusesToCreateWithoutAPassword(t *testing.T) {
 }
 
 func TestUseraddUpsertIsSilentWhenTheAccountExists(t *testing.T) {
-	s := newStubUsers(t, "semiont", []map[string]any{{"id": "abc-123", "email": "sam@x.co"}})
+	s := newStubUsers(t, "xynolog", []map[string]any{{"id": "abc-123", "email": "sam@x.co"}})
 	if code := applyAgainst(t, s, useraddOpts{email: "sam@x.co", upsert: true}, ""); code != 0 {
 		t.Fatalf("upsert over an existing account should succeed, got %d", code)
 	}
@@ -447,7 +447,7 @@ func TestUseraddUpsertIsSilentWhenTheAccountExists(t *testing.T) {
 func TestUseraddRefusesAnUnflaggedCollision(t *testing.T) {
 	// Without --update or --upsert, an existing account is an error: the
 	// alternative is silently rewriting someone's password.
-	s := newStubUsers(t, "semiont", []map[string]any{{"id": "abc-123", "email": "sam@x.co"}})
+	s := newStubUsers(t, "xynolog", []map[string]any{{"id": "abc-123", "email": "sam@x.co"}})
 	if code := applyAgainst(t, s, useraddOpts{email: "sam@x.co"}, "newpassword1"); code != 1 {
 		t.Fatalf("a collision should refuse, got %d", code)
 	}
@@ -457,7 +457,7 @@ func TestUseraddRefusesAnUnflaggedCollision(t *testing.T) {
 }
 
 func TestUseraddUpdateRefusesAnAbsentAccount(t *testing.T) {
-	s := newStubUsers(t, "semiont", []map[string]any{})
+	s := newStubUsers(t, "xynolog", []map[string]any{})
 	if code := applyAgainst(t, s, useraddOpts{email: "sam@x.co", update: true}, "newpassword1"); code != 1 {
 		t.Fatalf("--update on an absent account should refuse, got %d", code)
 	}
@@ -470,28 +470,28 @@ func TestUseraddUpdateTouchesOnlyWhatTheFlagsName(t *testing.T) {
 	// No --active/--inactive means the account's sign-in state is not this
 	// command's business: an operator changing a password must not silently
 	// re-enable someone who was disabled.
-	s := newStubUsers(t, "semiont", []map[string]any{{"id": "abc-123", "email": "sam@x.co", "enabled": false}})
+	s := newStubUsers(t, "xynolog", []map[string]any{{"id": "abc-123", "email": "sam@x.co", "enabled": false}})
 	if code := applyAgainst(t, s, useraddOpts{email: "sam@x.co", update: true}, "newpassword1"); code != 0 {
 		t.Fatalf("update: exit %d", code)
 	}
-	if _, wrote := s.puts["/admin/realms/semiont/users/abc-123/reset-password"]; !wrote {
+	if _, wrote := s.puts["/admin/realms/xynolog/users/abc-123/reset-password"]; !wrote {
 		t.Error("the password was not set")
 	}
-	if _, wrote := s.puts["/admin/realms/semiont/users/abc-123"]; wrote {
+	if _, wrote := s.puts["/admin/realms/xynolog/users/abc-123"]; wrote {
 		t.Error("an update with no --active/--inactive changed the account's enabled state")
 	}
 }
 
 func TestUseraddActiveRestoresADisabledAccount(t *testing.T) {
-	s := newStubUsers(t, "semiont", []map[string]any{{"id": "abc-123", "email": "sam@x.co", "enabled": false}})
+	s := newStubUsers(t, "xynolog", []map[string]any{{"id": "abc-123", "email": "sam@x.co", "enabled": false}})
 	if code := applyAgainst(t, s, useraddOpts{email: "sam@x.co", update: true, active: true}, ""); code != 0 {
 		t.Fatalf("update --active: exit %d", code)
 	}
-	body, _ := s.puts["/admin/realms/semiont/users/abc-123"].(map[string]any)
+	body, _ := s.puts["/admin/realms/xynolog/users/abc-123"].(map[string]any)
 	if body == nil || body["enabled"] != true {
 		t.Errorf("--active did not enable the account: %v", body)
 	}
-	if _, wrote := s.puts["/admin/realms/semiont/users/abc-123/reset-password"]; wrote {
+	if _, wrote := s.puts["/admin/realms/xynolog/users/abc-123/reset-password"]; wrote {
 		t.Error("an update with no password reset one anyway")
 	}
 }

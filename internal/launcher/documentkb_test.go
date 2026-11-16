@@ -9,7 +9,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/Xynoplex/sdk/go/api"
+	"github.com/xynolog/sdk/go/api"
 )
 
 // namesItsKB: whether a service's document names the knowledge base it serves —
@@ -44,7 +44,7 @@ func TestEveryDocumentThatNamesItsKBNamesTheGatewaysKB(t *testing.T) {
 	if !naming["gateway"] {
 		t.Fatal("the gateway's schema has no kb: this census compares every document with the gateway's")
 	}
-	committed, err := os.ReadFile(filepath.Join(fixtureRoot, ".semiont", projectFileYAML))
+	committed, err := os.ReadFile(filepath.Join(fixtureRoot, ".xynolog", projectFileYAML))
 	if err != nil {
 		t.Fatal(err)
 	}

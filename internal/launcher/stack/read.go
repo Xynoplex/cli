@@ -1,6 +1,6 @@
 // Package stack reads the launcher's documents: a knowledge base's, the kinds
-// of its stack, committed in .semiont/stack/, and its project file,
-// .semiont/config.yaml; and the Browser's, which belongs to no knowledge base
+// of its stack, committed in .xynolog/stack/, and its project file,
+// .xynolog/config.yaml; and the Browser's, which belongs to no knowledge base
 // and is kept in the launcher's state home.
 //
 // A document is held to its schema in protocol/specs/src/stack/ or

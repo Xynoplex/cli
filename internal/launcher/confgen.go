@@ -21,9 +21,9 @@ import (
 	"sort"
 	"strings"
 
-	"github.com/Xynoplex/sdk/go/api"
+	"github.com/xynolog/sdk/go/api"
 
-	"github.com/Xynoplex/cli/internal/launcher/stack"
+	"github.com/xynolog/cli/internal/launcher/stack"
 )
 
 type genParams struct {
@@ -65,7 +65,7 @@ func limits(mem string) stack.Resources {
 const initKnowledgeBase = "knowledge-base"
 
 // generateStack: the documents `xynolog init` writes, each as YAML, by its
-// path below .semiont/stack — the two the knowledge base shares, and the
+// path below .xynolog/stack — the two the knowledge base shares, and the
 // Inference document named name. Its issuer and its vector store are the
 // machine's, whose documents the state home keeps (issuerdoc.go,
 // vectorsdoc.go).
@@ -76,7 +76,7 @@ func generateStack(p genParams, name string) (map[string][]byte, error) {
 		return &image, &resources
 	}
 	service := func(svc string) (string, stack.Resources) {
-		return semiontImage(svc, "latest"), limits(semiontDescriptor(svc).mem)
+		return xynologImage(svc, "latest"), limits(xynologDescriptor(svc).mem)
 	}
 	meta := func(kind, name string) (string, string, stack.Metadata) {
 		return stack.APIVersion, kind, stack.Metadata{Name: name}
@@ -162,13 +162,13 @@ func generateStack(p genParams, name string) (map[string][]byte, error) {
 	return out, nil
 }
 
-// writeVettedStack writes documents into root's .semiont/stack — but only
+// writeVettedStack writes documents into root's .xynolog/stack — but only
 // after the REAL loader and deriver accept them: they land in a temporary
 // tree, stack.Load + derivePlan judge it once for each Inference document,
 // and only success writes them in place. The same gate template copies pass
 // through: no path may write documents this launcher cannot start.
 func writeVettedStack(u *UI, root string, files map[string][]byte) bool {
-	vet, err := os.MkdirTemp("", "semiont-vet-*")
+	vet, err := os.MkdirTemp("", "xynolog-vet-*")
 	if err != nil {
 		u.Fail("Vetting the documents: %v", err)
 		return false
@@ -217,7 +217,7 @@ func writeVettedStack(u *UI, root string, files map[string][]byte) bool {
 	return true
 }
 
-// writeStackFiles writes each document below root's .semiont/stack. A path
+// writeStackFiles writes each document below root's .xynolog/stack. A path
 // that would leave it is refused.
 func writeStackFiles(root string, files map[string][]byte) error {
 	dir := filepath.Join(root, stack.Dir)

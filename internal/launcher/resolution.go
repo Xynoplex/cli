@@ -168,7 +168,7 @@ Providers (the URI scheme picks one):
 Examples:
   xynolog settings secret set ANTHROPIC_API_KEY
   xynolog settings secret set ANTHROPIC_API_KEY op://OSS/Anthropic/credential
-  xynolog settings secret push ANTHROPIC_API_KEY --repo The-AI-Alliance/my-kb
+  xynolog settings secret push ANTHROPIC_API_KEY --repo your-org/my-kb
   xynolog settings secret rm ANTHROPIC_API_KEY
 `
 }

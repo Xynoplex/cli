@@ -45,10 +45,10 @@ import (
 	"testing"
 	"time"
 
-	"github.com/Xynoplex/cli/internal/launcher/harness"
+	"github.com/xynolog/cli/internal/launcher/harness"
 
-	xynoplex "github.com/Xynoplex/sdk/go"
-	"github.com/Xynoplex/sdk/go/api"
+	xynolog "github.com/xynolog/sdk/go"
+	"github.com/xynolog/sdk/go/api"
 )
 
 var updateGoldens = flag.Bool("update-goldens", false, "rewrite golden files from observed output")
@@ -68,7 +68,7 @@ var (
 // import path.
 var libraries = filepath.Join("..", "..", "internal", "launcher")
 
-const librariesImportPath = "github.com/Xynoplex/cli/internal/launcher"
+const librariesImportPath = "github.com/xynolog/cli/internal/launcher"
 
 // libraryTestdata: a file of the launcher libraries' testdata: the fixture
 // knowledge base (kb/) and the goldens (golden/).
@@ -156,7 +156,7 @@ func shimDir(t *testing.T, runtimes ...string) string {
 }
 
 // fixtureDocuments: the fixture knowledge base's committed files, below its
-// .semiont — its project file and its stack's documents.
+// .xynolog — its project file and its stack's documents.
 var fixtureDocuments = []string{
 	"config.yaml",
 	"stack/knowledge-base.yaml", "stack/index.yaml",
@@ -168,11 +168,11 @@ func mkKB(t *testing.T) string {
 	t.Helper()
 	root := t.TempDir()
 	for _, name := range fixtureDocuments {
-		b, err := os.ReadFile(libraryTestdata("kb", ".semiont", filepath.FromSlash(name)))
+		b, err := os.ReadFile(libraryTestdata("kb", ".xynolog", filepath.FromSlash(name)))
 		if err != nil {
 			t.Fatal(err)
 		}
-		target := filepath.Join(root, ".semiont", filepath.FromSlash(name))
+		target := filepath.Join(root, ".xynolog", filepath.FromSlash(name))
 		if err := os.MkdirAll(filepath.Dir(target), 0o755); err != nil {
 			t.Fatal(err)
 		}
@@ -237,18 +237,18 @@ func (s *scenario) stagingParent() string {
 
 // stagingPattern: every staging dir under it, as the launcher prints it.
 func (s *scenario) stagingPattern() string {
-	return filepath.Join(s.stagingParent(), "semiont-config.*")
+	return filepath.Join(s.stagingParent(), "xynolog-config.*")
 }
 
-// stageRe matches one staging dir: semiont-config.<kb key>.<MkdirTemp's digits>.
+// stageRe matches one staging dir: xynolog-config.<kb key>.<MkdirTemp's digits>.
 func (s *scenario) stageRe() *regexp.Regexp {
-	return regexp.MustCompile(regexp.QuoteMeta(filepath.Join(s.stagingParent(), "semiont-config.")) + `[A-Za-z0-9._-]+\.[0-9]+`)
+	return regexp.MustCompile(regexp.QuoteMeta(filepath.Join(s.stagingParent(), "xynolog-config.")) + `[A-Za-z0-9._-]+\.[0-9]+`)
 }
 
 // stageOf: a staging dir as a start of the test KB makes one.
 func (s *scenario) stageOf(t *testing.T) string {
 	t.Helper()
-	stage, err := os.MkdirTemp(s.stagingParent(), "semiont-config."+testKBKey+".")
+	stage, err := os.MkdirTemp(s.stagingParent(), "xynolog-config."+testKBKey+".")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -259,7 +259,7 @@ func (s *scenario) stageOf(t *testing.T) string {
 // as its site, so its DID, its stores and its realm's audience are its own.
 func withDomain(t *testing.T, root, domain string) {
 	t.Helper()
-	path := filepath.Join(root, ".semiont", "config.yaml")
+	path := filepath.Join(root, ".xynolog", "config.yaml")
 	b, err := os.ReadFile(path)
 	if err != nil {
 		t.Fatal(err)
@@ -273,17 +273,17 @@ func withDomain(t *testing.T, root, domain string) {
 	}
 }
 
-// remoteProjectFile: a codespace's .semiont/config.yaml declaring domain, as
+// remoteProjectFile: a codespace's .xynolog/config.yaml declaring domain, as
 // the fake runtime answers a `cat` of it over ssh.
 func remoteProjectFile(domain string) string {
 	return "project:\n  name: remote-kb\ngit:\n  sync: true\nsite:\n  domain: " + domain + "\n  siteName: Remote KB\n"
 }
 
 // writeDocument writes text as the scenario's document at path, below its
-// .semiont/stack ("index.yaml", "inference/broker.yaml").
+// .xynolog/stack ("index.yaml", "inference/broker.yaml").
 func writeDocument(t *testing.T, s *scenario, path, text string) {
 	t.Helper()
-	target := filepath.Join(s.kb, ".semiont", "stack", filepath.FromSlash(path))
+	target := filepath.Join(s.kb, ".xynolog", "stack", filepath.FromSlash(path))
 	if err := os.MkdirAll(filepath.Dir(target), 0o755); err != nil {
 		t.Fatal(err)
 	}
@@ -293,10 +293,10 @@ func writeDocument(t *testing.T, s *scenario, path, text string) {
 }
 
 // fixtureDocument: the text of the fixture's document at path, below its
-// .semiont/stack.
+// .xynolog/stack.
 func fixtureDocument(t *testing.T, path string) string {
 	t.Helper()
-	b, err := os.ReadFile(libraryTestdata("kb", ".semiont", "stack", filepath.FromSlash(path)))
+	b, err := os.ReadFile(libraryTestdata("kb", ".xynolog", "stack", filepath.FromSlash(path)))
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -451,7 +451,7 @@ func (s *scenario) env() []string {
 		// from this list gets a generated credential and its boot golden differs
 		// on the very next run.
 		for _, svc := range []string{"archivist", "dispatcher", "gateway", "librarian", "smelter", "weaver"} {
-			env = append(env, "SEMIONT_OIDC_CLIENT_SECRET_"+strings.ToUpper(svc)+"=test-"+svc+"-client-secret")
+			env = append(env, "XYNOLOG_OIDC_CLIENT_SECRET_"+strings.ToUpper(svc)+"=test-"+svc+"-client-secret")
 		}
 	}
 	// Pinned because a generated one is random, and the boot goldens compare
@@ -611,15 +611,15 @@ func (s *scenario) norm(text string) string {
 	// this placeholder too (executor.go), so live and dry-run goldens
 	// agree on the one line that cannot be a literal.
 	out = keycloakAdminPwRe.ReplaceAllString(out, "KC_BOOTSTRAP_ADMIN_PASSWORD=<keycloak-admin-password>")
-	// A Semiont image runs by the digest its attestation is of. The fake
+	// A Xynolog image runs by the digest its attestation is of. The fake
 	// authority derives it from the image's name, so it is stable, but it is
 	// not what a golden is about; plan mode renders the same placeholder.
 	out = verifiedDigestRe.ReplaceAllString(out, "${1}@sha256:<verified>")
 	return out
 }
 
-// verifiedDigestRe: the digest a verified Semiont image runs by.
-var verifiedDigestRe = regexp.MustCompile(`(/semiont-[a-z]+:[A-Za-z0-9._-]+)@sha256:[0-9a-f]{64}`)
+// verifiedDigestRe: the digest a verified Xynolog image runs by.
+var verifiedDigestRe = regexp.MustCompile(`(/xynolog-[a-z]+:[A-Za-z0-9._-]+)@sha256:[0-9a-f]{64}`)
 
 // inJSON: a path as it reads inside a JSON string, where Windows' separator
 // is written twice.
@@ -836,7 +836,7 @@ func TestStartDefaultBoot(t *testing.T) {
 	// container in the record.
 	rec, _ := os.ReadFile(statePathFor(s.home))
 	mustContain(t, "stack.json", string(rec), `"embedding"`)
-	if strings.Contains(string(rec), `"container": "semiont-embedding"`) {
+	if strings.Contains(string(rec), `"container": "xynolog-embedding"`) {
 		t.Errorf("embedding recorded a container it does not own:\n%s", rec)
 	}
 	// An ollama embedding is served by the SAME Ollama the inference role
@@ -861,7 +861,7 @@ func TestStartDefaultBoot(t *testing.T) {
 	mustContain(t, "stdout", stdout,
 		"KB: Test Knowledge Base did:web:example.github.io:test-kb",
 		"No prior containers",
-		"🚀 Semiont stack is up",
+		"🚀 Xynolog stack is up",
 		"http://localhost:3000",
 		"http://localhost:4000",
 		"http://localhost:7474",
@@ -881,11 +881,11 @@ func TestStartDefaultBoot(t *testing.T) {
 	if strings.Contains(stdout, "test-gateway-client-secret") || strings.Contains(s.argv(t), "test-gateway-client-secret") {
 		t.Error("a service-account secret reached stdout or a command line")
 	}
-	mustContain(t, "stdout", stdout, "--env SEMIONT_OIDC_CLIENT_SECRET ")
+	mustContain(t, "stdout", stdout, "--env XYNOLOG_OIDC_CLIENT_SECRET ")
 }
 
 // The launcher half of the split supervision gate: local runs pass the
-// SEMIONT_SUPERVISE opt-in (the image half, that every image can be
+// XYNOLOG_SUPERVISE opt-in (the image half, that every image can be
 // supervised, is images/scripts/audit-supervision.sh). Published images
 // run their CMD directly — supervision is a per-run opt-in, and LOCAL
 // placement is the one place with no orchestrator restart policy, so the
@@ -903,7 +903,7 @@ func TestStartOptsEveryServiceIntoSupervision(t *testing.T) {
 		for _, svc := range []string{"gateway", "worker", "smelter", "weaver", "archivist", "librarian", "browser"} {
 			if strings.Contains(line, " --name "+containerOf(svc)+" ") {
 				seen[svc] = true
-				mustContain(t, containerOf(svc)+" run argv", line, "--env SEMIONT_SUPERVISE=1")
+				mustContain(t, containerOf(svc)+" run argv", line, "--env XYNOLOG_SUPERVISE=1")
 			}
 		}
 	}
@@ -958,14 +958,14 @@ func TestHostProbeRefusalQuotesTheRuntime(t *testing.T) {
 // makes the second wait for the first, then run its own whole sequence.
 func TestConcurrentStartsOnOneRootQueue(t *testing.T) {
 	s := newScenario(t, "container")
-	s.extraEnv = append(s.extraEnv, "FAKERT_RUN_HOLD=semiont-example.github.io-test-kb-archivist")
+	s.extraEnv = append(s.extraEnv, "FAKERT_RUN_HOLD=xynolog-example.github.io-test-kb-archivist")
 	type result struct {
 		out  string
 		code int
 	}
 	first, second := make(chan result, 1), make(chan result, 1)
 	go func() { o, e, c := s.run(t, "start"); first <- result{o + e, c} }()
-	held := filepath.Join(s.fakertDir, "holding-semiont-example.github.io-test-kb-archivist")
+	held := filepath.Join(s.fakertDir, "holding-xynolog-example.github.io-test-kb-archivist")
 	for i := 0; i < 600; i++ {
 		if _, err := os.Stat(held); err == nil {
 			break
@@ -974,7 +974,7 @@ func TestConcurrentStartsOnOneRootQueue(t *testing.T) {
 	}
 	go func() { o, e, c := s.run(t, "start"); second <- result{o + e, c} }()
 	time.Sleep(3 * time.Second) // time enough to interleave, if it can
-	if err := os.WriteFile(filepath.Join(s.fakertDir, "release-semiont-example.github.io-test-kb-archivist"), nil, 0o644); err != nil {
+	if err := os.WriteFile(filepath.Join(s.fakertDir, "release-xynolog-example.github.io-test-kb-archivist"), nil, 0o644); err != nil {
 		t.Fatal(err)
 	}
 	r1, r2 := <-first, <-second
@@ -987,7 +987,7 @@ func TestConcurrentStartsOnOneRootQueue(t *testing.T) {
 	lines := strings.Split(s.argv(t), "\n")
 	firstWeaver, secondProbe, probes := -1, -1, 0
 	for i, l := range lines {
-		if firstWeaver < 0 && strings.Contains(l, "--name semiont-example.github.io-test-kb-weaver") {
+		if firstWeaver < 0 && strings.Contains(l, "--name xynolog-example.github.io-test-kb-weaver") {
 			firstWeaver = i
 		}
 		if strings.Contains(l, "ip route") {
@@ -1006,10 +1006,10 @@ func TestConcurrentStartsOnOneRootQueue(t *testing.T) {
 // already is — the record lists only what has started so far.
 func TestStatusRootSaysNotReadyWhileAStartRuns(t *testing.T) {
 	s := newScenario(t, "container")
-	s.extraEnv = append(s.extraEnv, "FAKERT_RUN_HOLD=semiont-example.github.io-test-kb-archivist")
+	s.extraEnv = append(s.extraEnv, "FAKERT_RUN_HOLD=xynolog-example.github.io-test-kb-archivist")
 	done := make(chan int, 1)
 	go func() { _, _, c := s.run(t, "start"); done <- c }()
-	held := filepath.Join(s.fakertDir, "holding-semiont-example.github.io-test-kb-archivist")
+	held := filepath.Join(s.fakertDir, "holding-xynolog-example.github.io-test-kb-archivist")
 	for i := 0; i < 600; i++ {
 		if _, err := os.Stat(held); err == nil {
 			break
@@ -1017,7 +1017,7 @@ func TestStatusRootSaysNotReadyWhileAStartRuns(t *testing.T) {
 		time.Sleep(100 * time.Millisecond)
 	}
 	_, stderr, code := s.run(t, "status", "--root", s.kb)
-	if err := os.WriteFile(filepath.Join(s.fakertDir, "release-semiont-example.github.io-test-kb-archivist"), nil, 0o644); err != nil {
+	if err := os.WriteFile(filepath.Join(s.fakertDir, "release-xynolog-example.github.io-test-kb-archivist"), nil, 0o644); err != nil {
 		t.Fatal(err)
 	}
 	if c := <-done; c != 0 {
@@ -1263,7 +1263,7 @@ func TestKeycloakPortIsTheIssuerDocuments(t *testing.T) {
 	s := newScenario(t, "container")
 	keycloakRun := func(argv string) string {
 		for _, line := range strings.Split(argv, "\n") {
-			if strings.Contains(line, "run -d --name semiont-keycloak ") {
+			if strings.Contains(line, "run -d --name xynolog-keycloak ") {
 				return line
 			}
 		}
@@ -1346,7 +1346,7 @@ func TestDockerAndPodmanNameTheIssuerKeycloakLocalhost(t *testing.T) {
 				// sign-in or its own start.
 				dialers := 0
 				for _, line := range strings.Split(s.argv(t), "\n") {
-					if !strings.Contains(line, "SEMIONT_OIDC_CLIENT_ID=") && !strings.Contains(line, "--env SEMIONT_OIDC_CLIENT_KEY") {
+					if !strings.Contains(line, "XYNOLOG_OIDC_CLIENT_ID=") && !strings.Contains(line, "--env XYNOLOG_OIDC_CLIENT_KEY") {
 						continue
 					}
 					dialers++
@@ -1355,7 +1355,7 @@ func TestDockerAndPodmanNameTheIssuerKeycloakLocalhost(t *testing.T) {
 					}
 				}
 				if dialers == 0 {
-					t.Fatal("no container carries SEMIONT_OIDC_CLIENT_ID or SEMIONT_OIDC_CLIENT_KEY — the scan matched nothing, so it proved nothing")
+					t.Fatal("no container carries XYNOLOG_OIDC_CLIENT_ID or XYNOLOG_OIDC_CLIENT_KEY — the scan matched nothing, so it proved nothing")
 				}
 				// The issuer is named in what each service is staged; the probe's
 				// answer still places every other daemon.
@@ -1538,19 +1538,19 @@ func TestTheSharedOllamaLifecycle(t *testing.T) {
 		t.Fatalf("first start: exit %d\nstdout:\n%s\nstderr:\n%s", code, stdout, stderr)
 	}
 	first := readSharedRecords(t, s)
-	ollama := first.Shared["semiont-ollama"]
-	if ollama == nil || ollama.Container != "semiont-ollama" || ollama.ID == "" || ollama.Runtime != "container" {
+	ollama := first.Shared["xynolog-ollama"]
+	if ollama == nil || ollama.Container != "xynolog-ollama" || ollama.ID == "" || ollama.Runtime != "container" {
 		t.Fatalf("no machine-level Ollama record naming its container, ID and runtime: %+v", ollama)
 	}
-	if ollama.Cache != "semiont-ollama-models" {
+	if ollama.Cache != "xynolog-ollama-models" {
 		t.Errorf("the record's cache is %q: want the named volume a home with no ~/.ollama gets", ollama.Cache)
 	}
 	if !slices.Equal(ollama.Ports, []int{11434}) {
 		t.Errorf("the record's ports are %v: want the 11434 its start required free", ollama.Ports)
 	}
 	inference := first.Stacks[localKey].Services["inference"]
-	if inference.Provided != "shared" || inference.Container != "semiont-ollama" || inference.ID != "" {
-		t.Errorf("the stack records inference as %+v: want provided by the shared semiont-ollama, with no ID of its own", inference)
+	if inference.Provided != "shared" || inference.Container != "xynolog-ollama" || inference.ID != "" {
+		t.Errorf("the stack records inference as %+v: want provided by the shared xynolog-ollama, with no ID of its own", inference)
 	}
 	// Ollama's port is shared, not among the stack's claims.
 	for _, p := range first.Stacks[localKey].Ports {
@@ -1572,14 +1572,14 @@ func TestTheSharedOllamaLifecycle(t *testing.T) {
 	fresh := strings.TrimPrefix(string(s.mustLog(t)), string(before))
 	mustContain(t, "keep message", stdout, "the shared Ollama already running")
 	if strings.Contains(stdout, "using host Ollama") {
-		t.Errorf("the re-run took the shared semiont-ollama for a host install:\n%s", stdout)
+		t.Errorf("the re-run took the shared xynolog-ollama for a host install:\n%s", stdout)
 	}
-	for _, churn := range []string{"rm semiont-ollama", "--name semiont-ollama"} {
+	for _, churn := range []string{"rm xynolog-ollama", "--name xynolog-ollama"} {
 		if strings.Contains(fresh, churn) {
 			t.Errorf("a current Ollama was churned (%q):\n%s", churn, fresh)
 		}
 	}
-	if kept := readSharedRecords(t, s).Shared["semiont-ollama"]; kept == nil || kept.ID != ollama.ID {
+	if kept := readSharedRecords(t, s).Shared["xynolog-ollama"]; kept == nil || kept.ID != ollama.ID {
 		t.Errorf("the kept Ollama's record changed: %+v, was %+v", kept, ollama)
 	}
 
@@ -1596,10 +1596,10 @@ func TestTheSharedOllamaLifecycle(t *testing.T) {
 	if _, stderr, code := s.run(t, "stop", "--service", "gateway"); code != 0 {
 		t.Fatalf("stop --service gateway: exit %d\nstderr:\n%s", code, stderr)
 	}
-	if fresh := strings.TrimPrefix(string(s.mustLog(t)), string(before)); strings.Contains(fresh, "semiont-ollama") || strings.Contains(fresh, ollama.ID) {
+	if fresh := strings.TrimPrefix(string(s.mustLog(t)), string(before)); strings.Contains(fresh, "xynolog-ollama") || strings.Contains(fresh, ollama.ID) {
 		t.Errorf("stopping the gateway touched the shared Ollama:\n%s", fresh)
 	}
-	if readSharedRecords(t, s).Shared["semiont-ollama"] == nil {
+	if readSharedRecords(t, s).Shared["xynolog-ollama"] == nil {
 		t.Errorf("stopping the gateway forgot the shared Ollama")
 	}
 
@@ -1611,8 +1611,8 @@ func TestTheSharedOllamaLifecycle(t *testing.T) {
 	}
 	fresh = strings.TrimPrefix(string(s.mustLog(t)), string(before))
 	hostCache := filepath.Join(s.home, ".ollama")
-	mustContain(t, "another cache's argv", fresh, "container rm semiont-ollama", "--name semiont-ollama", "-v "+hostCache+":/root/.ollama")
-	if moved := readSharedRecords(t, s).Shared["semiont-ollama"]; moved == nil || moved.Cache != hostCache {
+	mustContain(t, "another cache's argv", fresh, "container rm xynolog-ollama", "--name xynolog-ollama", "-v "+hostCache+":/root/.ollama")
+	if moved := readSharedRecords(t, s).Shared["xynolog-ollama"]; moved == nil || moved.Cache != hostCache {
 		t.Errorf("the restarted Ollama's record does not name the cache asked for: %+v", moved)
 	}
 
@@ -1627,7 +1627,7 @@ func TestTheSharedOllamaLifecycle(t *testing.T) {
 		t.Fatalf("stale-image start: exit %d\nstdout:\n%s\nstderr:\n%s", code, stdout, stderr)
 	}
 	fresh = strings.TrimPrefix(string(s.mustLog(t)), string(before))
-	mustContain(t, "stale image's argv", fresh, "container rm semiont-ollama", "--name semiont-ollama")
+	mustContain(t, "stale image's argv", fresh, "container rm xynolog-ollama", "--name xynolog-ollama")
 
 	// `start --service inference` is the explicit refresh: it restarts a
 	// current one.
@@ -1641,18 +1641,18 @@ func TestTheSharedOllamaLifecycle(t *testing.T) {
 		t.Fatalf("start --service inference: exit %d\nstdout:\n%s\nstderr:\n%s", code, stdout, stderr)
 	}
 	fresh = strings.TrimPrefix(string(s.mustLog(t)), string(before))
-	mustContain(t, "--service inference's argv", fresh, "container rm semiont-ollama", "--name semiont-ollama")
+	mustContain(t, "--service inference's argv", fresh, "container rm xynolog-ollama", "--name xynolog-ollama")
 
 	// Its dry run says so, from the record, and runs nothing.
-	restarted := readSharedRecords(t, s).Shared["semiont-ollama"]
+	restarted := readSharedRecords(t, s).Shared["xynolog-ollama"]
 	before = s.mustLog(t)
 	stdout, stderr, code = s.run(t, "stop", "--service", "inference", "--dry-run")
 	if code != 0 {
 		t.Fatalf("stop --service inference --dry-run: exit %d\nstderr:\n%s", code, stderr)
 	}
 	mustContain(t, "stop --service inference --dry-run", stdout, "# stop the shared Ollama:",
-		"container stop "+restarted.ID, "container stop semiont-ollama", "container rm semiont-ollama")
-	mustNotContain(t, "stop --service inference --dry-run", stdout, "semiont-example.github.io-test-kb-gateway")
+		"container stop "+restarted.ID, "container stop xynolog-ollama", "container rm xynolog-ollama")
+	mustNotContain(t, "stop --service inference --dry-run", stdout, "xynolog-example.github.io-test-kb-gateway")
 	if fresh := strings.TrimPrefix(string(s.mustLog(t)), string(before)); fresh != "" {
 		t.Errorf("a dry run ran:\n%s", fresh)
 	}
@@ -1666,11 +1666,11 @@ func TestTheSharedOllamaLifecycle(t *testing.T) {
 	}
 	mustContain(t, "stop --service inference", stdout, "Ollama stopped")
 	fresh = strings.TrimPrefix(string(s.mustLog(t)), string(before))
-	mustContain(t, "stop --service inference's argv", fresh, "container stop semiont-ollama", "container rm semiont-ollama")
-	if strings.Contains(fresh, "semiont-example.github.io-test-kb-gateway") {
+	mustContain(t, "stop --service inference's argv", fresh, "container stop xynolog-ollama", "container rm xynolog-ollama")
+	if strings.Contains(fresh, "xynolog-example.github.io-test-kb-gateway") {
 		t.Errorf("stop --service inference touched the stack:\n%s", fresh)
 	}
-	if after := readSharedRecords(t, s); after.Shared["semiont-ollama"] != nil || after.Stacks[localKey].Services["gateway"].Provided == "" {
+	if after := readSharedRecords(t, s); after.Shared["xynolog-ollama"] != nil || after.Stacks[localKey].Services["gateway"].Provided == "" {
 		t.Errorf("after stop --service inference: want no Ollama record and the stack's standing, got %+v", after)
 	}
 
@@ -1685,7 +1685,7 @@ func TestTheSharedOllamaLifecycle(t *testing.T) {
 	}
 	mustContain(t, "bare stop", stdout, "Ollama stopped", "Browser stopped")
 	fresh = strings.TrimPrefix(string(s.mustLog(t)), string(before))
-	mustContain(t, "bare stop's argv", fresh, "container stop semiont-ollama", "container rm semiont-ollama")
+	mustContain(t, "bare stop's argv", fresh, "container stop xynolog-ollama", "container rm xynolog-ollama")
 	if left, err := os.ReadFile(statePathFor(s.home)); !os.IsNotExist(err) {
 		t.Errorf("stack.json after a bare stop: %v\n%s", err, left)
 	}
@@ -1703,13 +1703,13 @@ func TestTheSharedTelemetryLifecycle(t *testing.T) {
 	}
 	first := readSharedRecords(t, s)
 	for name, ports := range map[string][]int{
-		"semiont-otel-collector": {4318, 24110}, "semiont-jaeger": {16686, 14318}, "semiont-prometheus": {9090},
+		"xynolog-otel-collector": {4318, 24110}, "xynolog-jaeger": {16686, 14318}, "xynolog-prometheus": {9090},
 	} {
 		if rec := first.Shared[name]; rec == nil || rec.ID == "" || rec.Runtime != "container" || !slices.Equal(rec.Ports, ports) {
 			t.Errorf("%s's shared record: %+v, want its ID, runtime container and ports %v", name, rec, ports)
 		}
 	}
-	for role, name := range map[string]string{"collector": "semiont-otel-collector", "traces": "semiont-jaeger", "metrics": "semiont-prometheus"} {
+	for role, name := range map[string]string{"collector": "xynolog-otel-collector", "traces": "xynolog-jaeger", "metrics": "xynolog-prometheus"} {
 		if svc := first.Stacks[localKey].Services[role]; svc.Provided != "shared" || svc.Container != name || svc.ID != "" {
 			t.Errorf("the stack records %s as %+v: want provided by the shared %s, with no ID of its own", role, svc, name)
 		}
@@ -1735,7 +1735,7 @@ func TestTheSharedTelemetryLifecycle(t *testing.T) {
 	// would run, keeps it.
 	for _, svc := range []string{"otel-collector", "jaeger", "prometheus"} {
 		s.extraEnv = append(s.extraEnv, "FAKERT_STATE_"+svc+"=running",
-			"FAKERT_IMAGE_"+svc+"="+first.Shared["semiont-"+svc].Image)
+			"FAKERT_IMAGE_"+svc+"="+first.Shared["xynolog-"+svc].Image)
 	}
 	churned := func(label, fresh string, names ...string) {
 		t.Helper()
@@ -1753,9 +1753,9 @@ func TestTheSharedTelemetryLifecycle(t *testing.T) {
 		t.Fatalf("keeping start: exit %d\nstdout:\n%s\nstderr:\n%s", code, stdout, stderr)
 	}
 	mustContain(t, "keeping start", stdout, "traces — Jaeger already running", "metrics — Prometheus already running", "collector — OTel already running")
-	churned("a keeping start", strings.TrimPrefix(string(s.mustLog(t)), string(before)), "semiont-otel-collector", "semiont-jaeger", "semiont-prometheus")
+	churned("a keeping start", strings.TrimPrefix(string(s.mustLog(t)), string(before)), "xynolog-otel-collector", "xynolog-jaeger", "xynolog-prometheus")
 	kept := readSharedRecords(t, s)
-	for _, name := range []string{"semiont-otel-collector", "semiont-jaeger", "semiont-prometheus"} {
+	for _, name := range []string{"xynolog-otel-collector", "xynolog-jaeger", "xynolog-prometheus"} {
 		if k := kept.Shared[name]; k == nil || k.ID != first.Shared[name].ID {
 			t.Errorf("the kept %s's record changed: %+v, was %+v", name, k, first.Shared[name])
 		}
@@ -1768,8 +1768,8 @@ func TestTheSharedTelemetryLifecycle(t *testing.T) {
 		t.Fatalf("start --no-observe: exit %d\nstdout:\n%s\nstderr:\n%s", code, stdout, stderr)
 	}
 	fresh := strings.TrimPrefix(string(s.mustLog(t)), string(before))
-	mustNotContain(t, "start --no-observe's argv", fresh, "semiont-jaeger", "semiont-prometheus")
-	churned("start --no-observe", fresh, "semiont-otel-collector")
+	mustNotContain(t, "start --no-observe's argv", fresh, "xynolog-jaeger", "xynolog-prometheus")
+	churned("start --no-observe", fresh, "xynolog-otel-collector")
 
 	// `stop --service traces` stops Jaeger alone and forgets its record.
 	before = s.mustLog(t)
@@ -1779,9 +1779,9 @@ func TestTheSharedTelemetryLifecycle(t *testing.T) {
 	}
 	mustContain(t, "stop --service traces", stdout, "Jaeger stopped")
 	fresh = strings.TrimPrefix(string(s.mustLog(t)), string(before))
-	mustContain(t, "stop --service traces' argv", fresh, "container stop "+first.Shared["semiont-jaeger"].ID, "container rm semiont-jaeger")
-	mustNotContain(t, "stop --service traces' argv", fresh, "semiont-otel-collector", "semiont-prometheus", "semiont-example.github.io-test-kb-gateway")
-	if after := readSharedRecords(t, s); after.Shared["semiont-jaeger"] != nil || after.Shared["semiont-otel-collector"] == nil {
+	mustContain(t, "stop --service traces' argv", fresh, "container stop "+first.Shared["xynolog-jaeger"].ID, "container rm xynolog-jaeger")
+	mustNotContain(t, "stop --service traces' argv", fresh, "xynolog-otel-collector", "xynolog-prometheus", "xynolog-example.github.io-test-kb-gateway")
+	if after := readSharedRecords(t, s); after.Shared["xynolog-jaeger"] != nil || after.Shared["xynolog-otel-collector"] == nil {
 		t.Errorf("after stop --service traces: want no Jaeger record and the collector's standing, got %+v", after.Shared)
 	}
 
@@ -1792,8 +1792,8 @@ func TestTheSharedTelemetryLifecycle(t *testing.T) {
 		t.Fatalf("start --no-observe without Jaeger: exit %d\nstdout:\n%s\nstderr:\n%s", code, stdout, stderr)
 	}
 	fresh = strings.TrimPrefix(string(s.mustLog(t)), string(before))
-	mustContain(t, "start --no-observe without Jaeger's argv", fresh, "container rm semiont-otel-collector", "--name semiont-otel-collector")
-	mustNotContain(t, "start --no-observe without Jaeger's argv", fresh, "--name semiont-jaeger")
+	mustContain(t, "start --no-observe without Jaeger's argv", fresh, "container rm xynolog-otel-collector", "--name xynolog-otel-collector")
+	mustNotContain(t, "start --no-observe without Jaeger's argv", fresh, "--name xynolog-jaeger")
 	mustNotContain(t, "collector.yaml with no Jaeger", collectorYAML(), "otlphttp/jaeger")
 
 	// An observing start brings Jaeger back and restarts the collector into
@@ -1803,8 +1803,8 @@ func TestTheSharedTelemetryLifecycle(t *testing.T) {
 		t.Fatalf("observing start: exit %d\nstdout:\n%s\nstderr:\n%s", code, stdout, stderr)
 	}
 	fresh = strings.TrimPrefix(string(s.mustLog(t)), string(before))
-	mustContain(t, "observing start's argv", fresh, "--name semiont-jaeger", "container rm semiont-otel-collector", "--name semiont-otel-collector")
-	churned("an observing start", fresh, "semiont-prometheus")
+	mustContain(t, "observing start's argv", fresh, "--name xynolog-jaeger", "container rm xynolog-otel-collector", "--name xynolog-otel-collector")
+	churned("an observing start", fresh, "xynolog-prometheus")
 	mustContain(t, "collector.yaml with Jaeger back", collectorYAML(), "otlphttp/jaeger")
 
 	// A bare stop stops them after the stack: the collector, Prometheus,
@@ -1816,7 +1816,7 @@ func TestTheSharedTelemetryLifecycle(t *testing.T) {
 	}
 	mustContain(t, "bare stop", stdout, "OTel collector stopped", "Prometheus stopped", "Jaeger stopped", "Ollama stopped", "Browser stopped")
 	fresh = strings.TrimPrefix(string(s.mustLog(t)), string(before))
-	order := []string{"stop fid-semiont-example.github.io-test-kb-gateway", "stop semiont-otel-collector", "stop semiont-prometheus", "stop semiont-jaeger", "stop semiont-ollama", "stop semiont-browser"}
+	order := []string{"stop fid-xynolog-example.github.io-test-kb-gateway", "stop xynolog-otel-collector", "stop xynolog-prometheus", "stop xynolog-jaeger", "stop xynolog-ollama", "stop xynolog-browser"}
 	at := -1
 	for _, step := range order {
 		i := strings.Index(fresh, step)
@@ -1830,21 +1830,21 @@ func TestTheSharedTelemetryLifecycle(t *testing.T) {
 	}
 }
 
-// localImages: the scenario's documents naming each of Semiont's images at
+// localImages: the scenario's documents naming each of Xynolog's images at
 // :local, the shared Browser's and worker's included — a developer's
 // checkout.
 func localImages(t *testing.T, s *scenario) {
 	t.Helper()
 	editDocument(t, s, "knowledge-base.yaml",
-		"semiont-gateway:latest", "semiont-gateway:local",
-		"semiont-dispatcher:latest", "semiont-dispatcher:local",
-		"semiont-archivist:latest", "semiont-archivist:local")
+		"xynolog-gateway:latest", "xynolog-gateway:local",
+		"xynolog-dispatcher:latest", "xynolog-dispatcher:local",
+		"xynolog-archivist:latest", "xynolog-archivist:local")
 	editDocument(t, s, "index.yaml",
-		"semiont-librarian:latest", "semiont-librarian:local",
-		"semiont-smelter:latest", "semiont-smelter:local",
-		"semiont-weaver:latest", "semiont-weaver:local")
-	editSharedDocument(t, s, "worker", "workers.yaml", "semiont-worker:latest", "semiont-worker:local")
-	editSharedDocument(t, s, "browser", "browser.yaml", "semiont-browser:latest", "semiont-browser:local")
+		"xynolog-librarian:latest", "xynolog-librarian:local",
+		"xynolog-smelter:latest", "xynolog-smelter:local",
+		"xynolog-weaver:latest", "xynolog-weaver:local")
+	editSharedDocument(t, s, "worker", "workers.yaml", "xynolog-worker:latest", "xynolog-worker:local")
+	editSharedDocument(t, s, "browser", "browser.yaml", "xynolog-browser:latest", "xynolog-browser:local")
 }
 
 func TestStartLocalImagesBoot(t *testing.T) {
@@ -1861,8 +1861,8 @@ func TestStartLocalImagesBoot(t *testing.T) {
 	// No release built them, so nothing vouches for them, and every start
 	// says so, naming each.
 	mustContain(t, "the start's warning", stdout+stderr,
-		"Unverified: ghcr.io/the-ai-alliance/semiont-gateway:local, ghcr.io/the-ai-alliance/semiont-archivist:local, ghcr.io/the-ai-alliance/semiont-librarian:local",
-		"Unverified: ghcr.io/the-ai-alliance/semiont-browser:local",
+		"Unverified: ghcr.io/xynolog/xynolog-gateway:local, ghcr.io/xynolog/xynolog-archivist:local, ghcr.io/xynolog/xynolog-librarian:local",
+		"Unverified: ghcr.io/xynolog/xynolog-browser:local",
 		"For development only")
 }
 
@@ -1885,13 +1885,13 @@ func fakeAttestations(t *testing.T, s *scenario, said map[string]map[string]any)
 	}
 }
 
-const servicesRelease = "https://github.com/The-AI-Alliance/semiont/.github/workflows/publish-service-images.yml@refs/tags/v0.7.0"
+const servicesRelease = "https://github.com/xynolog/images/.github/workflows/publish-service-images.yml@refs/tags/v0.7.0"
 
-// An image of Semiont's runs only when a release built it, and a start that
+// An image of Xynolog's runs only when a release built it, and a start that
 // would run one no release built refuses before it touches anything: the
 // running stack stays as it was.
 func TestAnImageNoReleaseBuiltIsRefusedBeforeAnythingIsTornDown(t *testing.T) {
-	const worker = "ghcr.io/the-ai-alliance/semiont-worker:latest"
+	const worker = "ghcr.io/xynolog/xynolog-worker:latest"
 	for _, c := range []struct {
 		name string
 		said map[string]any
@@ -1911,7 +1911,7 @@ func TestAnImageNoReleaseBuiltIsRefusedBeforeAnythingIsTornDown(t *testing.T) {
 			mustContain(t, "refusal", stdout+stderr, worker+" does not run", c.why,
 				"publish-service-images.yml, run at a release tag")
 			argv := s.argv(t)
-			for _, touched := range []string{"stop semiont-", "run -d", " pull "} {
+			for _, touched := range []string{"stop xynolog-", "run -d", " pull "} {
 				if strings.Contains(argv, touched) {
 					t.Errorf("a refused start touched the stack (%q):\n%s", touched, argv)
 				}
@@ -1923,7 +1923,7 @@ func TestAnImageNoReleaseBuiltIsRefusedBeforeAnythingIsTornDown(t *testing.T) {
 // The Browser's image is a release's only when the Browser's own workflow
 // built it: the services' workflow signing it does not make it one.
 func TestTheBrowsersImageIsHeldToItsOwnWorkflow(t *testing.T) {
-	const browser = "ghcr.io/the-ai-alliance/semiont-browser:latest"
+	const browser = "ghcr.io/xynolog/xynolog-browser:latest"
 	s := newScenario(t, "container")
 	fakeAttestations(t, s, map[string]map[string]any{browser: {"identity": servicesRelease}})
 	stdout, stderr, code := s.run(t, "start")
@@ -1931,7 +1931,7 @@ func TestTheBrowsersImageIsHeldToItsOwnWorkflow(t *testing.T) {
 		t.Fatalf("started\nstdout:\n%s", stdout)
 	}
 	mustContain(t, "refusal", stdout+stderr, browser+" does not run", "publish-browser.yml, run at a release tag")
-	if strings.Contains(s.argv(t), "--name semiont-browser") {
+	if strings.Contains(s.argv(t), "--name xynolog-browser") {
 		t.Errorf("the refused Browser ran:\n%s", s.argv(t))
 	}
 }
@@ -1959,7 +1959,7 @@ func TestStartPortConflict(t *testing.T) {
 	}
 	mustContain(t, "stderr", stderr,
 		"Port 7474 (needed for Neo4j HTTP) is held by 12345 (node).",
-		"This is not a Semiont container. Stop it and re-run (e.g. "+stopHint("12345")+").")
+		"This is not a Xynolog container. Stop it and re-run (e.g. "+stopHint("12345")+").")
 	checkGolden(t, "start-port-conflict.argv", s.argv(t))
 }
 
@@ -2029,7 +2029,7 @@ func TestStartConfigNotFound(t *testing.T) {
 	if code != 1 {
 		t.Fatalf("want exit 1, got %d", code)
 	}
-	mustContain(t, "stderr", stderr, "Config not found: "+filepath.FromSlash(".semiont/stack/inference/nope.yaml"))
+	mustContain(t, "stderr", stderr, "Config not found: "+filepath.FromSlash(".xynolog/stack/inference/nope.yaml"))
 }
 
 func TestStartNoRuntime(t *testing.T) {
@@ -2063,7 +2063,7 @@ func TestStartCleanOllama(t *testing.T) {
 		t.Fatalf("want exit 0, got %d", code)
 	}
 	mustContain(t, "stdout", stdout, "Removed.")
-	mustContain(t, "argv", s.argv(t), "container volume rm semiont-ollama-models")
+	mustContain(t, "argv", s.argv(t), "container volume rm xynolog-ollama-models")
 
 	s2 := newScenario(t, "container")
 	s2.extraEnv = append(s2.extraEnv, "FAKERT_VOLUME_ABSENT=1")
@@ -2146,11 +2146,11 @@ func TestStartDryRunLocalImages(t *testing.T) {
 func stateHomeFor(home string) string {
 	switch runtime.GOOS {
 	case "darwin":
-		return filepath.Join(home, "Library", "Application Support", "semiont")
+		return filepath.Join(home, "Library", "Application Support", "xynolog")
 	case "windows":
-		return filepath.Join(home, "AppData", "Local", "semiont")
+		return filepath.Join(home, "AppData", "Local", "xynolog")
 	}
-	return filepath.Join(home, ".local", "state", "semiont")
+	return filepath.Join(home, ".local", "state", "xynolog")
 }
 
 // workerListFor: where the knowledge bases the shared worker serves are
@@ -2170,7 +2170,7 @@ func dataHomeFor(home string) string {
 	case "darwin", "windows":
 		return stateHomeFor(home)
 	}
-	return filepath.Join(home, ".local", "share", "semiont")
+	return filepath.Join(home, ".local", "share", "xynolog")
 }
 
 // stateRootFor: a root's state dir under the scenario's home.
@@ -2178,7 +2178,7 @@ func stateRootFor(home, key string) string {
 	return filepath.Join(dataHomeFor(home), "roots", key)
 }
 
-// testKBKey: the slug of the test KB's did:web (internal/launcher/testdata/kb/.semiont/config.yaml).
+// testKBKey: the slug of the test KB's did:web (internal/launcher/testdata/kb/.xynolog/config.yaml).
 const testKBKey = "example.github.io-test-kb"
 
 // testKBDid: the test KB's did:web.
@@ -2200,9 +2200,9 @@ func (s *scenario) localRecord(runtime, rest string) string {
 // KB, and one named for the KB otherwise.
 func containerOf(product string) string {
 	if slices.Contains([]string{"worker", "browser", "keycloak", "postgres"}, product) {
-		return "semiont-" + product
+		return "xynolog-" + product
 	}
-	return "semiont-" + testKBKey + "-" + product
+	return "xynolog-" + testKBKey + "-" + product
 }
 
 // sharedRunsAsRecorded scripts the machine's containers of products as
@@ -2212,9 +2212,9 @@ func sharedRunsAsRecorded(t *testing.T, s *scenario, products ...string) {
 	t.Helper()
 	recorded := readSharedRecords(t, s).Shared
 	for _, product := range products {
-		rec := recorded["semiont-"+product]
+		rec := recorded["xynolog-"+product]
 		if rec == nil {
-			t.Fatalf("no shared record of semiont-%s", product)
+			t.Fatalf("no shared record of xynolog-%s", product)
 		}
 		s.extraEnv = append(s.extraEnv, "FAKERT_STATE_"+product+"=running", "FAKERT_IMAGE_"+product+"="+rec.Image)
 	}
@@ -2260,13 +2260,13 @@ func TestTwoKnowledgeBasesStartInTurn(t *testing.T) {
 		t.Fatalf("the second knowledge base's start: exit %d\nstdout:\n%s\nstderr:\n%s", code, stdout, stderr)
 	}
 	realm := realmOf(t, s, "example.github.io-other-kb")
-	mustContain(t, "the second start's realm", realm, xynoplex.KbResource("example.github.io:other-kb"))
-	if strings.Contains(realm, xynoplex.KbResource("example.github.io:test-kb")) {
+	mustContain(t, "the second start's realm", realm, xynolog.KbResource("example.github.io:other-kb"))
+	if strings.Contains(realm, xynolog.KbResource("example.github.io:test-kb")) {
 		t.Errorf("the second knowledge base's realm names the first's audience:\n%s", realm)
 	}
 	// The first's realm is held beside it, in the database every realm here
 	// is kept in.
-	mustContain(t, "the first start's realm", realmOf(t, s, testKBKey), xynoplex.KbResource("example.github.io:test-kb"))
+	mustContain(t, "the first start's realm", realmOf(t, s, testKBKey), xynolog.KbResource("example.github.io:test-kb"))
 
 	for _, key := range []string{testKBKey, "example.github.io-other-kb"} {
 		if _, err := os.Stat(stateRootFor(s.home, key)); err != nil {
@@ -2291,7 +2291,7 @@ func TestTwoKnowledgeBasesShareOneIssuer(t *testing.T) {
 		t.Fatalf("the first knowledge base's start: exit %d\nstderr:\n%s", code, stderr)
 	}
 	sharedRunsAsRecorded(t, s, "postgres", "keycloak")
-	issuer := readSharedRecords(t, s).Shared["semiont-keycloak"].ID
+	issuer := readSharedRecords(t, s).Shared["xynolog-keycloak"].ID
 
 	s.kb = other
 	before := s.argv(t)
@@ -2300,10 +2300,10 @@ func TestTwoKnowledgeBasesShareOneIssuer(t *testing.T) {
 		t.Fatalf("the second knowledge base's start: exit %d\nstdout:\n%s\nstderr:\n%s", code, stdout, stderr)
 	}
 	fresh := strings.TrimPrefix(s.argv(t), before)
-	mustNotContain(t, "the second start", fresh, "--name semiont-keycloak", "--name semiont-postgres", "stop semiont-keycloak", "stop semiont-postgres")
+	mustNotContain(t, "the second start", fresh, "--name xynolog-keycloak", "--name xynolog-postgres", "stop xynolog-keycloak", "stop xynolog-postgres")
 	mustContain(t, "the second start", stdout, "identity-store — PostgreSQL already running", "identity — Keycloak already running",
 		"realm example.github.io-other-kb at http://192.168.64.1:8080/realms/example.github.io-other-kb")
-	if got := readSharedRecords(t, s).Shared["semiont-keycloak"].ID; got != issuer {
+	if got := readSharedRecords(t, s).Shared["xynolog-keycloak"].ID; got != issuer {
 		t.Errorf("the second start replaced the shared Keycloak's record: %s, was %s", got, issuer)
 	}
 	realmOf(t, s, "example.github.io-other-kb")
@@ -2319,13 +2319,13 @@ func TestTwoKnowledgeBasesShareOneIssuer(t *testing.T) {
 		}
 		return argvStops(strings.TrimPrefix(s.argv(t), before))
 	}
-	if got := stopOf(first, "the first knowledge base's stop"); slices.Contains(got, "semiont-keycloak") || slices.Contains(got, "semiont-postgres") {
+	if got := stopOf(first, "the first knowledge base's stop"); slices.Contains(got, "xynolog-keycloak") || slices.Contains(got, "xynolog-postgres") {
 		t.Errorf("a stop beside another stack stopped the issuer: %q", got)
 	}
-	if readSharedRecords(t, s).Shared["semiont-keycloak"] == nil {
+	if readSharedRecords(t, s).Shared["xynolog-keycloak"] == nil {
 		t.Error("a stop beside another stack forgot the shared Keycloak")
 	}
-	if got := stopOf(other, "the last stack's stop"); !slices.Contains(got, "semiont-keycloak") || !slices.Contains(got, "semiont-postgres") {
+	if got := stopOf(other, "the last stack's stop"); !slices.Contains(got, "xynolog-keycloak") || !slices.Contains(got, "xynolog-postgres") {
 		t.Errorf("the last stack's stop left the issuer running: %q", got)
 	}
 }
@@ -2374,7 +2374,7 @@ const sharedVectorsBlock = "  vectors:\n    type: qdrant\n    shared: {}\n"
 // machine's.
 func withOwnVectors(t *testing.T, root string) {
 	t.Helper()
-	path := filepath.Join(root, ".semiont", "stack", "index.yaml")
+	path := filepath.Join(root, ".xynolog", "stack", "index.yaml")
 	b, err := os.ReadFile(path)
 	if err != nil {
 		t.Fatal(err)
@@ -2401,8 +2401,8 @@ func TestTwoKnowledgeBasesShareOneQdrant(t *testing.T) {
 	if _, stderr, code := s.run(t, "start"); code != 0 {
 		t.Fatalf("the first knowledge base's start: exit %d\nstderr:\n%s", code, stderr)
 	}
-	mustContain(t, "the first start", s.argv(t), "--name semiont-qdrant", "-p 192.168.64.1:6330:6333", "-v <data-home>/shared/qdrant:")
-	qdrant := readSharedRecords(t, s).Shared["semiont-qdrant"]
+	mustContain(t, "the first start", s.argv(t), "--name xynolog-qdrant", "-p 192.168.64.1:6330:6333", "-v <data-home>/shared/qdrant:")
+	qdrant := readSharedRecords(t, s).Shared["xynolog-qdrant"]
 	if qdrant == nil {
 		t.Fatal("the first start recorded no shared Qdrant")
 	}
@@ -2415,9 +2415,9 @@ func TestTwoKnowledgeBasesShareOneQdrant(t *testing.T) {
 		t.Fatalf("the second knowledge base's start: exit %d\nstdout:\n%s\nstderr:\n%s", code, stdout, stderr)
 	}
 	fresh := strings.TrimPrefix(s.argv(t), before)
-	mustNotContain(t, "the second start", fresh, "--name semiont-qdrant", "stop semiont-qdrant", "--name semiont-example.github.io-other-kb-qdrant")
+	mustNotContain(t, "the second start", fresh, "--name xynolog-qdrant", "stop xynolog-qdrant", "--name xynolog-example.github.io-other-kb-qdrant")
 	mustContain(t, "the second start", stdout, "vectors — Qdrant already running")
-	if got := readSharedRecords(t, s).Shared["semiont-qdrant"].ID; got != qdrant.ID {
+	if got := readSharedRecords(t, s).Shared["xynolog-qdrant"].ID; got != qdrant.ID {
 		t.Errorf("the second start replaced the shared Qdrant's record: %s, was %s", got, qdrant.ID)
 	}
 	mustContain(t, "the second start's smelter.json", stagedFile(t, s, "smelter.json"), `"port": 6330`)
@@ -2446,13 +2446,13 @@ func TestTwoKnowledgeBasesShareOneQdrant(t *testing.T) {
 		}
 		return argvStops(strings.TrimPrefix(s.argv(t), before))
 	}
-	if got := stopOf(first, "the first knowledge base's stop"); slices.Contains(got, "semiont-qdrant") {
+	if got := stopOf(first, "the first knowledge base's stop"); slices.Contains(got, "xynolog-qdrant") {
 		t.Errorf("a stop beside another stack stopped the shared Qdrant: %q", got)
 	}
-	if readSharedRecords(t, s).Shared["semiont-qdrant"] == nil {
+	if readSharedRecords(t, s).Shared["xynolog-qdrant"] == nil {
 		t.Error("a stop beside another stack forgot the shared Qdrant")
 	}
-	if got := stopOf(other, "the last stack's stop"); !slices.Contains(got, "semiont-qdrant") {
+	if got := stopOf(other, "the last stack's stop"); !slices.Contains(got, "xynolog-qdrant") {
 		t.Errorf("the last stack's stop left the shared Qdrant running: %q", got)
 	}
 }
@@ -2483,16 +2483,16 @@ func TestEachServiceIsHandedItsOwnTokenToTheSharedQdrant(t *testing.T) {
 			t.Fatalf("the machine keeps no key for the shared Qdrant: %v", err)
 		}
 		key := strings.TrimSpace(string(kept))
-		if got, _ := s.containerEnv(t, "semiont-qdrant", "QDRANT__SERVICE__API_KEY"); key == "" || got != key {
+		if got, _ := s.containerEnv(t, "xynolog-qdrant", "QDRANT__SERVICE__API_KEY"); key == "" || got != key {
 			t.Fatalf("after %s's start the shared Qdrant runs with another key than the machine keeps", kb.did)
 		}
-		if got, _ := s.containerEnv(t, "semiont-qdrant", "QDRANT__SERVICE__JWT_RBAC"); got != "true" {
+		if got, _ := s.containerEnv(t, "xynolog-qdrant", "QDRANT__SERVICE__JWT_RBAC"); got != "true" {
 			t.Errorf("the shared Qdrant runs with QDRANT__SERVICE__JWT_RBAC=%q, want true", got)
 		}
 		argv := s.argv(t)
 		mustNotContain(t, "the runtime calls", argv, key)
 		for _, svc := range []string{"smelter", "librarian"} {
-			container := "semiont-" + kb.key + "-" + svc
+			container := "xynolog-" + kb.key + "-" + svc
 			token, ok := s.containerEnv(t, container, "QDRANT_TOKEN")
 			if !ok {
 				t.Fatalf("%s is handed no QDRANT_TOKEN", container)
@@ -2582,11 +2582,11 @@ func TestAnOwnQdrantIsKeyedFromItsRoot(t *testing.T) {
 		t.Errorf("the machine keeps a key for a Qdrant it does not run (%v)", err)
 	}
 	key := strings.TrimSpace(string(kept))
-	qdrant := "semiont-" + arxivKey + "-qdrant"
+	qdrant := "xynolog-" + arxivKey + "-qdrant"
 	if got, _ := s.containerEnv(t, qdrant, "QDRANT__SERVICE__API_KEY"); key == "" || got != key {
 		t.Fatalf("%s runs with another key than its root keeps", qdrant)
 	}
-	token, _ := s.containerEnv(t, "semiont-"+arxivKey+"-librarian", "QDRANT_TOKEN")
+	token, _ := s.containerEnv(t, "xynolog-"+arxivKey+"-librarian", "QDRANT_TOKEN")
 	if got, want := qdrantTokenClaims(t, key, token), tokenClaimsByKB(t)[arxivDid]["librarian"]; got != want {
 		t.Errorf("the librarian's token claims %s, want %s", got, want)
 	}
@@ -2609,7 +2609,7 @@ func TestALoneStartRunsASharedQdrantUnderALostKeyAfresh(t *testing.T) {
 	}
 	mustContain(t, "the start", stdout, "did not answer the machine's API key (listing its collections: 401 Unauthorized: Invalid API key or JWT)",
 		"it keeps no other knowledge base's index, so it runs afresh under the machine's")
-	mustContain(t, "the start's runtime calls", strings.TrimPrefix(s.argv(t), before), "--name semiont-qdrant")
+	mustContain(t, "the start's runtime calls", strings.TrimPrefix(s.argv(t), before), "--name xynolog-qdrant")
 	if key := qdrantRunsUnderTheMachinesKey(t, s); key == lost {
 		t.Error("the machine kept the lost key")
 	}
@@ -2644,10 +2644,10 @@ func TestAStartRefusesASharedQdrantUnderALostKeyThatAnotherKnowledgeBaseUses(t *
 	mustContain(t, "the refusal", stderr, "did not answer the machine's API key", "it keeps the index of "+first+":",
 		"listing its collections: 401 Unauthorized: Invalid API key or JWT")
 	mustContain(t, "the refusal", stdout, "Stop them first (xynolog stop --root <its path>), then start each again after this one.")
-	if got := argvStops(strings.TrimPrefix(s.argv(t), before)); slices.Contains(got, "semiont-qdrant") {
+	if got := argvStops(strings.TrimPrefix(s.argv(t), before)); slices.Contains(got, "xynolog-qdrant") {
 		t.Errorf("the refused start stopped the shared Qdrant: %q", got)
 	}
-	if got, _ := s.containerEnv(t, "semiont-qdrant", "QDRANT__SERVICE__API_KEY"); got != lost {
+	if got, _ := s.containerEnv(t, "xynolog-qdrant", "QDRANT__SERVICE__API_KEY"); got != lost {
 		t.Error("the refused start ran the shared Qdrant afresh")
 	}
 
@@ -2663,7 +2663,7 @@ func TestAStartRefusesASharedQdrantUnderALostKeyThatAnotherKnowledgeBaseUses(t *
 	}
 	for _, kb := range []string{arxivKey, "example.github.io-plain-kb"} {
 		for _, svc := range []string{"smelter", "librarian"} {
-			token, _ := s.containerEnv(t, "semiont-"+kb+"-"+svc, "QDRANT_TOKEN")
+			token, _ := s.containerEnv(t, "xynolog-"+kb+"-"+svc, "QDRANT_TOKEN")
 			qdrantTokenClaims(t, key, token)
 		}
 	}
@@ -2674,7 +2674,7 @@ func TestAStartRefusesASharedQdrantUnderALostKeyThatAnotherKnowledgeBaseUses(t *
 func loseTheMachinesQdrantKey(t *testing.T, s *scenario) string {
 	t.Helper()
 	sharedRunsAsRecorded(t, s, "qdrant")
-	lost, ok := s.containerEnv(t, "semiont-qdrant", "QDRANT__SERVICE__API_KEY")
+	lost, ok := s.containerEnv(t, "xynolog-qdrant", "QDRANT__SERVICE__API_KEY")
 	if !ok || lost == "" {
 		t.Fatal("the shared Qdrant runs under no key")
 	}
@@ -2693,7 +2693,7 @@ func qdrantRunsUnderTheMachinesKey(t *testing.T, s *scenario) string {
 		t.Fatal(err)
 	}
 	key := strings.TrimSpace(string(b))
-	if got, _ := s.containerEnv(t, "semiont-qdrant", "QDRANT__SERVICE__API_KEY"); key == "" || got != key {
+	if got, _ := s.containerEnv(t, "xynolog-qdrant", "QDRANT__SERVICE__API_KEY"); key == "" || got != key {
 		t.Fatal("the shared Qdrant runs under another key than the machine keeps")
 	}
 	return key
@@ -2729,7 +2729,7 @@ func TestCleanSharedRemovesTheSharedQdrantsStore(t *testing.T) {
 		t.Fatalf("stop --service vectors: exit %d\nstderr:\n%s", code, stderr)
 	}
 	mustContain(t, "stop --service vectors", stdout+stderr, "Qdrant stopped")
-	if got := argvStops(strings.TrimPrefix(s.argv(t), before)); !slices.Equal(got, []string{"semiont-qdrant"}) {
+	if got := argvStops(strings.TrimPrefix(s.argv(t), before)); !slices.Equal(got, []string{"xynolog-qdrant"}) {
 		t.Errorf("stop --service vectors stopped %q, want the shared Qdrant alone", got)
 	}
 	refused("beside a stack that keeps its index there", "A recorded stack keeps its index in the shared Qdrant")
@@ -2739,7 +2739,7 @@ func TestCleanSharedRemovesTheSharedQdrantsStore(t *testing.T) {
 
 	// The shared Qdrant alone, as a stop of a stack beside one with its own
 	// leaves it.
-	if err := os.WriteFile(statePathFor(s.home), []byte(`{"schema":3,"stacks":{},"shared":{"semiont-qdrant":{"container":"semiont-qdrant","provided":"launcher","runtime":"container"}}}`), 0o644); err != nil {
+	if err := os.WriteFile(statePathFor(s.home), []byte(`{"schema":3,"stacks":{},"shared":{"xynolog-qdrant":{"container":"xynolog-qdrant","provided":"launcher","runtime":"container"}}}`), 0o644); err != nil {
 		t.Fatal(err)
 	}
 	refused("beside the shared Qdrant's record", "Stop it first: xynolog stop --service vectors")
@@ -2776,7 +2776,7 @@ func TestCleanSharedRemovesTheSharedQdrantsStore(t *testing.T) {
 // gateway's, where clients reach it too.
 func withGatewayPort(t *testing.T, root string, port int) {
 	t.Helper()
-	path := filepath.Join(root, ".semiont", "stack", "knowledge-base.yaml")
+	path := filepath.Join(root, ".xynolog", "stack", "knowledge-base.yaml")
 	b, err := os.ReadFile(path)
 	if err != nil {
 		t.Fatal(err)
@@ -2859,19 +2859,19 @@ func TestTwoKnowledgeBasesRunSideBySide(t *testing.T) {
 		t.Fatal(err)
 	}
 	for name, m := range rec.Shared {
-		bare := strings.TrimPrefix(name, "semiont-")
+		bare := strings.TrimPrefix(name, "xynolog-")
 		s.extraEnv = append(s.extraEnv, "FAKERT_STATE_"+bare+"=running", "FAKERT_IMAGE_"+bare+"="+m.Image)
 	}
 	s.kb = other
 	second, _, _ := run("the second knowledge base's start", 0, "start")
 	for name := range rec.Shared {
-		if name != "semiont-worker" {
+		if name != "xynolog-worker" {
 			mustNotContain(t, "the second start", second, "stop "+name, "rm "+name, "stop fid-"+name, "rm fid-"+name)
 		}
 	}
-	mustContain(t, "the second start", second, "run -d --name semiont-example.github.io-other-kb-gateway",
-		"rm semiont-worker", "run -d --name semiont-worker")
-	mustNotContain(t, "the second start", second, "semiont-example.github.io-test-kb-")
+	mustContain(t, "the second start", second, "run -d --name xynolog-example.github.io-other-kb-gateway",
+		"rm xynolog-worker", "run -d --name xynolog-worker")
+	mustNotContain(t, "the second start", second, "xynolog-example.github.io-test-kb-")
 	if got := recordedStacks(t, s); !slices.Equal(got, []string{otherKey, localKey}) {
 		t.Errorf("stack.json records %v, want both knowledge bases' stacks", got)
 	}
@@ -2904,7 +2904,7 @@ func TestTwoKnowledgeBasesRunSideBySide(t *testing.T) {
 	mustNotContain(t, "a stop naming the twin", argv, " stop ", " rm ")
 	// logs --root follows the stack it names, from anywhere.
 	argv, _, _ = run("logs naming the second", 0, "logs", "--root", other, "--service", "gateway")
-	mustContain(t, "logs naming the second", argv, "container logs --follow fid-semiont-example.github.io-other-kb-gateway")
+	mustContain(t, "logs naming the second", argv, "container logs --follow fid-xynolog-example.github.io-other-kb-gateway")
 	mustNotContain(t, "logs naming the second", argv, "test-kb-gateway")
 	s.cwd = ""
 	third := asTheSystemNamesIt(t, mkKB(t))
@@ -2916,16 +2916,16 @@ func TestTwoKnowledgeBasesRunSideBySide(t *testing.T) {
 	// A stop standing in it sweeps its own names, which nothing runs, and
 	// leaves both stacks that do.
 	argv, _, _ = run("a stop standing in a knowledge base nothing started", 0, "stop")
-	mustContain(t, "a stop standing in a knowledge base nothing started", argv, "stop semiont-example.github.io-third-kb-gateway")
-	mustNotContain(t, "a stop standing in a knowledge base nothing started", argv, "test-kb-", "other-kb-", "semiont-worker")
+	mustContain(t, "a stop standing in a knowledge base nothing started", argv, "stop xynolog-example.github.io-third-kb-gateway")
+	mustNotContain(t, "a stop standing in a knowledge base nothing started", argv, "test-kb-", "other-kb-", "xynolog-worker")
 	if got := recordedStacks(t, s); !slices.Equal(got, []string{otherKey, localKey}) {
 		t.Errorf("after a stop of a knowledge base nothing started, stack.json records %v, want both", got)
 	}
 
 	s.kb = first
 	argv, stdout, _ := run("the first knowledge base's stop", 0, "stop")
-	mustContain(t, "the first knowledge base's stop", argv, "stop fid-semiont-example.github.io-test-kb-gateway")
-	mustNotContain(t, "the first knowledge base's stop", argv, "other-kb-", "semiont-worker", "semiont-otel-collector")
+	mustContain(t, "the first knowledge base's stop", argv, "stop fid-xynolog-example.github.io-test-kb-gateway")
+	mustNotContain(t, "the first knowledge base's stop", argv, "other-kb-", "xynolog-worker", "xynolog-otel-collector")
 	mustContain(t, "the first knowledge base's stop", stdout, "The shared containers stay up")
 	if got := recordedStacks(t, s); !slices.Equal(got, []string{otherKey}) {
 		t.Errorf("after the first knowledge base's stop, stack.json records %v, want the second's alone", got)
@@ -2939,7 +2939,7 @@ func TestTwoKnowledgeBasesRunSideBySide(t *testing.T) {
 
 	s.kb = other
 	argv, _, _ = run("the second knowledge base's stop", 0, "stop")
-	mustContain(t, "the last stack's stop", argv, "stop fid-semiont-example.github.io-other-kb-gateway", "stop semiont-otel-collector")
+	mustContain(t, "the last stack's stop", argv, "stop fid-xynolog-example.github.io-other-kb-gateway", "stop xynolog-otel-collector")
 	if got := recordedStacks(t, s); len(got) != 0 {
 		t.Errorf("after the last stop, stack.json records %v", got)
 	}
@@ -2950,7 +2950,7 @@ func TestTwoKnowledgeBasesRunSideBySide(t *testing.T) {
 	argv, stdout, _ = run("a stop with nothing recorded", 0, "stop")
 	mustContain(t, "a stop with nothing recorded", stdout, "of every known knowledge base")
 	mustContain(t, "a stop with nothing recorded", argv,
-		"stop semiont-example.github.io-test-kb-gateway", "stop semiont-example.github.io-other-kb-gateway")
+		"stop xynolog-example.github.io-test-kb-gateway", "stop xynolog-example.github.io-other-kb-gateway")
 }
 
 // Status asks a recorded stack's services where its record says, and nowhere
@@ -3000,7 +3000,7 @@ func TestStatusAsksARecordedStackOnlyWhereItsRecordSays(t *testing.T) {
 		t.Fatal(err)
 	}
 	for name, m := range rec.Shared {
-		bare := strings.TrimPrefix(name, "semiont-")
+		bare := strings.TrimPrefix(name, "xynolog-")
 		s.extraEnv = append(s.extraEnv, "FAKERT_STATE_"+bare+"=running", "FAKERT_IMAGE_"+bare+"="+m.Image)
 	}
 	s.kb = other
@@ -3152,7 +3152,7 @@ func TestEachKnowledgeBaseRunsOnAPortBlockOfItsOwn(t *testing.T) {
 		"--inference", "anthropic", "--model", "claude-sonnet-4-5-20250929",
 		"--embedding", "ollama:nomic-embed-text", "--config-name", "anthropic",
 		"--ollama-base", "http://127.0.0.1:1", "--ollama-registry", "http://127.0.0.1:1")
-	kb, err := os.ReadFile(filepath.Join(s.cwd, ".semiont", "stack", "knowledge-base.yaml"))
+	kb, err := os.ReadFile(filepath.Join(s.cwd, ".xynolog", "stack", "knowledge-base.yaml"))
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -3195,7 +3195,7 @@ func TestAStartOnTheBrokerAnotherKnowledgeBaseHereNamesIsRefused(t *testing.T) {
 			t.Fatalf("%s on the first's broker: exit %d, want 1\nstdout:\n%s\nstderr:\n%s", label, code, stdout, stderr)
 		}
 		mustContain(t, label, stderr,
-			`spec.messaging.external.servers is "nats://nats.example.com:4223", which `+filepath.Join(first, ".semiont", "stack", "knowledge-base.yaml")+" names too: a broker serves one knowledge base",
+			`spec.messaging.external.servers is "nats://nats.example.com:4223", which `+filepath.Join(first, ".xynolog", "stack", "knowledge-base.yaml")+" names too: a broker serves one knowledge base",
 			"xynolog forget "+first)
 		mustNotContain(t, label, strings.TrimPrefix(s.argv(t), before), "run -d")
 	}
@@ -3291,7 +3291,7 @@ func TestAnchoredTextStorePersistsAcrossStarts(t *testing.T) {
 // alone: the Smelter keeps its entries on the Archivist's surface, and the
 // Librarian reads the views on the bus.
 func TestNoStoreIsMountedByTwoContainers(t *testing.T) {
-	name := regexp.MustCompile(`--name (semiont-\S+)`)
+	name := regexp.MustCompile(`--name (xynolog-\S+)`)
 	for _, rt := range []string{"container", "docker"} {
 		t.Run(rt, func(t *testing.T) {
 			s := newScenario(t, "container", "docker", "podman")
@@ -3342,7 +3342,7 @@ func TestNoStoreIsMountedByTwoContainers(t *testing.T) {
 				}
 			}
 			for _, store := range []string{"anchored-text", "state"} {
-				if by := containers(store); len(by) != 1 || by[0] != "semiont-example.github.io-test-kb-archivist" {
+				if by := containers(store); len(by) != 1 || by[0] != "xynolog-example.github.io-test-kb-archivist" {
 					t.Errorf("the %s store is mounted into %v, want the Archivist alone", store, by)
 				}
 			}
@@ -3364,7 +3364,7 @@ func TestAnImageChangeClearsNothingFromTheAnchoredTextStore(t *testing.T) {
 	if err := os.WriteFile(entry, []byte(`{"v":3,"stamp":"reader-0+engine-0","declined":"encrypted"}`), 0o644); err != nil {
 		t.Fatal(err)
 	}
-	meta := `{"kbRoot":"` + inJSON(s.kb) + `","stores":{"anchored-text":{"image":"ghcr.io/the-ai-alliance/semiont-smelter:0.0.0-old"}}}`
+	meta := `{"kbRoot":"` + inJSON(s.kb) + `","stores":{"anchored-text":{"image":"ghcr.io/xynolog/xynolog-smelter:0.0.0-old"}}}`
 	if err := os.WriteFile(filepath.Join(dir, "meta.json"), []byte(meta), 0o644); err != nil {
 		t.Fatal(err)
 	}
@@ -3478,7 +3478,7 @@ func TestStoreClearResolvesBeforeFirstRun(t *testing.T) {
 	if err := os.WriteFile(sentinel, []byte("old"), 0o644); err != nil {
 		t.Fatal(err)
 	}
-	meta := `{"kbRoot":"` + inJSON(s.kb) + `","stores":{"state":{"image":"ghcr.io/the-ai-alliance/semiont-archivist:0.0.0-old"}}}`
+	meta := `{"kbRoot":"` + inJSON(s.kb) + `","stores":{"state":{"image":"ghcr.io/xynolog/xynolog-archivist:0.0.0-old"}}}`
 	if err := os.WriteFile(filepath.Join(dir, "meta.json"), []byte(meta), 0o644); err != nil {
 		t.Fatal(err)
 	}
@@ -3521,7 +3521,7 @@ func TestStoreClearKeepsMountRootDir(t *testing.T) {
 	if err := os.WriteFile(filepath.Join(sd, "stale-view"), []byte("old"), 0o644); err != nil {
 		t.Fatal(err)
 	}
-	meta := `{"kbRoot":"` + inJSON(s.kb) + `","stores":{"state":{"image":"ghcr.io/the-ai-alliance/semiont-archivist:0.0.0-old"}}}`
+	meta := `{"kbRoot":"` + inJSON(s.kb) + `","stores":{"state":{"image":"ghcr.io/xynolog/xynolog-archivist:0.0.0-old"}}}`
 	if err := os.WriteFile(filepath.Join(dir, "meta.json"), []byte(meta), 0o644); err != nil {
 		t.Fatal(err)
 	}
@@ -3613,7 +3613,7 @@ func TestStartRefusesKBWithoutDid(t *testing.T) {
 	// prevent. Identity is declared, never defaulted. ProjectConfig requires
 	// the domain, so a KB with no project file is the one that has none.
 	s := newScenario(t, "container")
-	if err := os.Remove(filepath.Join(s.kb, ".semiont", "config.yaml")); err != nil {
+	if err := os.Remove(filepath.Join(s.kb, ".xynolog", "config.yaml")); err != nil {
 		t.Fatal(err)
 	}
 	// Refused even in --dry-run: a plan for a KB that cannot be identified is
@@ -3625,7 +3625,7 @@ func TestStartRefusesKBWithoutDid(t *testing.T) {
 	mustContain(t, "stderr", stderr, "did:web", "config.yaml", "site:", "domain")
 
 	// And the fix-it must be actionable: adding the domain makes it start.
-	if err := os.WriteFile(filepath.Join(s.kb, ".semiont", "config.yaml"),
+	if err := os.WriteFile(filepath.Join(s.kb, ".xynolog", "config.yaml"),
 		[]byte("project:\n  name: No Did KB\ngit:\n  sync: true\nsite:\n  domain: example.github.io:no-did-kb\n  siteName: No Did KB\n"), 0o644); err != nil {
 		t.Fatal(err)
 	}
@@ -3636,13 +3636,13 @@ func TestStartRefusesKBWithoutDid(t *testing.T) {
 	mustContain(t, "state key", s.norm(stdout), "roots/example.github.io-no-did-kb/neo4j")
 }
 
-// A knowledge base whose project file is .semiont/config.yaml starts from it;
+// A knowledge base whose project file is .xynolog/config.yaml starts from it;
 // one whose config.yaml does not hold to its schema is refused, each place
 // named at its line, even in --dry-run.
 func TestStartReadsTheYAMLProjectFile(t *testing.T) {
 	s := newScenario(t, "container")
-	semiont := filepath.Join(s.kb, ".semiont")
-	project, err := os.ReadFile(filepath.Join(semiont, "config.yaml"))
+	xynolog := filepath.Join(s.kb, ".xynolog")
+	project, err := os.ReadFile(filepath.Join(xynolog, "config.yaml"))
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -3656,7 +3656,7 @@ func TestStartReadsTheYAMLProjectFile(t *testing.T) {
 	if broken == string(project) {
 		t.Fatal("the fixture's config.yaml states no domain to misspell")
 	}
-	if err := os.WriteFile(filepath.Join(semiont, "config.yaml"), []byte(broken), 0o644); err != nil {
+	if err := os.WriteFile(filepath.Join(xynolog, "config.yaml"), []byte(broken), 0o644); err != nil {
 		t.Fatal(err)
 	}
 	_, stderr, code = s.run(t, "start", "--dry-run")
@@ -3695,7 +3695,7 @@ func seedStateDir(t *testing.T, s *scenario) string {
 }
 
 // storeClear: the run that empties a store dir. A container wrote what is
-// in it — as neo4j 7474, postgres 70, qdrant and nats root, Semiont 1001 —
+// in it — as neo4j 7474, postgres 70, qdrant and nats root, Xynolog 1001 —
 // and on Linux only a container's root can remove it.
 func storeClear(sd string) string {
 	return "container run --rm -v " + sd + ":/store busybox:1.38.0@sha256:fd7dc98638c8e305f4dc34e979f1c0fdfdcaeb0fbf8fcff77ae834b6da3d7e6e find /store -mindepth 1 -maxdepth 1 -exec rm -rf {} +"
@@ -3887,13 +3887,13 @@ func TestCleanDeletesTheRealmAtTheSharedIssuer(t *testing.T) {
 	}
 	mustContain(t, "clean", stdout, "Deleted realm "+testKBKey+" from the shared issuer.")
 	// The server that answers is the other knowledge base's too: left as it is.
-	if fresh := strings.TrimPrefix(s.argv(t), before); strings.Contains(fresh, "--name semiont-keycloak") || slices.Contains(argvStops(fresh), "semiont-keycloak") {
+	if fresh := strings.TrimPrefix(s.argv(t), before); strings.Contains(fresh, "--name xynolog-keycloak") || slices.Contains(argvStops(fresh), "xynolog-keycloak") {
 		t.Errorf("a clean beside a running issuer ran or stopped it:\n%s", fresh)
 	}
 	if _, err := os.Stat(filepath.Join(s.fakertDir, "realm-"+containerOf("keycloak")+"-"+testKBKey+".json")); !os.IsNotExist(err) {
 		t.Errorf("the realm is held after its clean (%v)", err)
 	}
-	mustContain(t, "the other's realm", realmOf(t, s, "example.github.io-other-kb"), xynoplex.KbResource("example.github.io:other-kb"))
+	mustContain(t, "the other's realm", realmOf(t, s, "example.github.io-other-kb"), xynolog.KbResource("example.github.io:other-kb"))
 	if _, err := os.Stat(filepath.Join(sharedStateFor(s.home), "postgres")); err != nil {
 		t.Errorf("a knowledge base's clean took the store every realm is kept in: %v", err)
 	}
@@ -3957,8 +3957,8 @@ func TestCleanOfARealmRunsTheSharedIssuerForTheDelete(t *testing.T) {
 	}
 	issuerLeftAsFound := func(label, argv string) {
 		t.Helper()
-		mustContain(t, label+"'s runtime calls", argv, "--name semiont-postgres", "--name semiont-keycloak")
-		if got := argvStops(argv); !slices.Contains(got, "semiont-keycloak") || !slices.Contains(got, "semiont-postgres") {
+		mustContain(t, label+"'s runtime calls", argv, "--name xynolog-postgres", "--name xynolog-keycloak")
+		if got := argvStops(argv); !slices.Contains(got, "xynolog-keycloak") || !slices.Contains(got, "xynolog-postgres") {
 			t.Errorf("%s left the issuer it ran running: %q", label, got)
 		}
 		// With nothing recorded there is no record to read.
@@ -3966,7 +3966,7 @@ func TestCleanOfARealmRunsTheSharedIssuerForTheDelete(t *testing.T) {
 			return
 		}
 		rec := readSharedRecords(t, s)
-		for _, name := range []string{"semiont-keycloak", "semiont-postgres"} {
+		for _, name := range []string{"xynolog-keycloak", "xynolog-postgres"} {
 			if rec.Shared[name] != nil {
 				t.Errorf("%s left a record of %s", label, name)
 			}
@@ -3982,13 +3982,13 @@ func TestCleanOfARealmRunsTheSharedIssuerForTheDelete(t *testing.T) {
 	realmOf(t, s, testKBKey)
 
 	_, argv = cleanRuns("clean", "--store", "vectors")
-	mustNotContain(t, "clean --store vectors's runtime calls", argv, "--name semiont-keycloak")
+	mustNotContain(t, "clean --store vectors's runtime calls", argv, "--name xynolog-keycloak")
 
 	stdout, argv = cleanRuns("clean", "--store", "identity-store")
 	mustContain(t, "the clean", stdout,
 		"The shared issuer is not running: running it for the delete",
 		"Deleted realm "+testKBKey+" from the shared issuer.",
-		"Stopped semiont-keycloak and semiont-postgres, which this clean ran for the delete.")
+		"Stopped xynolog-keycloak and xynolog-postgres, which this clean ran for the delete.")
 	issuerLeftAsFound("the clean", argv)
 	if _, err := os.Stat(realmFile); !os.IsNotExist(err) {
 		t.Errorf("the realm is held after its clean (%v)", err)
@@ -4039,12 +4039,12 @@ func TestCleanOfARealmRunsKeycloakAloneOnAnExternalDatabase(t *testing.T) {
 	if code != 0 {
 		t.Fatalf("clean: exit %d\nstdout:\n%s\nstderr:\n%s", code, stdout, stderr)
 	}
-	mustContain(t, "the clean", stdout, "No realm "+testKBKey+" at the shared issuer", "Stopped semiont-keycloak, which this clean ran for the delete.")
+	mustContain(t, "the clean", stdout, "No realm "+testKBKey+" at the shared issuer", "Stopped xynolog-keycloak, which this clean ran for the delete.")
 	argv := strings.TrimPrefix(s.argv(t), before)
 	// The password is handed by name, never on the command line.
-	mustContain(t, "the clean's runtime calls", argv, "--name semiont-keycloak", "KC_DB_URL=jdbc:postgresql://db.example.com:5432/keycloak", "-e KC_DB_PASSWORD ")
-	mustNotContain(t, "the clean's runtime calls", argv, "--name semiont-postgres", "pgsecret")
-	if got := argvStops(argv); !slices.Contains(got, "semiont-keycloak") || slices.Contains(got, "semiont-postgres") {
+	mustContain(t, "the clean's runtime calls", argv, "--name xynolog-keycloak", "KC_DB_URL=jdbc:postgresql://db.example.com:5432/keycloak", "-e KC_DB_PASSWORD ")
+	mustNotContain(t, "the clean's runtime calls", argv, "--name xynolog-postgres", "pgsecret")
+	if got := argvStops(argv); !slices.Contains(got, "xynolog-keycloak") || slices.Contains(got, "xynolog-postgres") {
 		t.Errorf("the clean stopped %q, want the Keycloak it ran alone", got)
 	}
 }
@@ -4060,7 +4060,7 @@ func TestCleanOfARealmRefusesAnIssuerRecordedAsRunningThatDoesNotAnswer(t *testi
 	if _, stderr, code := s.run(t, "stop"); code != 0 {
 		t.Fatalf("stop: exit %d\nstderr:\n%s", code, stderr)
 	}
-	if err := os.WriteFile(statePathFor(s.home), []byte(`{"schema":3,"stacks":{},"shared":{"semiont-keycloak":{"container":"semiont-keycloak","provided":"launcher","runtime":"container","endpoint":"http://127.0.0.1:9/realms/master"}}}`), 0o644); err != nil {
+	if err := os.WriteFile(statePathFor(s.home), []byte(`{"schema":3,"stacks":{},"shared":{"xynolog-keycloak":{"container":"xynolog-keycloak","provided":"launcher","runtime":"container","endpoint":"http://127.0.0.1:9/realms/master"}}}`), 0o644); err != nil {
 		t.Fatal(err)
 	}
 	before := s.argv(t)
@@ -4070,16 +4070,16 @@ func TestCleanOfARealmRefusesAnIssuerRecordedAsRunningThatDoesNotAnswer(t *testi
 	}
 	mustContain(t, "the refusal", stderr, "The shared issuer at http://127.0.0.1:9:",
 		"Once it is stopped (xynolog stop --group issuer), this clean runs it for the delete.")
-	mustNotContain(t, "the refusal's runtime calls", strings.TrimPrefix(s.argv(t), before), "--name semiont-keycloak", "stop semiont-keycloak")
+	mustNotContain(t, "the refusal's runtime calls", strings.TrimPrefix(s.argv(t), before), "--name xynolog-keycloak", "stop xynolog-keycloak")
 	realmOf(t, s, testKBKey)
 }
 
 // The knowledge bases the index cleans run, by domain: two that
 // protocol/specs/src/vectors/payload-cases.json names the collections of.
 const (
-	arxivDomain = "the-ai-alliance.github.io:semiont-arxiv-kb"
+	arxivDomain = "example.org:test-kb"
 	arxivDid    = "did:web:" + arxivDomain
-	arxivKey    = "the-ai-alliance.github.io-semiont-arxiv-kb"
+	arxivKey    = "example.org-test-kb"
 	plainDomain = "example.github.io:plain-kb"
 	plainDid    = "did:web:" + plainDomain
 )
@@ -4124,7 +4124,7 @@ func plantIndex(t *testing.T, s *scenario, did string) []string {
 // collectionAt: the file the fakert keeps a collection of the shared Qdrant
 // in.
 func collectionAt(s *scenario, name string) string {
-	return filepath.Join(s.fakertDir, "collection-semiont-qdrant-"+name)
+	return filepath.Join(s.fakertDir, "collection-xynolog-qdrant-"+name)
 }
 
 // indexHeld: whether the shared Qdrant holds each of names, as one.
@@ -4183,7 +4183,7 @@ func TestCleanDeletesOneKnowledgeBasesIndexAtTheSharedQdrant(t *testing.T) {
 	}
 	mustContain(t, "clean", stdout, "Deleted the index of "+arxivDid+" from the shared Qdrant (3 collections).")
 	// The Qdrant that answers keeps the other knowledge base's index: left as it is.
-	if fresh := strings.TrimPrefix(s.argv(t), before); strings.Contains(fresh, "--name semiont-qdrant") || slices.Contains(argvStops(fresh), "semiont-qdrant") {
+	if fresh := strings.TrimPrefix(s.argv(t), before); strings.Contains(fresh, "--name xynolog-qdrant") || slices.Contains(argvStops(fresh), "xynolog-qdrant") {
 		t.Errorf("a clean beside a running shared Qdrant ran or stopped it:\n%s", fresh)
 	}
 	if indexHeld(t, s, ours) {
@@ -4210,7 +4210,7 @@ func TestCleanDeletesOneKnowledgeBasesIndexAtTheSharedQdrant(t *testing.T) {
 	if indexHeld(t, s, ours) || !indexHeld(t, s, theirs) {
 		t.Error("an unscoped clean left its index, or took another's")
 	}
-	log, err := os.ReadFile(filepath.Join(s.fakertDir, "admin-semiont-qdrant.log"))
+	log, err := os.ReadFile(filepath.Join(s.fakertDir, "admin-xynolog-qdrant.log"))
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -4244,8 +4244,8 @@ func TestCleanOfAnIndexRunsTheSharedQdrantForTheDelete(t *testing.T) {
 	}
 	qdrantLeftAsFound := func(label, argv string) {
 		t.Helper()
-		mustContain(t, label+"'s runtime calls", argv, "--name semiont-qdrant")
-		if got := argvStops(argv); !slices.Contains(got, "semiont-qdrant") {
+		mustContain(t, label+"'s runtime calls", argv, "--name xynolog-qdrant")
+		if got := argvStops(argv); !slices.Contains(got, "xynolog-qdrant") {
 			t.Errorf("%s left the Qdrant it ran running: %q", label, got)
 		}
 		// With nothing recorded there is no record to read.
@@ -4253,8 +4253,8 @@ func TestCleanOfAnIndexRunsTheSharedQdrantForTheDelete(t *testing.T) {
 			return
 		}
 		rec := readSharedRecords(t, s)
-		if rec.Shared["semiont-qdrant"] != nil {
-			t.Errorf("%s left a record of semiont-qdrant", label)
+		if rec.Shared["xynolog-qdrant"] != nil {
+			t.Errorf("%s left a record of xynolog-qdrant", label)
 		}
 		if len(rec.Stacks) != 0 {
 			t.Errorf("%s recorded a stack: %v", label, rec.Stacks)
@@ -4269,13 +4269,13 @@ func TestCleanOfAnIndexRunsTheSharedQdrantForTheDelete(t *testing.T) {
 	}
 
 	_, argv = cleanRuns("clean", "--store", "graph")
-	mustNotContain(t, "clean --store graph's runtime calls", argv, "--name semiont-qdrant")
+	mustNotContain(t, "clean --store graph's runtime calls", argv, "--name xynolog-qdrant")
 
 	stdout, argv = cleanRuns("clean", "--store", "vectors")
 	mustContain(t, "the clean", stdout,
 		"The shared Qdrant is not running: running it for the delete",
 		"Deleted the index of "+arxivDid+" from the shared Qdrant (3 collections).",
-		"Stopped semiont-qdrant, which this clean ran for the delete.")
+		"Stopped xynolog-qdrant, which this clean ran for the delete.")
 	qdrantLeftAsFound("the clean", argv)
 	if indexHeld(t, s, ours) {
 		t.Error("the index is held after its clean")
@@ -4306,7 +4306,7 @@ func TestCleanOfAnIndexRefusesAQdrantRecordedAsRunningThatDoesNotAnswer(t *testi
 			if err := os.MkdirAll(stateHomeFor(s.home), 0o755); err != nil {
 				t.Fatal(err)
 			}
-			if err := os.WriteFile(statePathFor(s.home), []byte(`{"schema":3,"stacks":{},"shared":{"semiont-qdrant":{"container":"semiont-qdrant","provided":"launcher","runtime":"container","endpoint":"http://127.0.0.1:9/readyz"}}}`), 0o644); err != nil {
+			if err := os.WriteFile(statePathFor(s.home), []byte(`{"schema":3,"stacks":{},"shared":{"xynolog-qdrant":{"container":"xynolog-qdrant","provided":"launcher","runtime":"container","endpoint":"http://127.0.0.1:9/readyz"}}}`), 0o644); err != nil {
 				t.Fatal(err)
 			}
 			if c.key != "" {
@@ -4324,7 +4324,7 @@ func TestCleanOfAnIndexRefusesAQdrantRecordedAsRunningThatDoesNotAnswer(t *testi
 			}
 			mustContain(t, "the refusal", stderr, "The shared Qdrant at http://127.0.0.1:9: ", c.says,
 				"Once it is stopped (xynolog stop --service vectors), this clean runs it for the delete.")
-			mustNotContain(t, "the refusal's runtime calls", strings.TrimPrefix(s.argv(t), before), "--name semiont-qdrant", "stop semiont-qdrant")
+			mustNotContain(t, "the refusal's runtime calls", strings.TrimPrefix(s.argv(t), before), "--name xynolog-qdrant", "stop xynolog-qdrant")
 			if !indexHeld(t, s, ours) {
 				t.Error("the refused clean deleted the index")
 			}
@@ -4352,7 +4352,7 @@ func TestCleanOfAnOwnIndexLeavesTheSharedQdrant(t *testing.T) {
 	}
 	mustContain(t, "the clean", stdout, "Removed "+filepath.Join(stateRootFor(s.home, arxivKey), "qdrant"))
 	mustNotContain(t, "the clean", stdout, "the shared Qdrant")
-	mustNotContain(t, "the clean's runtime calls", strings.TrimPrefix(s.argv(t), before), "--name semiont-qdrant")
+	mustNotContain(t, "the clean's runtime calls", strings.TrimPrefix(s.argv(t), before), "--name xynolog-qdrant")
 	if !indexHeld(t, s, ours) {
 		t.Error("a clean of a knowledge base's own index deleted collections at the shared Qdrant")
 	}
@@ -4402,7 +4402,7 @@ func TestCleanSharedRemovesTheIssuersStore(t *testing.T) {
 		t.Fatalf("stop: exit %d\nstderr:\n%s", code, stderr)
 	}
 	// The issuer's PostgreSQL alone, as `stop --service identity` leaves it.
-	if err := os.WriteFile(statePathFor(s.home), []byte(`{"schema":3,"stacks":{},"shared":{"semiont-postgres":{"container":"semiont-postgres","provided":"launcher","runtime":"container"}}}`), 0o644); err != nil {
+	if err := os.WriteFile(statePathFor(s.home), []byte(`{"schema":3,"stacks":{},"shared":{"xynolog-postgres":{"container":"xynolog-postgres","provided":"launcher","runtime":"container"}}}`), 0o644); err != nil {
 		t.Fatal(err)
 	}
 	refused("beside the issuer's record", "Stop it first: xynolog stop --group issuer")
@@ -4583,12 +4583,12 @@ func TestStatusVerboseNamesWhereTheStoresWereLastStartedFrom(t *testing.T) {
 func TestStatusVerboseNamesAnotherSecretStoreWithoutAskingIt(t *testing.T) {
 	s := newScenario(t, "container", "op")
 	seedStateDir(t, s)
-	if _, stderr, code := s.run(t, "settings", "secret-store", "op://Semiont"); code != 0 {
+	if _, stderr, code := s.run(t, "settings", "secret-store", "op://Xynolog"); code != 0 {
 		t.Fatalf("secret store: exit %d\nstderr:\n%s", code, stderr)
 	}
 	asked := strings.Count(string(s.mustLog(t)), "\nop ")
 	stdout, _, _ := s.run(t, "status", "--verbose")
-	mustContain(t, "another store", stdout, "its secrets are kept in", "Semiont")
+	mustContain(t, "another store", stdout, "its secrets are kept in", "Xynolog")
 	mustNotContain(t, "another store", stdout, "kept secret (", "kept secrets (")
 	if after := strings.Count(string(s.mustLog(t)), "\nop "); after != asked {
 		t.Errorf("status ran 1Password %d more times; the report is not to ask a store anything", after-asked)
@@ -4642,9 +4642,9 @@ func tagOf(token string) string {
 }
 
 // storedSignIn is the sign-in tokens.json holds under home for key.
-func storedSignIn(t *testing.T, home, key string) (xynoplex.SignIn, bool) {
+func storedSignIn(t *testing.T, home, key string) (xynolog.SignIn, bool) {
 	t.Helper()
-	signIn, ok, err := xynoplex.NewSignInStore(tokensPathFor(home)).SignIn(key)
+	signIn, ok, err := xynolog.NewSignInStore(tokensPathFor(home)).SignIn(key)
 	if err != nil {
 		t.Fatalf("tokens.json: %v", err)
 	}
@@ -4692,7 +4692,7 @@ func TestLoginDeviceGrantStoresTokens(t *testing.T) {
 	if err != nil {
 		t.Fatalf("device authorization request not recorded: %v", err)
 	}
-	mustContain(t, "device authorization", string(da), "client_id="+xynoplex.ScriptClientID, "offline_access")
+	mustContain(t, "device authorization", string(da), "client_id="+xynolog.ScriptClientID, "offline_access")
 	signIn, ok := storedSignIn(t, s.home, localKey)
 	if !ok || tagOf(signIn.Token) != "fake-jwt-token" || signIn.RefreshToken != "fake-refresh-token" ||
 		signIn.Issuer != "http://localhost:4000/realms/fake-kb" || signIn.TokenEndpoint == "" || signIn.Email != "admin@example.com" {
@@ -4903,7 +4903,7 @@ func TestLogoutForgetsSession(t *testing.T) {
 	if err != nil {
 		t.Fatalf("no revocation reached the issuer: %v", err)
 	}
-	mustContain(t, "revocation", string(rv), "token=fake-refresh-token", "client_id="+xynoplex.ScriptClientID)
+	mustContain(t, "revocation", string(rv), "token=fake-refresh-token", "client_id="+xynolog.ScriptClientID)
 	// A second logout is a benign no-op, said plainly.
 	stdout, _, code = s.run(t, "logout")
 	if code != 0 {
@@ -4944,7 +4944,7 @@ func TestStopSweepsAllRuntimes(t *testing.T) {
 		"docker: none found",
 		"podman: none found",
 		"staged config dir(s)",
-		"Semiont stack stopped.")
+		"Xynolog stack stopped.")
 	if _, err := os.Stat(stage); !os.IsNotExist(err) {
 		t.Errorf("staged config dir %s not removed", stage)
 	}
@@ -5345,7 +5345,7 @@ func TestStatusNoRuntime(t *testing.T) {
 // invLogPath mirrors the launcher's logDir for the scenario's fake HOME.
 func invLogPath(home string) string {
 	if runtime.GOOS == "darwin" {
-		return filepath.Join(home, "Library", "Logs", "semiont", "launcher.log")
+		return filepath.Join(home, "Library", "Logs", "xynolog", "launcher.log")
 	}
 	if runtime.GOOS == "windows" {
 		return filepath.Join(stateHomeFor(home), "logs", "launcher.log")
@@ -5403,7 +5403,7 @@ func TestUseradd(t *testing.T) {
 
 	// Whatever it does, it never runs a container for a local stack.
 	log, _ := os.ReadFile(s.log)
-	if strings.Contains(string(log), "semiont-useradd") {
+	if strings.Contains(string(log), "xynolog-useradd") {
 		t.Errorf("the local path reaches for the gateway's bin:\n%s", log)
 	}
 	// And the password never appears anywhere it could be read back.
@@ -5770,7 +5770,7 @@ func TestSecretValuesStayOffTheCommandLine(t *testing.T) {
 	if _, stderr, code := s.run(t, "start", "--config", "anthropic"); code != 0 {
 		t.Fatalf("start: exit %d\n%s", code, stderr)
 	}
-	secrets := []string{"ANTHROPIC_API_KEY", "JWT_SECRET", "SEMIONT_OIDC_CLIENT_SECRET", "SEMIONT_OIDC_CLIENT_KEY", "KC_BOOTSTRAP_ADMIN_PASSWORD", "POSTGRES_PASSWORD", "KC_DB_PASSWORD"}
+	secrets := []string{"ANTHROPIC_API_KEY", "JWT_SECRET", "XYNOLOG_OIDC_CLIENT_SECRET", "XYNOLOG_OIDC_CLIENT_KEY", "KC_BOOTSTRAP_ADMIN_PASSWORD", "POSTGRES_PASSWORD", "KC_DB_PASSWORD"}
 	for _, l := range strings.Split(s.argv(t), "\n") {
 		if !strings.HasPrefix(l, "container run") {
 			continue
@@ -5782,11 +5782,11 @@ func TestSecretValuesStayOffTheCommandLine(t *testing.T) {
 		}
 	}
 	for _, c := range []struct{ container, name, want string }{
-		{"semiont-worker", "ANTHROPIC_API_KEY", "test-key"},
-		{"semiont-example.github.io-test-kb-gateway", "JWT_SECRET", ""},
-		{"semiont-example.github.io-test-kb-weaver", "SEMIONT_OIDC_CLIENT_SECRET", ""},
+		{"xynolog-worker", "ANTHROPIC_API_KEY", "test-key"},
+		{"xynolog-example.github.io-test-kb-gateway", "JWT_SECRET", ""},
+		{"xynolog-example.github.io-test-kb-weaver", "XYNOLOG_OIDC_CLIENT_SECRET", ""},
 		// The PEM's first line: the record keeps a line per variable.
-		{"semiont-worker", "SEMIONT_OIDC_CLIENT_KEY", "-----BEGIN PRIVATE KEY-----"},
+		{"xynolog-worker", "XYNOLOG_OIDC_CLIENT_KEY", "-----BEGIN PRIVATE KEY-----"},
 		{containerOf("keycloak"), "KC_BOOTSTRAP_ADMIN_PASSWORD", ""},
 		{containerOf("keycloak"), "KC_DB_PASSWORD", ""},
 		{containerOf("postgres"), "POSTGRES_PASSWORD", ""},
@@ -5796,7 +5796,7 @@ func TestSecretValuesStayOffTheCommandLine(t *testing.T) {
 			t.Errorf("%s did not receive %s through the runtime's environment (got %q)", c.container, c.name, got)
 		}
 	}
-	if _, handed := s.containerEnv(t, "semiont-worker", "SEMIONT_OIDC_CLIENT_SECRET"); handed {
+	if _, handed := s.containerEnv(t, "xynolog-worker", "XYNOLOG_OIDC_CLIENT_SECRET"); handed {
 		t.Error("the worker was handed a secret; it proves itself with the worker key")
 	}
 }
@@ -5943,7 +5943,7 @@ func TestStartResolvesSecret(t *testing.T) {
 	mustContain(t, "stdout", stdout,
 		"ANTHROPIC_API_KEY: reading from 1Password (op read op://OSS/Anthropic/credential)",
 		"expect an authorization prompt")
-	if v, _ := s.containerEnv(t, "semiont-worker", "ANTHROPIC_API_KEY"); v != "fake-op-secret" {
+	if v, _ := s.containerEnv(t, "xynolog-worker", "ANTHROPIC_API_KEY"); v != "fake-op-secret" {
 		t.Errorf("the worker did not receive the resolved secret (got %q)", v)
 	}
 	log, _ := os.ReadFile(s.log)
@@ -5987,7 +5987,7 @@ func TestStartResolvesSecret(t *testing.T) {
 	if code != 0 {
 		t.Fatalf("env-wins start: exit %d\nstderr:\n%s", code, stderr)
 	}
-	if v, _ := s.containerEnv(t, "semiont-worker", "ANTHROPIC_API_KEY"); v != "from-env" {
+	if v, _ := s.containerEnv(t, "xynolog-worker", "ANTHROPIC_API_KEY"); v != "from-env" {
 		t.Errorf("the worker did not receive the exported value (got %q)", v)
 	}
 	log, _ = os.ReadFile(s.log)
@@ -6065,11 +6065,11 @@ func TestCodespaceStartCreates(t *testing.T) {
 		// on the first probe and the follower is killed before it can
 		// exec, so the argv log may legitimately never see it.
 		"gh codespace logs --follow -c fake-cs-1",
-		"Semiont KB is up in codespace fake-cs-1",
-		"Semiont KB         http://localhost:4000",
+		"Xynolog KB is up in codespace fake-cs-1",
+		"Xynolog KB         http://localhost:4000",
 		// Codespace start ENSURES the local Browser (a runtime exists in
 		// this scenario), so the summary names the live endpoint.
-		"Semiont Browser    http://localhost:3000",
+		"Xynolog Browser    http://localhost:3000",
 		// Nothing auto-creates an account, so the summary leads the
 		// follow-ups with the command that makes the first one.
 		"First user:", "xynolog useradd --repo "+csRepo,
@@ -6110,7 +6110,7 @@ func TestCodespaceWaitsForRemoteBeforeForwarding(t *testing.T) {
 	}
 	// The readiness question was asked over ssh, before any forward existed.
 	log := s.argv(t)
-	sshAt := strings.Index(log, "SEMIONT_KB_READY") // the stack-readiness probe
+	sshAt := strings.Index(log, "XYNOLOG_KB_READY") // the stack-readiness probe
 	fwdAt := strings.Index(log, "ports forward")
 	if sshAt < 0 {
 		t.Fatalf("readiness was never asked over ssh:\n%s", log)
@@ -6500,7 +6500,7 @@ func TestCodespaceSshFailureDoesNotBlockAHealthyStack(t *testing.T) {
 		t.Fatalf("a failed ssh must not fail the start: exit %d\nstderr:\n%s", code, stderr)
 	}
 	mustContain(t, "stdout", stdout,
-		"Semiont KB is up in codespace", // stack still reported up
+		"Xynolog KB is up in codespace", // stack still reported up
 		"First user:")                   // and the next step still told
 }
 
@@ -6543,7 +6543,7 @@ func TestUseraddCodespace(t *testing.T) {
 	if strings.Contains(remote, "KC_BOOTSTRAP_ADMIN") {
 		t.Errorf("the remote command carries the admin credential:\n%s", remote)
 	}
-	if strings.Contains(remote, "docker") || strings.Contains(remote, "semiont-example.github.io-test-kb-gateway") {
+	if strings.Contains(remote, "docker") || strings.Contains(remote, "xynolog-example.github.io-test-kb-gateway") {
 		t.Errorf("the codespace path reaches into a container:\n%s", remote)
 	}
 	// Arguments cross a SHELL, so they must be quoted. The free-text value in
@@ -6633,7 +6633,7 @@ func TestExportRepoStreamsTheCodespacesKB(t *testing.T) {
 		t.Fatalf("export: exit %d\nstdout:\n%s\nstderr:\n%s", code, stdout, stderr)
 	}
 	entries := tarGzEntries(t, archive)
-	mustContain(t, "archive", entries, ".semiont/config.yaml", ".semiont/events/__system__/events-000001.jsonl")
+	mustContain(t, "archive", entries, ".xynolog/config.yaml", ".xynolog/events/__system__/events-000001.jsonl")
 	if strings.Contains(entries, ".git/") {
 		t.Errorf("the archive carries .git without --with-git:\n%s", entries)
 	}
@@ -6647,7 +6647,7 @@ func TestExportRepoStreamsTheCodespacesKB(t *testing.T) {
 	if stdout, stderr, code := s.run(t, "export", "--repo", csRepo, "--with-git", "--force"); code != 0 {
 		t.Fatalf("export --with-git --force: exit %d\nstdout:\n%s\nstderr:\n%s", code, stdout, stderr)
 	}
-	mustContain(t, "archive --with-git", tarGzEntries(t, archive), ".git/HEAD", ".semiont/config.yaml")
+	mustContain(t, "archive --with-git", tarGzEntries(t, archive), ".git/HEAD", ".xynolog/config.yaml")
 
 	failed := filepath.Join(s.cwd, "failed.tar.gz")
 	s.extraEnv = append(s.extraEnv, "FAKERT_GH_SSH_FAIL=1")
@@ -6724,7 +6724,7 @@ func TestUseraddAmbiguousStacks(t *testing.T) {
 		t.Fatal(err)
 	}
 	both := `{"schema":3,"stacks":{` +
-		s.localRecord("container", `"services":{"gateway":{"container":"semiont-example.github.io-test-kb-gateway","id":"fid-semiont-example.github.io-test-kb-gateway","provided":"launcher","startedAt":"2026-07-19T00:00:00Z"}}`) + `,` +
+		s.localRecord("container", `"services":{"gateway":{"container":"xynolog-example.github.io-test-kb-gateway","id":"fid-xynolog-example.github.io-test-kb-gateway","provided":"launcher","startedAt":"2026-07-19T00:00:00Z"}}`) + `,` +
 		`"codespace:` + csRepo + `":{"codespace":{"name":"fake-cs-1","repo":"` + csRepo + `","forwardPort":4001},"services":{}}}}`
 	if err := os.WriteFile(p, []byte(both), 0o644); err != nil {
 		t.Fatal(err)
@@ -6846,7 +6846,7 @@ func TestCodespaceDidIsRecordedNotInferred(t *testing.T) {
 	// remote-KB line must show only what was READ from the clone whose origin
 	// named this repo — never a did matched by directory name, which would
 	// attach one fork's identity to another's.
-	s := newCodespaceScenario(t) // cwd is a KB clone with a .semiont/config.yaml
+	s := newCodespaceScenario(t) // cwd is a KB clone with a .xynolog/config.yaml
 	if _, stderr, code := s.run(t, "start", "--runtime", "codespace"); code != 0 {
 		t.Fatalf("create: exit %d\nstderr:\n%s", code, stderr)
 	}
@@ -7083,7 +7083,7 @@ func TestCodespaceForwardsItsIssuer(t *testing.T) {
 		// The codespace's own summary names ITS ports, which are wrong from
 		// the laptop whenever the laptop allocated others. Only the outer
 		// summary may print URLs.
-		if strings.Contains(stdout, "Semiont stack is up") || strings.Count(stdout, "Semiont KB  ") != 1 {
+		if strings.Contains(stdout, "Xynolog stack is up") || strings.Count(stdout, "Xynolog KB  ") != 1 {
 			t.Errorf("the codespace's own summary reached the laptop:\n%s", stdout)
 		}
 		mustContain(t, "the move's one line", stdout, "restarted its stack with the issuer on 8081")
@@ -7166,7 +7166,7 @@ func TestCodespaceForwardsItsIssuer(t *testing.T) {
 
 	t.Run("an issuer the codespace does not run is not forwarded", func(t *testing.T) {
 		s := newCodespaceScenario(t)
-		s.extraEnv = append(s.extraEnv, "FAKERT_GH_CS_ISSUER=https://id.example.com/realms/semiont")
+		s.extraEnv = append(s.extraEnv, "FAKERT_GH_CS_ISSUER=https://id.example.com/realms/xynolog")
 		if _, stderr, code := s.run(t, "start", "--runtime", "codespace"); code != 0 {
 			t.Fatalf("exit %d\n%s", code, stderr)
 		}
@@ -7255,7 +7255,7 @@ func TestCodespaceMovesOnlyAfterItsOwnStartFinishes(t *testing.T) {
 	lines := strings.Split(s.argv(t), "\n")
 	move, stackProbes, lastProbe := -1, 0, -1
 	for i, l := range lines {
-		if strings.Contains(l, "xynolog status") && strings.Contains(l, "SEMIONT_KB_READY") {
+		if strings.Contains(l, "xynolog status") && strings.Contains(l, "XYNOLOG_KB_READY") {
 			stackProbes++
 			lastProbe = i
 		}
@@ -7426,7 +7426,7 @@ func TestCodespaceGuardsAndScoping(t *testing.T) {
 		t.Fatal(err)
 	}
 	local := `{"schema":3,"stacks":{` + s.localRecord("container", `"ports":[3000,4000,24100],`+
-		`"services":{"gateway":{"container":"semiont-example.github.io-test-kb-gateway","id":"fid-semiont-example.github.io-test-kb-gateway","provided":"launcher","startedAt":"2026-07-19T00:00:00Z"}}`) + `}}`
+		`"services":{"gateway":{"container":"xynolog-example.github.io-test-kb-gateway","id":"fid-xynolog-example.github.io-test-kb-gateway","provided":"launcher","startedAt":"2026-07-19T00:00:00Z"}}`) + `}}`
 	if err := os.WriteFile(statePath, []byte(local), 0o644); err != nil {
 		t.Fatal(err)
 	}
@@ -7434,7 +7434,7 @@ func TestCodespaceGuardsAndScoping(t *testing.T) {
 	if code != 0 {
 		t.Fatalf("local record + codespace start: exit %d\nstderr:\n%s", code, stderr)
 	}
-	mustContain(t, "coexist stdout", stdout, "Semiont KB         http://localhost:4001")
+	mustContain(t, "coexist stdout", stdout, "Xynolog KB         http://localhost:4001")
 	if l, _ := os.ReadFile(s.log); !strings.Contains(string(l), "ports forward 4000:4001") {
 		t.Errorf("forward argv must be <codespacePort>:<localPort> = 4000:4001:\n%s", l)
 	}
@@ -7453,7 +7453,7 @@ func TestCodespaceGuardsAndScoping(t *testing.T) {
 	if code != 0 {
 		t.Fatalf("codespace record + local dry-run: exit %d\nstderr:\n%s", code, stderr)
 	}
-	mustContain(t, "local plan stdout", stdout, "container run -d --name semiont-example.github.io-test-kb-gateway")
+	mustContain(t, "local plan stdout", stdout, "container run -d --name xynolog-example.github.io-test-kb-gateway")
 
 	// useradd works against a codespace stack.
 	if _, stderr, code := s2.run(t, "useradd", "--email", "a@b.co", "--generate-password"); code != 0 {
@@ -7509,7 +7509,7 @@ func TestCodespaceDryRunAndLogs(t *testing.T) {
 		"gh api /repos/"+csRepo+"/codespaces/machines",
 		"gh codespace create --repo "+csRepo+" --machine <machine>",
 		"gh codespace ports forward",
-		"cat /workspaces/*/.semiont/config.yaml")
+		"cat /workspaces/*/.xynolog/config.yaml")
 	if log, _ := os.ReadFile(s.log); strings.Contains(string(log), "gh ") {
 		t.Errorf("dry-run invoked gh:\n%s", log)
 	}
@@ -7528,7 +7528,7 @@ func TestCodespaceDryRunAndLogs(t *testing.T) {
 	mustContain(t, "logs stdout", stdout, "[gateway] gateway out")
 	log, _ := os.ReadFile(s.log)
 	mustContain(t, "argv log", string(log),
-		"gh codespace ssh -c fake-cs-1 -- docker logs --follow semiont-example.com-remote-kb-gateway")
+		"gh codespace ssh -c fake-cs-1 -- docker logs --follow xynolog-example.com-remote-kb-gateway")
 
 	// --root names a local knowledge base: its containers are followed by
 	// name, whatever codespace is forwarded.
@@ -7551,7 +7551,7 @@ func TestMultiStackCodespaces(t *testing.T) {
 	if code != 0 {
 		t.Fatalf("bar start: exit %d\nstderr:\n%s", code, stderr)
 	}
-	mustContain(t, "bar stdout", stdout, "Semiont KB         http://localhost:4001")
+	mustContain(t, "bar stdout", stdout, "Xynolog KB         http://localhost:4001")
 	if strings.Contains(stdout, "Switching") || strings.Contains(stdout, "Dropping") {
 		t.Errorf("concurrent start disturbed the other stack's forward:\n%s", stdout)
 	}
@@ -7701,7 +7701,7 @@ func recordedBrowser(t *testing.T, s *scenario) (image, endpoint, memory string)
 	if err := json.Unmarshal(b, &rec); err != nil {
 		t.Fatalf("stack.json: %v", err)
 	}
-	browser := rec.Shared["semiont-browser"]
+	browser := rec.Shared["xynolog-browser"]
 	return browser.Image, browser.Endpoint, browser.Memory
 }
 
@@ -7735,21 +7735,21 @@ func TestTheWorkerRunsWhatItsDocumentSays(t *testing.T) {
 	mustContain(t, path, string(text),
 		"kind: WorkerPool",
 		"logLevel: info",
-		"image: ghcr.io/the-ai-alliance/semiont-worker:latest",
+		"image: ghcr.io/xynolog/xynolog-worker:latest",
 		"memory: 2G")
-	mustContain(t, "argv log", s.argv(t), "run -d --name semiont-worker --memory 2G")
+	mustContain(t, "argv log", s.argv(t), "run -d --name xynolog-worker --memory 2G")
 
 	editSharedDocument(t, s, "worker", "workers.yaml",
-		"semiont-worker:latest", "semiont-worker:local",
+		"xynolog-worker:latest", "xynolog-worker:local",
 		"memory: 2G", "memory: 3G",
 		"logLevel: info", "logLevel: debug")
 	stdout, stderr, code = s.run(t, "start")
 	if code != 0 {
 		t.Fatalf("start after the edit: exit %d\nstdout:\n%s\nstderr:\n%s", code, stdout, stderr)
 	}
-	mustContain(t, "argv log", s.argv(t), "run -d --name semiont-worker --memory 3G")
-	mustContain(t, "argv log", s.argv(t), "ghcr.io/the-ai-alliance/semiont-worker:local")
-	mustNotContain(t, "argv log", s.argv(t), "pull ghcr.io/the-ai-alliance/semiont-worker:local")
+	mustContain(t, "argv log", s.argv(t), "run -d --name xynolog-worker --memory 3G")
+	mustContain(t, "argv log", s.argv(t), "ghcr.io/xynolog/xynolog-worker:local")
+	mustNotContain(t, "argv log", s.argv(t), "pull ghcr.io/xynolog/xynolog-worker:local")
 	var doc api.WorkerConfig
 	if err := json.Unmarshal([]byte(sharedFile(t, s, "worker.json")), &doc); err != nil {
 		t.Fatal(err)
@@ -7811,10 +7811,10 @@ func TestAStartWithNoBrowserDocumentWritesOne(t *testing.T) {
 	}
 	mustContain(t, path, string(text),
 		"kind: Browser",
-		"image: ghcr.io/the-ai-alliance/semiont-browser:latest",
+		"image: ghcr.io/xynolog/xynolog-browser:latest",
 		"memory: 1G",
 		"port: 3000")
-	mustContain(t, "argv log", s.argv(t), "run -d --name semiont-browser --memory 1G --publish 127.0.0.1:3000:3000")
+	mustContain(t, "argv log", s.argv(t), "run -d --name xynolog-browser --memory 1G --publish 127.0.0.1:3000:3000")
 	if _, endpoint, memory := recordedBrowser(t, s); endpoint != "http://localhost:3000" || memory != "1G" {
 		t.Errorf("the Browser was recorded at %q with %q, want http://localhost:3000 with 1G", endpoint, memory)
 	}
@@ -7827,7 +7827,7 @@ func TestAStartWithNoBrowserDocumentWritesOne(t *testing.T) {
 func TestTheBrowserRunsWhatItsDocumentSays(t *testing.T) {
 	s := newScenario(t, "container")
 	editSharedDocument(t, s, "browser", "browser.yaml",
-		"semiont-browser:latest", "semiont-browser:local",
+		"xynolog-browser:latest", "xynolog-browser:local",
 		"memory: 1G", "memory: 2G",
 		"port: 3000", "port: 3001")
 	stdout, stderr, code := s.run(t, "start")
@@ -7835,10 +7835,10 @@ func TestTheBrowserRunsWhatItsDocumentSays(t *testing.T) {
 		t.Fatalf("start: exit %d\nstdout:\n%s\nstderr:\n%s", code, stdout, stderr)
 	}
 	mustContain(t, "argv log", s.argv(t),
-		"run -d --name semiont-browser --memory 2G --publish 127.0.0.1:3001:3000",
-		"ghcr.io/the-ai-alliance/semiont-browser:local")
-	mustContain(t, "the start's summary", stdout, "Semiont Browser    http://localhost:3001")
-	if image, endpoint, memory := recordedBrowser(t, s); image != "ghcr.io/the-ai-alliance/semiont-browser:local" || endpoint != "http://localhost:3001" || memory != "2G" {
+		"run -d --name xynolog-browser --memory 2G --publish 127.0.0.1:3001:3000",
+		"ghcr.io/xynolog/xynolog-browser:local")
+	mustContain(t, "the start's summary", stdout, "Xynolog Browser    http://localhost:3001")
+	if image, endpoint, memory := recordedBrowser(t, s); image != "ghcr.io/xynolog/xynolog-browser:local" || endpoint != "http://localhost:3001" || memory != "2G" {
 		t.Errorf("the Browser was recorded as %q at %q with %q, want the document's :local at http://localhost:3001 with 2G", image, endpoint, memory)
 	}
 	stdout, _, _ = s.run(t, "status", "--service", "browser")
@@ -7847,14 +7847,14 @@ func TestTheBrowserRunsWhatItsDocumentSays(t *testing.T) {
 	// A later start keeps the Browser it finds running as its document says.
 	s.extraEnv = append(s.extraEnv,
 		"FAKERT_STATE_browser=running",
-		"FAKERT_IMAGE_browser=ghcr.io/the-ai-alliance/semiont-browser:local")
+		"FAKERT_IMAGE_browser=ghcr.io/xynolog/xynolog-browser:local")
 	before := s.mustLog(t)
 	stdout, stderr, code = s.run(t, "start")
 	if code != 0 {
 		t.Fatalf("second start: exit %d\nstdout:\n%s\nstderr:\n%s", code, stdout, stderr)
 	}
 	mustContain(t, "the second start's output", stdout+stderr, "Browser already running on http://localhost:3001")
-	if fresh := strings.TrimPrefix(string(s.mustLog(t)), string(before)); strings.Contains(fresh, "run -d --name semiont-browser") {
+	if fresh := strings.TrimPrefix(string(s.mustLog(t)), string(before)); strings.Contains(fresh, "run -d --name xynolog-browser") {
 		t.Errorf("a Browser running as its document says was restarted:\n%s", fresh)
 	}
 
@@ -7870,7 +7870,7 @@ func TestTheBrowserRunsWhatItsDocumentSays(t *testing.T) {
 			t.Fatalf("start after %s: exit %d\nstdout:\n%s\nstderr:\n%s", edit.to, code, stdout, stderr)
 		}
 		fresh := strings.TrimPrefix(string(s.mustLog(t)), string(before))
-		mustContain(t, "argv after "+edit.to, fresh, "run -d --name semiont-browser "+edit.publishes)
+		mustContain(t, "argv after "+edit.to, fresh, "run -d --name xynolog-browser "+edit.publishes)
 	}
 	if _, endpoint, memory := recordedBrowser(t, s); endpoint != "http://localhost:3002" || memory != "3G" {
 		t.Errorf("after the edits the Browser was recorded at %q with %q, want http://localhost:3002 with 3G", endpoint, memory)
@@ -7907,17 +7907,17 @@ func TestSettingsShowsTheBrowserDocument(t *testing.T) {
 	if code != 0 {
 		t.Fatalf("settings browser: exit %d\n%s", code, stderr)
 	}
-	mustContain(t, "settings browser", stdout, path, "ghcr.io/the-ai-alliance/semiont-browser:latest", "1G", "http://localhost:3000")
+	mustContain(t, "settings browser", stdout, path, "ghcr.io/xynolog/xynolog-browser:latest", "1G", "http://localhost:3000")
 	if _, err := os.Stat(path); err != nil {
 		t.Errorf("showing the Browser's document did not write it: %v", err)
 	}
 
-	if _, stderr, code := s.run(t, "settings", "browser", "ghcr.io/the-ai-alliance/semiont-browser:local"); code != 1 {
+	if _, stderr, code := s.run(t, "settings", "browser", "ghcr.io/xynolog/xynolog-browser:local"); code != 1 {
 		t.Errorf("settings browser <value>: exit %d, want 1", code)
 	} else {
 		mustContain(t, "settings browser <value>", stderr, "edit", path)
 	}
-	if _, stderr, code := s.run(t, "settings", "browser-image", "ghcr.io/the-ai-alliance/semiont-browser:local"); code != 1 {
+	if _, stderr, code := s.run(t, "settings", "browser-image", "ghcr.io/xynolog/xynolog-browser:local"); code != 1 {
 		t.Errorf("settings browser-image: exit %d, want 1", code)
 	} else {
 		mustContain(t, "settings browser-image", stderr, `Unknown setting "browser-image"`)
@@ -7936,7 +7936,7 @@ func TestMultiStackLocalPlusCodespace(t *testing.T) {
 	// codespace records alone.
 	s := newCodespaceScenario(t)
 	s.cwd = t.TempDir()
-	set := `{"schema":3,"stacks":{` + s.localRecord("container", `"services":{"gateway":{"container":"semiont-example.github.io-test-kb-gateway","id":"fid-semiont-example.github.io-test-kb-gateway","provided":"launcher","startedAt":"2026-07-19T00:00:00Z"}}`) + `,
+	set := `{"schema":3,"stacks":{` + s.localRecord("container", `"services":{"gateway":{"container":"xynolog-example.github.io-test-kb-gateway","id":"fid-xynolog-example.github.io-test-kb-gateway","provided":"launcher","startedAt":"2026-07-19T00:00:00Z"}}`) + `,
 	  "codespace:pingel-org/foo-kb":{"codespace":{"name":"fake-cs-1","repo":"pingel-org/foo-kb"},"ports":[3000,4000,24100,24101,24102],"services":{}}}}`
 	p := statePathFor(s.home)
 	if err := os.MkdirAll(filepath.Dir(p), 0o755); err != nil {
@@ -7968,7 +7968,7 @@ func TestMultiStackLocalPlusCodespace(t *testing.T) {
 	if strings.Contains(fresh, "gh codespace") {
 		t.Errorf("useradd --runtime container reached the codespace:\n%s", fresh)
 	}
-	if strings.Contains(fresh, "semiont-useradd") {
+	if strings.Contains(fresh, "xynolog-useradd") {
 		t.Errorf("the local path execs the gateway's bin:\n%s", fresh)
 	}
 
@@ -8008,9 +8008,9 @@ func TestStartExternalGraphBoot(t *testing.T) {
 	}
 	mustContain(t, "stdout", stdout,
 		"graph — externally provided at 127.0.0.1:7777 (reachable)",
-		"🚀 Semiont stack is up")
+		"🚀 Xynolog stack is up")
 	argv := s.argv(t)
-	for _, absent := range []string{"run -d --name semiont-example.github.io-test-kb-neo4j", "NEO4J_AUTH", "lsof -ti :7474"} {
+	for _, absent := range []string{"run -d --name xynolog-example.github.io-test-kb-neo4j", "NEO4J_AUTH", "lsof -ti :7474"} {
 		if strings.Contains(argv, absent) {
 			t.Errorf("external graph still touched %q in argv", absent)
 		}
@@ -8039,17 +8039,17 @@ func TestStartExternalGraphBoot(t *testing.T) {
 		t.Fatalf("stop: exit %d", code)
 	}
 	stopArgv := strings.TrimPrefix(s.argv(t), preStop)
-	if strings.Contains(stopArgv, "semiont-example.github.io-test-kb-neo4j") {
+	if strings.Contains(stopArgv, "xynolog-example.github.io-test-kb-neo4j") {
 		t.Errorf("stop touched the external graph:\n%s", stopArgv)
 	}
-	mustContain(t, "stop argv", stopArgv, "stop fid-semiont-example.github.io-test-kb-gateway")
+	mustContain(t, "stop argv", stopArgv, "stop fid-xynolog-example.github.io-test-kb-gateway")
 }
 
 // --- a stack without a worker ---
 
 // noJobEngines: an Inference document, no-worker, that gives each actor an
 // engine and no job one.
-const noJobEngines = `apiVersion: semiont.the-ai-alliance.github.io/v1alpha1
+const noJobEngines = `apiVersion: xynolog.org/v1alpha1
 kind: Inference
 metadata:
   name: no-worker
@@ -8065,7 +8065,7 @@ spec:
 
 // noJobEnginesAt: where a start names giving a job an engine, for that
 // document.
-var noJobEnginesAt = filepath.FromSlash(".semiont/stack/inference/no-worker.yaml") + " spec.engines.jobs"
+var noJobEnginesAt = filepath.FromSlash(".xynolog/stack/inference/no-worker.yaml") + " spec.engines.jobs"
 
 // A worker asked for by name, when no job has an engine, is refused before
 // anything is pulled or run, naming where a job is given one: the plan names
@@ -8078,7 +8078,7 @@ func TestStartServiceWorkerRefusesWhenNoJobHasAnEngine(t *testing.T) {
 		t.Fatalf("exit %d, want 1\nstdout:\n%s\nstderr:\n%s", code, stdout, stderr)
 	}
 	mustContain(t, "output", stdout+stderr, "no job has an engine", noJobEnginesAt)
-	mustNotContain(t, "argv", s.argv(t), "pull", "semiont-worker")
+	mustNotContain(t, "argv", s.argv(t), "pull", "xynolog-worker")
 }
 
 // An Inference document that gives no job an engine starts everything else
@@ -8099,12 +8099,12 @@ func TestStartWithoutAWorkerBoot(t *testing.T) {
 
 	mustContain(t, "stdout", stdout,
 		"worker — no job has an engine, so it does not serve this knowledge base (give one an engine in "+noJobEnginesAt+")",
-		"🚀 Semiont stack is up")
+		"🚀 Xynolog stack is up")
 	if n := strings.Count(stdout+stderr, noJobEnginesAt); n != 1 {
 		t.Errorf("the start names %s %d times, want once\nstdout:\n%s\nstderr:\n%s", noJobEnginesAt, n, stdout, stderr)
 	}
-	mustNotContain(t, "start argv", started, "run -d --name semiont-worker", "semiont-worker:", "24100")
-	mustContain(t, "start argv", started, "run -d --name semiont-example.github.io-test-kb-smelter", "run -d --name semiont-example.github.io-test-kb-weaver")
+	mustNotContain(t, "start argv", started, "run -d --name xynolog-worker", "xynolog-worker:", "24100")
+	mustContain(t, "start argv", started, "run -d --name xynolog-example.github.io-test-kb-smelter", "run -d --name xynolog-example.github.io-test-kb-weaver")
 
 	for _, file := range []string{filepath.Join(stateHomeFor(s.home), "shared", "worker.json"), workerListFor(s.home)} {
 		if _, err := os.Stat(file); !os.IsNotExist(err) {
@@ -8166,7 +8166,7 @@ func TestStartWithoutAWorkerBoot(t *testing.T) {
 		t.Errorf("status has %d worker rows, want one:\n%s", workerRows, stdout)
 	}
 	mustNotContain(t, "status stdout", stdout, "24100")
-	mustNotContain(t, "status argv", strings.TrimPrefix(s.argv(t), before), "semiont-worker")
+	mustNotContain(t, "status argv", strings.TrimPrefix(s.argv(t), before), "xynolog-worker")
 
 	before = s.argv(t)
 	stdout, stderr, code = s.run(t, "logs")
@@ -8174,7 +8174,7 @@ func TestStartWithoutAWorkerBoot(t *testing.T) {
 		t.Fatalf("logs: exit %d\nstdout:\n%s\nstderr:\n%s", code, stdout, stderr)
 	}
 	mustContain(t, "logs stdout", stdout, "Following gateway · smelter · weaver · archivist · librarian · dispatcher · browser —")
-	mustNotContain(t, "logs argv", strings.TrimPrefix(s.argv(t), before), "semiont-worker")
+	mustNotContain(t, "logs argv", strings.TrimPrefix(s.argv(t), before), "xynolog-worker")
 	// Asked for by name, the worker has nothing to follow, and says why.
 	_, stderr, code = s.run(t, "logs", "--service", "worker")
 	if code != 1 {
@@ -8187,8 +8187,8 @@ func TestStartWithoutAWorkerBoot(t *testing.T) {
 		t.Fatalf("stop: exit %d\n%s", code, stderr)
 	}
 	stopped := strings.TrimPrefix(s.argv(t), before)
-	mustNotContain(t, "stop argv", stopped, "semiont-worker", "24100")
-	mustContain(t, "stop argv", stopped, "stop fid-semiont-example.github.io-test-kb-gateway", "stop fid-semiont-example.github.io-test-kb-smelter")
+	mustNotContain(t, "stop argv", stopped, "xynolog-worker", "24100")
+	mustContain(t, "stop argv", stopped, "stop fid-xynolog-example.github.io-test-kb-gateway", "stop fid-xynolog-example.github.io-test-kb-smelter")
 }
 
 // The plan of that start is the start: no document, no pull, no port, no
@@ -8204,13 +8204,13 @@ func TestStartWithoutAWorkerDryRun(t *testing.T) {
 	mustContain(t, "plan", plan,
 		"# worker: no job has an engine — this knowledge base is not on its list (give one an engine in "+noJobEnginesAt+")",
 		"# remove <data-home>/shared/worker-knowledge-bases.json: the worker's list is empty",
-		"run -d --name semiont-example.github.io-test-kb-smelter", "wait: http://<host-addr>:24101/health (30s)")
+		"run -d --name xynolog-example.github.io-test-kb-smelter", "wait: http://<host-addr>:24101/health (30s)")
 	if n := strings.Count(plan, noJobEnginesAt); n != 1 {
 		t.Errorf("the plan names %s %d times, want once:\n%s", noJobEnginesAt, n, plan)
 	}
-	// The preflight sweep still names semiont-worker: it removes whatever an
+	// The preflight sweep still names xynolog-worker: it removes whatever an
 	// earlier start of another Inference document left, by name.
-	mustNotContain(t, "plan", plan, "run -d --name semiont-worker", "semiont-worker:", "worker.json", "24100")
+	mustNotContain(t, "plan", plan, "run -d --name xynolog-worker", "xynolog-worker:", "worker.json", "24100")
 }
 
 // Asked for by name, a worker with no job to do is refused, naming where a
@@ -8224,7 +8224,7 @@ func TestStartServiceWorkerIsRefusedWhenNoJobHasAnEngine(t *testing.T) {
 	}
 	mustContain(t, "stderr", stderr, "no job has an engine", noJobEnginesAt)
 	mustNotContain(t, "stdout", stdout, "nothing to launch", "is up")
-	mustNotContain(t, "argv", s.argv(t), "run -d --name semiont-worker")
+	mustNotContain(t, "argv", s.argv(t), "run -d --name xynolog-worker")
 }
 
 // voyageEmbedding: the fixture's KnowledgeIndex with Voyage making the
@@ -8289,7 +8289,7 @@ func TestStartServiceExternalIsNoop(t *testing.T) {
 	}
 	mustContain(t, "stdout+stderr", stdout+stderr, "graph is externally provided per", "graph.example.com:7687", "nothing to launch")
 	mustNotContain(t, "stdout", stdout, "is up")
-	if argv := s.argv(t); strings.Contains(argv, "semiont-example.github.io-test-kb-neo4j") {
+	if argv := s.argv(t); strings.Contains(argv, "xynolog-example.github.io-test-kb-neo4j") {
 		t.Errorf("no-op still touched the container:\n%s", argv)
 	}
 }
@@ -8313,14 +8313,14 @@ func TestServiceGatewayPortFollowsConfig(t *testing.T) {
 	}
 }
 
-// --- SEMIONT_ROOT / KB-root discovery ---
+// --- XYNOLOG_ROOT / KB-root discovery ---
 
-func TestSemiontRootOverride(t *testing.T) {
-	// From an unrelated directory, SEMIONT_ROOT selects the KB — GIT_DIR
+func TestXynologRootOverride(t *testing.T) {
+	// From an unrelated directory, XYNOLOG_ROOT selects the KB — GIT_DIR
 	// style. The git-clone invariant then runs against the override.
 	s := newScenario(t, "container")
 	s.cwd = t.TempDir() // not a KB
-	s.extraEnv = append(s.extraEnv, "SEMIONT_ROOT="+s.kb)
+	s.extraEnv = append(s.extraEnv, "XYNOLOG_ROOT="+s.kb)
 	stdout, stderr, code := s.run(t, "start", "--dry-run")
 	if code != 0 {
 		t.Fatalf("exit %d\nstdout:\n%s\nstderr:\n%s", code, stdout, stderr)
@@ -8330,25 +8330,25 @@ func TestSemiontRootOverride(t *testing.T) {
 	}
 }
 
-func TestSemiontRootInvalid(t *testing.T) {
+func TestXynologRootInvalid(t *testing.T) {
 	// Strict: an invalid override is an error, never silently ignored in
 	// favor of discovery.
 	s := newScenario(t, "container")
 	for _, tc := range []struct{ root, want string }{
 		{filepath.Join(t.TempDir(), "nope"), "points to non-existent directory"},
-		{t.TempDir(), "does not contain a .semiont/ directory"},
+		{t.TempDir(), "does not contain a .xynolog/ directory"},
 	} {
-		s.extraEnv = []string{"SEMIONT_ROOT=" + tc.root}
+		s.extraEnv = []string{"XYNOLOG_ROOT=" + tc.root}
 		_, stderr, code := s.run(t, "start", "--dry-run")
 		if code != 1 {
-			t.Errorf("SEMIONT_ROOT=%s: want exit 1, got %d", tc.root, code)
+			t.Errorf("XYNOLOG_ROOT=%s: want exit 1, got %d", tc.root, code)
 		}
 		mustContain(t, "stderr", stderr, tc.want)
 	}
 }
 
 func TestRootWalkUpFromSubdir(t *testing.T) {
-	// Discovery walks up from cwd looking for .semiont/ — a KB subdirectory
+	// Discovery walks up from cwd looking for .xynolog/ — a KB subdirectory
 	// resolves to the KB root.
 	s := newScenario(t, "container")
 	sub := filepath.Join(s.kb, "docs", "deep")
@@ -8371,8 +8371,8 @@ func TestRootNotFound(t *testing.T) {
 		t.Fatalf("want exit 1, got %d", code)
 	}
 	mustContain(t, "stderr", stderr,
-		"no .semiont/ directory found in the current directory or any parent",
-		"cd into a KB clone, or set SEMIONT_ROOT")
+		"no .xynolog/ directory found in the current directory or any parent",
+		"cd into a KB clone, or set XYNOLOG_ROOT")
 }
 
 // --- roots registry + --root ---
@@ -8445,7 +8445,7 @@ func TestRootFlagErrors(t *testing.T) {
 	s := newScenario(t, "container")
 	for _, tc := range []struct{ arg, want string }{
 		{filepath.Join(t.TempDir(), "nope", "deep"), "--root points to non-existent directory"},
-		{t.TempDir(), "--root does not contain a .semiont/ directory"},
+		{t.TempDir(), "--root does not contain a .xynolog/ directory"},
 		{"unregistered-name", "no roots are registered yet"},
 	} {
 		_, stderr, code := s.run(t, "start", "--dry-run", "--root", tc.arg)
@@ -8536,7 +8536,7 @@ func TestConfigStickiness(t *testing.T) {
 		t.Fatalf("vanished recorded config: want exit 1, got %d", code)
 	}
 	mustContain(t, "stderr", stderr,
-		"Config not found: "+filepath.FromSlash(".semiont/stack/inference/gone.yaml"),
+		"Config not found: "+filepath.FromSlash(".xynolog/stack/inference/gone.yaml"),
 		"'gone' is this KB's recorded preference")
 }
 
@@ -8550,7 +8550,7 @@ func TestLogsService(t *testing.T) {
 		t.Fatalf("exit %d\nstdout:\n%s\nstderr:\n%s", code, stdout, stderr)
 	}
 	mustContain(t, "stdout", stdout, "Following graph —", "[graph] neo4j out", "[graph] neo4j err")
-	mustContain(t, "argv", s.argv(t), "container logs --follow semiont-example.github.io-test-kb-neo4j")
+	mustContain(t, "argv", s.argv(t), "container logs --follow xynolog-example.github.io-test-kb-neo4j")
 }
 
 func TestLogsRecordAware(t *testing.T) {
@@ -8564,7 +8564,7 @@ func TestLogsRecordAware(t *testing.T) {
 	}
 	mustContain(t, "stdout", stdout, "Using recorded stack state", "[gateway]")
 	argv := s.argv(t)
-	mustContain(t, "argv", argv, "container logs --follow fid-semiont-example.github.io-test-kb-gateway")
+	mustContain(t, "argv", argv, "container logs --follow fid-xynolog-example.github.io-test-kb-gateway")
 	for _, absent := range []string{"container list", "docker ps"} {
 		if strings.Contains(argv, absent) {
 			t.Errorf("record-aware logs still name-scanned: %q", absent)
@@ -8637,7 +8637,7 @@ func TestStackStateLifecycle(t *testing.T) {
 	if _, ok := st.Services["browser"]; ok {
 		t.Error("browser recorded as a stack service — the Browser is machine-level")
 	}
-	if b := set.Shared["semiont-browser"]; b.ID != "fid-semiont-browser" {
+	if b := set.Shared["xynolog-browser"]; b.ID != "fid-xynolog-browser" {
 		t.Errorf("browser record missing or wrong: %+v", set.Shared)
 	}
 	// EXACTLY these roles, not at-least: fleet growth must fail here (a
@@ -8715,7 +8715,7 @@ func TestStackStateLifecycle(t *testing.T) {
 	}
 	mustContain(t, "status header", statusOut, "images latest")
 	statusArgv := strings.TrimPrefix(s.argv(t), preStatus)
-	mustContain(t, "status argv", statusArgv, "container inspect fid-semiont-example.github.io-test-kb-gateway")
+	mustContain(t, "status argv", statusArgv, "container inspect fid-xynolog-example.github.io-test-kb-gateway")
 	for _, bad := range []string{"docker inspect", "podman inspect"} {
 		if strings.Contains(statusArgv, bad) {
 			t.Errorf("status queried a non-recorded runtime: %q", bad)
@@ -8730,7 +8730,7 @@ func TestStackStateLifecycle(t *testing.T) {
 	}
 	mustContain(t, "stdout", stdout, "Using recorded stack state")
 	stopArgv := strings.TrimPrefix(s.argv(t), preStop)
-	mustContain(t, "per-service stop argv", stopArgv, "container stop fid-semiont-example.github.io-test-kb-weaver")
+	mustContain(t, "per-service stop argv", stopArgv, "container stop fid-xynolog-example.github.io-test-kb-weaver")
 	if strings.Contains(stopArgv, "docker stop") {
 		t.Error("per-service stop swept a non-recorded runtime")
 	}
@@ -8750,15 +8750,15 @@ func TestStackStateLifecycle(t *testing.T) {
 	if code != 0 {
 		t.Fatalf("stop: exit %d", code)
 	}
-	mustContain(t, "stdout", stdout, "Using recorded stack state", "Semiont stack stopped.")
+	mustContain(t, "stdout", stdout, "Using recorded stack state", "Xynolog stack stopped.")
 	fullArgv := strings.TrimPrefix(s.argv(t), preFull)
 	mustContain(t, "full stop argv", fullArgv,
-		"container stop fid-semiont-example.github.io-test-kb-gateway",
-		"docker stop semiont-example.github.io-test-kb-gateway", "podman stop semiont-example.github.io-test-kb-gateway")
+		"container stop fid-xynolog-example.github.io-test-kb-gateway",
+		"docker stop xynolog-example.github.io-test-kb-gateway", "podman stop xynolog-example.github.io-test-kb-gateway")
 	// The Browser goes with the stack, by its name under every runtime the
 	// stop swept.
 	mustContain(t, "full stop argv", fullArgv,
-		"container stop semiont-browser", "docker stop semiont-browser", "podman stop semiont-browser")
+		"container stop xynolog-browser", "docker stop xynolog-browser", "podman stop xynolog-browser")
 	for _, bad := range []string{"docker stop fid-", "podman stop fid-"} {
 		if strings.Contains(fullArgv, bad) {
 			t.Errorf("stray sweep used the recorded runtime's IDs: %q", bad)
@@ -8782,8 +8782,8 @@ func TestStopTwiceIsHonest(t *testing.T) {
 	mustContain(t, "stdout", stdout,
 		"No recorded stack",
 		"sweeping all installed runtimes by name",
-		"No Semiont containers found — nothing to stop.")
-	if strings.Contains(stdout, "Semiont stack stopped.") {
+		"No Xynolog containers found — nothing to stop.")
+	if strings.Contains(stdout, "Xynolog stack stopped.") {
 		t.Errorf("no-op stop overstated:\n%s", stdout)
 	}
 }
@@ -8872,7 +8872,7 @@ func TestUnreadableStackRecordRefuses(t *testing.T) {
 func writeStackState(t *testing.T, s *scenario, runtime string) {
 	t.Helper()
 	st := `{"schema":3,"stacks":{` + s.localRecord(runtime, `"services":{
-	  "gateway":{"container":"semiont-example.github.io-test-kb-gateway","id":"fid-semiont-example.github.io-test-kb-gateway","provided":"launcher","startedAt":"2026-07-19T00:00:00Z"}}`) + `}}`
+	  "gateway":{"container":"xynolog-example.github.io-test-kb-gateway","id":"fid-xynolog-example.github.io-test-kb-gateway","provided":"launcher","startedAt":"2026-07-19T00:00:00Z"}}`) + `}}`
 	p := statePathFor(s.home)
 	if err := os.MkdirAll(filepath.Dir(p), 0o755); err != nil {
 		t.Fatal(err)
@@ -8905,7 +8905,7 @@ func TestStopRuntimeMismatchKeepsRecordAndStaging(t *testing.T) {
 	}
 	argv := s.argv(t)
 	// The sweep excludes the Browser; weaver is the first stack member.
-	mustContain(t, "argv", argv, "docker stop semiont-example.github.io-test-kb-weaver")
+	mustContain(t, "argv", argv, "docker stop xynolog-example.github.io-test-kb-weaver")
 	if strings.Contains(argv, "container stop") {
 		t.Errorf("mismatched stop touched the recorded runtime:\n%s", argv)
 	}
@@ -8942,8 +8942,8 @@ func TestStartPrefersRecordedRuntime(t *testing.T) {
 		t.Fatalf("exit %d\nstderr:\n%s", code, stderr)
 	}
 	mustContain(t, "stdout", stdout,
-		"docker pull ghcr.io/the-ai-alliance/semiont-gateway:latest",
-		"docker run --log-opt max-size=10m --log-opt max-file=3 -d --name semiont-example.github.io-test-kb-gateway")
+		"docker pull ghcr.io/xynolog/xynolog-gateway:latest",
+		"docker run --log-opt max-size=10m --log-opt max-file=3 -d --name xynolog-example.github.io-test-kb-gateway")
 	// The main flow must plan against docker; `container` may appear only in
 	// the cross-runtime stray sweep, never as the launching runtime.
 	if strings.Contains(stdout, "container run -d") {
@@ -9025,7 +9025,7 @@ func TestRuntimeStickiness(t *testing.T) {
 }
 
 func TestStartPreflightSweepsAllRuntimes(t *testing.T) {
-	// The full-start preflight name-sweeps semiont-* under every OTHER
+	// The full-start preflight name-sweeps xynolog-* under every OTHER
 	// installed runtime too — after it, a port holder is provably foreign.
 	s := newScenario(t, "container", "docker")
 	s.extraEnv = append(s.extraEnv, "FAKERT_NSLOOKUP=ok")
@@ -9034,8 +9034,8 @@ func TestStartPreflightSweepsAllRuntimes(t *testing.T) {
 		t.Fatalf("exit %d\nstderr:\n%s", code, stderr)
 	}
 	mustContain(t, "stdout", stdout,
-		"# sweep stray Semiont containers under docker:",
-		"docker stop semiont-example.github.io-test-kb-gateway", "docker rm semiont-example.github.io-test-kb-gateway")
+		"# sweep stray Xynolog containers under docker:",
+		"docker stop xynolog-example.github.io-test-kb-gateway", "docker rm xynolog-example.github.io-test-kb-gateway")
 }
 
 func TestStopSweepsStrayRuntimes(t *testing.T) {
@@ -9055,7 +9055,7 @@ func TestStopSweepsStrayRuntimes(t *testing.T) {
 		t.Fatal(err)
 	}
 	mustContain(t, "argv log", string(log),
-		"docker stop semiont-example.github.io-test-kb-gateway", "docker rm semiont-example.github.io-test-kb-gateway")
+		"docker stop xynolog-example.github.io-test-kb-gateway", "docker rm xynolog-example.github.io-test-kb-gateway")
 
 	// An explicit --runtime keeps its narrow meaning: no cross-runtime sweep.
 	s.killServes(t)
@@ -9228,7 +9228,7 @@ func TestStartInjectsPersistentJWTSecret(t *testing.T) {
 	// accounts at the issuer and never sign anything.
 	for _, svc := range []string{"worker", "smelter", "weaver", "browser"} {
 		for _, line := range strings.Split(argv, "\n") {
-			if strings.Contains(line, "--name semiont-"+svc) && strings.Contains(line, "JWT_SECRET") {
+			if strings.Contains(line, "--name xynolog-"+svc) && strings.Contains(line, "JWT_SECRET") {
 				t.Errorf("%s must not receive JWT_SECRET: %s", svc, line)
 			}
 		}
@@ -9402,7 +9402,7 @@ func opItemFields(t *testing.T, s *scenario) map[string]string {
 	}
 	var out map[string]string
 	for _, it := range items {
-		if it.Title != "Semiont — "+testKBKey {
+		if it.Title != "Xynolog — "+testKBKey {
 			continue
 		}
 		if out != nil {
@@ -9427,17 +9427,17 @@ func freshLog(s *scenario, t *testing.T, before []byte) string {
 func TestSecretStoreKeepsAKnowledgeBaseInOnePassword(t *testing.T) {
 	s := newScenario(t, "container", "op")
 	s.noJWTSecret = true
-	stdout, stderr, code := s.run(t, "settings", "secret-store", "op://Semiont")
+	stdout, stderr, code := s.run(t, "settings", "secret-store", "op://Xynolog")
 	if code != 0 {
 		t.Fatalf("secret store: exit %d\nstdout:\n%s\nstderr:\n%s", code, stdout, stderr)
 	}
-	mustContain(t, "secret store", stdout, `1Password vault "Semiont"`)
+	mustContain(t, "secret store", stdout, `1Password vault "Xynolog"`)
 
 	_, firstErr, code := s.run(t, "start")
 	if code != 0 {
 		t.Fatalf("first start: exit %d\nstderr:\n%s", code, firstErr)
 	}
-	ref := "op://Semiont/Semiont — " + testKBKey + "/"
+	ref := "op://Xynolog/Xynolog — " + testKBKey + "/"
 	mustContain(t, "first start", firstErr, "secrets: write jwt-secret ("+ref+"jwt-secret)")
 	kept := opItemFields(t, s)
 	if kept["jwt-secret"] == "" || kept["neo4j-password"] == "" {
@@ -9484,7 +9484,7 @@ func TestSecretStoreKeepsAKnowledgeBaseInOnePassword(t *testing.T) {
 	}
 
 	stdout, _, _ = s.run(t, "status")
-	mustContain(t, "status", stdout, `secrets  1Password vault "Semiont", item "Semiont — `+testKBKey+`"`)
+	mustContain(t, "status", stdout, `secrets  1Password vault "Xynolog", item "Xynolog — `+testKBKey+`"`)
 	stdout, _, code = s.run(t, "settings", "secret-store")
 	if code != 0 {
 		t.Fatalf("secret store (show): exit %d", code)
@@ -9495,7 +9495,7 @@ func TestSecretStoreKeepsAKnowledgeBaseInOnePassword(t *testing.T) {
 func TestSecretStoreNeverFallsBackToTheFilesystem(t *testing.T) {
 	s := newScenario(t, "container", "op")
 	s.noJWTSecret = true
-	if _, stderr, code := s.run(t, "settings", "secret-store", "op://Semiont"); code != 0 {
+	if _, stderr, code := s.run(t, "settings", "secret-store", "op://Xynolog"); code != 0 {
 		t.Fatalf("secret store: exit %d\nstderr:\n%s", code, stderr)
 	}
 	// `op` leaves PATH by a fresh shim directory that never held it: Windows may
@@ -9505,7 +9505,7 @@ func TestSecretStoreNeverFallsBackToTheFilesystem(t *testing.T) {
 	if code == 0 {
 		t.Fatal("start succeeded with its configured store unreachable")
 	}
-	mustContain(t, "refusal", stderr, `1Password vault "Semiont"`, "'op' is not on PATH", "never falls back")
+	mustContain(t, "refusal", stderr, `1Password vault "Xynolog"`, "'op' is not on PATH", "never falls back")
 	if files := keptSecrets(t, stateRootFor(s.home, testKBKey)); len(files) != 0 {
 		t.Errorf("the refused start kept %d values on the filesystem", len(files))
 	}
@@ -9523,7 +9523,7 @@ func TestSecretStoreMovesKeptValues(t *testing.T) {
 	dir := stateRootFor(s.home, testKBKey)
 	onDisk := keptSecrets(t, dir)
 
-	stdout, stderr, code := s.run(t, "settings", "secret-store", "op://Semiont")
+	stdout, stderr, code := s.run(t, "settings", "secret-store", "op://Xynolog")
 	if code != 0 {
 		t.Fatalf("move: exit %d\nstdout:\n%s\nstderr:\n%s", code, stdout, stderr)
 	}
@@ -9561,13 +9561,13 @@ func TestSecretStoreRefusesATargetThatAlreadyHoldsValues(t *testing.T) {
 	if _, _, code := s.run(t, "stop"); code != 0 {
 		t.Fatalf("stop: exit %d", code)
 	}
-	stale := `[{"id":"stale1","title":"Semiont — ` + testKBKey + `","category":"SECURE_NOTE","vault":{"id":"v","name":"Semiont"},` +
+	stale := `[{"id":"stale1","title":"Xynolog — ` + testKBKey + `","category":"SECURE_NOTE","vault":{"id":"v","name":"Xynolog"},` +
 		`"fields":[{"id":"jwt-secret","label":"jwt-secret","type":"CONCEALED","value":"an-older-key"}]}]`
 	if err := os.WriteFile(filepath.Join(s.fakertDir, "op-items.json"), []byte(stale), 0o600); err != nil {
 		t.Fatal(err)
 	}
 	onDisk := keptSecrets(t, stateRootFor(s.home, testKBKey))
-	_, stderr, code := s.run(t, "settings", "secret-store", "op://Semiont")
+	_, stderr, code := s.run(t, "settings", "secret-store", "op://Xynolog")
 	if code == 0 {
 		t.Fatal("a move into a store that already holds this KB's values succeeded")
 	}
@@ -9583,7 +9583,7 @@ func TestSecretStoreRefusesATargetThatAlreadyHoldsValues(t *testing.T) {
 func TestCleanClearsTheSecretStore(t *testing.T) {
 	s := newScenario(t, "container", "op")
 	s.noJWTSecret = true
-	if _, stderr, code := s.run(t, "settings", "secret-store", "op://Semiont"); code != 0 {
+	if _, stderr, code := s.run(t, "settings", "secret-store", "op://Xynolog"); code != 0 {
 		t.Fatalf("secret store: exit %d\nstderr:\n%s", code, stderr)
 	}
 	if _, stderr, code := s.run(t, "start"); code != 0 {
@@ -9690,7 +9690,7 @@ func TestSettingsListsEverySetting(t *testing.T) {
 	if _, stderr, code := s.run(t, "settings", "secret", "set", "ANTHROPIC_API_KEY", "op://OSS/Anthropic/credential"); code != 0 {
 		t.Fatalf("secret set: exit %d\nstderr:\n%s", code, stderr)
 	}
-	if _, stderr, code := s.run(t, "settings", "secret-store", "op://Semiont"); code != 0 {
+	if _, stderr, code := s.run(t, "settings", "secret-store", "op://Xynolog"); code != 0 {
 		t.Fatalf("secret store: exit %d\nstderr:\n%s", code, stderr)
 	}
 
@@ -9704,7 +9704,7 @@ func TestSettingsListsEverySetting(t *testing.T) {
 		"config":        {"ollama-gemma", "recorded"},
 		"keycloak-port": {"8181", "spec.port of the issuer's document"},
 		"secret":        {"ANTHROPIC_API_KEY", "op://OSS/Anthropic/credential"},
-		"secret-store":  {`1Password vault "Semiont"`, "set"},
+		"secret-store":  {`1Password vault "Xynolog"`, "set"},
 	} {
 		row := settingRow(stdout, name)
 		if row == "" {
@@ -9824,17 +9824,17 @@ func TestSettingsKeepsAWideValueApartFromItsExplanation(t *testing.T) {
 func TestDefaultSecretStoreIsAdoptedByANewKnowledgeBase(t *testing.T) {
 	s := newScenario(t, "container", "op")
 	s.noJWTSecret = true
-	if _, stderr, code := s.run(t, "settings", "secret-store", "--default", "op://Semiont"); code != 0 {
+	if _, stderr, code := s.run(t, "settings", "secret-store", "--default", "op://Xynolog"); code != 0 {
 		t.Fatalf("set the default: exit %d\nstderr:\n%s", code, stderr)
 	}
 	stdout, _, _ := s.run(t, "settings")
-	mustContain(t, "default row", settingRow(stdout, "secret-store --default"), `1Password vault "Semiont"`)
+	mustContain(t, "default row", settingRow(stdout, "secret-store --default"), `1Password vault "Xynolog"`)
 
 	_, stderr, code := s.run(t, "start")
 	if code != 0 {
 		t.Fatalf("start: exit %d\nstderr:\n%s", code, stderr)
 	}
-	mustContain(t, "start", stderr, "adopt", `1Password vault "Semiont"`)
+	mustContain(t, "start", stderr, "adopt", `1Password vault "Xynolog"`)
 	if opItemFields(t, s)["jwt-secret"] == "" {
 		t.Error("the new knowledge base did not keep its secrets in the default store")
 	}
@@ -9842,7 +9842,7 @@ func TestDefaultSecretStoreIsAdoptedByANewKnowledgeBase(t *testing.T) {
 		t.Errorf("the new knowledge base kept %d values in files too", len(files))
 	}
 	stdout, _, _ = s.run(t, "settings")
-	mustContain(t, "the KB's own row", settingRow(stdout, "secret-store"), `1Password vault "Semiont"`, "set")
+	mustContain(t, "the KB's own row", settingRow(stdout, "secret-store"), `1Password vault "Xynolog"`, "set")
 
 	// Changing the default moves nothing: the KB keeps what it adopted.
 	if _, stderr, code := s.run(t, "settings", "secret-store", "--default", "--unset"); code != 0 {
@@ -9855,7 +9855,7 @@ func TestDefaultSecretStoreIsAdoptedByANewKnowledgeBase(t *testing.T) {
 	if code != 0 {
 		t.Fatalf("second start: exit %d\nstderr:\n%s", code, stderr)
 	}
-	mustContain(t, "second start", stderr, "secrets: read jwt-secret (op://Semiont/")
+	mustContain(t, "second start", stderr, "secrets: read jwt-secret (op://Xynolog/")
 }
 
 func TestDefaultSecretStoreLeavesAKnowledgeBaseThatKeepsFiles(t *testing.T) {
@@ -9868,7 +9868,7 @@ func TestDefaultSecretStoreLeavesAKnowledgeBaseThatKeepsFiles(t *testing.T) {
 		t.Fatalf("stop: exit %d", code)
 	}
 	kept := keptSecrets(t, stateRootFor(s.home, testKBKey))
-	if _, stderr, code := s.run(t, "settings", "secret-store", "--default", "op://Semiont"); code != 0 {
+	if _, stderr, code := s.run(t, "settings", "secret-store", "--default", "op://Xynolog"); code != 0 {
 		t.Fatalf("set the default: exit %d\nstderr:\n%s", code, stderr)
 	}
 	_, stderr, code := s.run(t, "start")
@@ -9888,7 +9888,7 @@ func TestDefaultSecretStoreLeavesAKnowledgeBaseThatKeepsFiles(t *testing.T) {
 // is not a new knowledge base's first need.
 func TestDefaultSecretStoreIsNotAdoptedByCleanOrAMove(t *testing.T) {
 	s := newScenario(t, "container", "op")
-	if _, stderr, code := s.run(t, "settings", "secret-store", "--default", "op://Semiont"); code != 0 {
+	if _, stderr, code := s.run(t, "settings", "secret-store", "--default", "op://Xynolog"); code != 0 {
 		t.Fatalf("set the default: exit %d\nstderr:\n%s", code, stderr)
 	}
 	if err := os.MkdirAll(stateRootFor(s.home, testKBKey), 0o755); err != nil {
@@ -9906,7 +9906,7 @@ func TestDefaultSecretStoreIsNotAdoptedByCleanOrAMove(t *testing.T) {
 	if code != 0 {
 		t.Fatalf("secret-store op://Other: exit %d\nstderr:\n%s", code, stderr)
 	}
-	mustNotContain(t, "move", stderr, "adopt", `vault "Semiont"`)
+	mustNotContain(t, "move", stderr, "adopt", `vault "Xynolog"`)
 	stdout, _, _ = s.run(t, "settings", "secret-store")
 	mustContain(t, "after the move", settingRow(stdout, "secret-store"), `1Password vault "Other"`)
 }
@@ -9915,7 +9915,7 @@ func TestDefaultSecretStoreIsNotAdoptedByCleanOrAMove(t *testing.T) {
 // they already run: init's summary and the start's.
 func TestInitAndStartNameTheSecretsStore(t *testing.T) {
 	s := newScenario(t, "container", "op")
-	if _, stderr, code := s.run(t, "settings", "secret-store", "--default", "op://Semiont"); code != 0 {
+	if _, stderr, code := s.run(t, "settings", "secret-store", "--default", "op://Xynolog"); code != 0 {
 		t.Fatalf("set the default: exit %d\nstderr:\n%s", code, stderr)
 	}
 	born := newScenario(t, "container", "op")
@@ -9925,13 +9925,13 @@ func TestInitAndStartNameTheSecretsStore(t *testing.T) {
 	if code != 0 {
 		t.Fatalf("init: exit %d\nstdout:\n%s\nstderr:\n%s", code, stdout, stderr)
 	}
-	mustContain(t, "init's summary", stdout, "Secrets", "op://Semiont", "xynolog settings secret-store")
+	mustContain(t, "init's summary", stdout, "Secrets", "op://Xynolog", "xynolog settings secret-store")
 
 	stdout, stderr, code = s.run(t, "start")
 	if code != 0 {
 		t.Fatalf("start: exit %d\nstderr:\n%s", code, stderr)
 	}
-	mustContain(t, "start's summary", stdout, "Secrets", `1Password vault "Semiont"`, "xynolog settings secret-store")
+	mustContain(t, "start's summary", stdout, "Secrets", `1Password vault "Xynolog"`, "xynolog settings secret-store")
 }
 
 // A setter validates as a start would, and a refused value records nothing.
@@ -9964,7 +9964,7 @@ func TestSettingsRefusesWhatAStartWould(t *testing.T) {
 // from what the container received.
 func gatewayJWTSecret(t *testing.T, s *scenario) string {
 	t.Helper()
-	v, ok := s.containerEnv(t, "semiont-example.github.io-test-kb-gateway", "JWT_SECRET")
+	v, ok := s.containerEnv(t, "xynolog-example.github.io-test-kb-gateway", "JWT_SECRET")
 	if !ok {
 		t.Fatalf("the gateway was given no JWT_SECRET:\n%s", s.argv(t))
 	}
@@ -10016,7 +10016,7 @@ func TestStartServiceWorker(t *testing.T) {
 	mustContain(t, "stdout", stdout,
 		"Restarting Worker\n",
 		"OTel collector detected — export enabled",
-		"--env SEMIONT_OIDC_CLIENT_KEY ",
+		"--env XYNOLOG_OIDC_CLIENT_KEY ",
 		"🚀 worker is up",
 		"xynolog status",
 	)
@@ -10025,14 +10025,14 @@ func TestStartServiceWorker(t *testing.T) {
 	}
 	argv := s.argv(t)
 	mustContain(t, "argv", argv,
-		"stop semiont-worker",
-		"rm semiont-worker",
-		"image pull ghcr.io/the-ai-alliance/semiont-worker:latest",
-		"--env SEMIONT_OIDC_CLIENT_KEY",
+		"stop xynolog-worker",
+		"rm xynolog-worker",
+		"image pull ghcr.io/xynolog/xynolog-worker:latest",
+		"--env XYNOLOG_OIDC_CLIENT_KEY",
 		"--env OTEL_EXPORTER_OTLP_ENDPOINT=http://",
-		asThisSystemRuns("<state-home>/shared/worker.json:/etc/semiont/worker.json:ro"),
+		asThisSystemRuns("<state-home>/shared/worker.json:/etc/xynolog/worker.json:ro"),
 	)
-	for _, absent := range []string{"run -d --name semiont-example.github.io-test-kb-neo4j", "run -d --name semiont-example.github.io-test-kb-gateway", "semiont-browser"} {
+	for _, absent := range []string{"run -d --name xynolog-example.github.io-test-kb-neo4j", "run -d --name xynolog-example.github.io-test-kb-gateway", "xynolog-browser"} {
 		if strings.Contains(argv, absent) {
 			t.Errorf("--service worker touched the wider stack: %q in argv", absent)
 		}
@@ -10069,7 +10069,7 @@ func otherKBGateway(t *testing.T) string {
 // machine's worker, from inside the scenario's knowledge base.
 func addToWorker(t *testing.T, s *scenario, domain, gateway string) (stderr string, code int) {
 	t.Helper()
-	_, stderr, code = s.run(t, "worker", "kb", "add", domain, "--gateway", gateway, "--client-id", "semiont-worker-alice")
+	_, stderr, code = s.run(t, "worker", "kb", "add", domain, "--gateway", gateway, "--client-id", "xynolog-worker-alice")
 	return stderr, code
 }
 
@@ -10122,7 +10122,7 @@ func TestTheWorkerServesTheKnowledgeBasesAddedToIt(t *testing.T) {
 	}
 	mustContain(t, "worker kb list", stdout,
 		"example.github.io:test-kb (local)\n",
-		"other.example:kb (added)\n", "Issuer:     https://id.other.example/realms/kb\n", "Client id:  semiont-worker-alice\n",
+		"other.example:kb (added)\n", "Issuer:     https://id.other.example/realms/kb\n", "Client id:  xynolog-worker-alice\n",
 		"Engines of: example.github.io:test-kb\n")
 
 	plan, _, code := s.run(t, "start", "--dry-run")
@@ -10139,11 +10139,11 @@ func TestTheWorkerServesTheKnowledgeBasesAddedToIt(t *testing.T) {
 		t.Fatalf("the worker's document names %v, want the local knowledge base and the one added", domainsOf(served))
 	}
 	own, other := served[0], served[1]
-	if own.Domain != "example.github.io:test-kb" || own.Identity.ClientId != "semiont-worker-local" {
+	if own.Domain != "example.github.io:test-kb" || own.Identity.ClientId != "xynolog-worker-local" {
 		t.Errorf("the first knowledge base is %s as %s, want the local one as the shared worker", own.Domain, own.Identity.ClientId)
 	}
 	if other.Domain != "other.example:kb" || other.GatewayUrl != gateway ||
-		other.Identity.Issuer != "https://id.other.example/realms/kb" || other.Identity.ClientId != "semiont-worker-alice" {
+		other.Identity.Issuer != "https://id.other.example/realms/kb" || other.Identity.ClientId != "xynolog-worker-alice" {
 		t.Errorf("the added knowledge base is served as %+v", other)
 	}
 	offered, _ := json.Marshal(other.Engines)
@@ -10234,10 +10234,10 @@ func TestTheWorkerServesTheLocalKnowledgeBaseOnEachGatewayPort(t *testing.T) {
 	if err := json.Unmarshal(b, &rec); err != nil {
 		t.Fatal(err)
 	}
-	s.extraEnv = append(s.extraEnv, "FAKERT_STATE_worker=running", "FAKERT_IMAGE_worker="+rec.Shared["semiont-worker"].Image)
+	s.extraEnv = append(s.extraEnv, "FAKERT_STATE_worker=running", "FAKERT_IMAGE_worker="+rec.Shared["xynolog-worker"].Image)
 	before := s.argv(t)
 	mustContain(t, "a re-run", start("a re-run of the second knowledge base's start"), "worker — Worker already running")
-	if again := strings.TrimPrefix(s.argv(t), before); strings.Contains(again, "run -d --name semiont-worker") {
+	if again := strings.TrimPrefix(s.argv(t), before); strings.Contains(again, "run -d --name xynolog-worker") {
 		t.Errorf("a re-run serving the same list restarted the worker:\n%s", again)
 	}
 
@@ -10250,7 +10250,7 @@ func TestTheWorkerServesTheLocalKnowledgeBaseOnEachGatewayPort(t *testing.T) {
 	s.kb = first
 	before = s.argv(t)
 	stdout = start("the first knowledge base's next start")
-	if again := strings.TrimPrefix(s.argv(t), before); !strings.Contains(again, "run -d --name semiont-worker") {
+	if again := strings.TrimPrefix(s.argv(t), before); !strings.Contains(again, "run -d --name xynolog-worker") {
 		t.Errorf("the first's next start did not run the worker:\n%s", again)
 	}
 	mustContain(t, "the first's next start", stdout,
@@ -10282,8 +10282,8 @@ func TestTheWorkerStopsWhenItServesNothing(t *testing.T) {
 		t.Fatalf("stop --service worker: exit %d\n%s", code, stderr)
 	}
 	stopped := strings.TrimPrefix(s.argv(t), before)
-	mustContain(t, "stop --service worker", stopped, "stop semiont-worker", "rm semiont-worker")
-	mustNotContain(t, "stop --service worker", stopped, "semiont-example.github.io-test-kb-gateway")
+	mustContain(t, "stop --service worker", stopped, "stop xynolog-worker", "rm xynolog-worker")
+	mustNotContain(t, "stop --service worker", stopped, "xynolog-example.github.io-test-kb-gateway")
 
 	start()
 	before = s.argv(t)
@@ -10292,7 +10292,7 @@ func TestTheWorkerStopsWhenItServesNothing(t *testing.T) {
 		t.Fatalf("stop: exit %d\n%s", code, stderr)
 	}
 	mustContain(t, "a bare stop", stdout, "Worker stopped")
-	mustContain(t, "a bare stop", strings.TrimPrefix(s.argv(t), before), "stop semiont-worker")
+	mustContain(t, "a bare stop", strings.TrimPrefix(s.argv(t), before), "stop xynolog-worker")
 	plan, _, _ := s.run(t, "stop", "--dry-run")
 	mustContain(t, "stop --dry-run", plan, "# stop the shared Worker:")
 
@@ -10300,7 +10300,7 @@ func TestTheWorkerStopsWhenItServesNothing(t *testing.T) {
 	before = s.argv(t)
 	stdout = start("--config", "no-worker")
 	mustContain(t, "a start with no engine", stdout, "worker — serves no knowledge base; stopped")
-	mustContain(t, "a start with no engine", strings.TrimPrefix(s.argv(t), before), "stop semiont-worker")
+	mustContain(t, "a start with no engine", strings.TrimPrefix(s.argv(t), before), "stop xynolog-worker")
 	if _, err := os.Stat(workerListFor(s.home)); !os.IsNotExist(err) {
 		t.Errorf("the worker's list is kept with nothing on it (stat: %v)", err)
 	}
@@ -10336,7 +10336,7 @@ func TestStopServiceWorkerStopsTheWorkerFromAKnowledgeBaseItDoesNotServe(t *test
 		t.Fatalf("start --config no-worker: exit %d\nstdout:\n%s\nstderr:\n%s", code, stdout, stderr)
 	}
 	mustContain(t, "a start with no engine", stdout, "worker — no job has an engine, so it does not serve this knowledge base")
-	mustContain(t, "a start with no engine", strings.TrimPrefix(s.argv(t), before), "run -d --name semiont-worker")
+	mustContain(t, "a start with no engine", strings.TrimPrefix(s.argv(t), before), "run -d --name xynolog-worker")
 	if served := domainsOf(workerServes(t, s)); !slices.Equal(served, []string{"example.github.io:other-kb"}) {
 		t.Errorf("the worker serves %v, want the knowledge base on its own port alone", served)
 	}
@@ -10346,7 +10346,7 @@ func TestStopServiceWorkerStopsTheWorkerFromAKnowledgeBaseItDoesNotServe(t *test
 	if _, stderr, code := s.run(t, "stop", "--service", "worker"); code != 0 {
 		t.Fatalf("stop --service worker: exit %d\n%s", code, stderr)
 	}
-	mustContain(t, "stop --service worker", strings.TrimPrefix(s.argv(t), before), "stop semiont-worker", "rm semiont-worker")
+	mustContain(t, "stop --service worker", strings.TrimPrefix(s.argv(t), before), "stop xynolog-worker", "rm xynolog-worker")
 }
 
 // A start resolves every provider key the worker's list names, its own
@@ -10448,7 +10448,7 @@ func TestStartServiceGraph(t *testing.T) {
 			mustContain(t, "stdout", stdout, "Restarting Graph (Neo4j)", "🚀 graph is up")
 			argv := s.argv(t)
 			// Docker's run carries its log options before -d.
-			mustContain(t, "argv", argv, "stop semiont-example.github.io-test-kb-neo4j", "rm semiont-example.github.io-test-kb-neo4j", "-d --name semiont-example.github.io-test-kb-neo4j")
+			mustContain(t, "argv", argv, "stop xynolog-example.github.io-test-kb-neo4j", "rm xynolog-example.github.io-test-kb-neo4j", "-d --name xynolog-example.github.io-test-kb-neo4j")
 			needless := []string{"image pull", "inspect"}
 			if rt == "container" {
 				mustContain(t, "argv", argv, "-p 192.168.64.1:17687:7687")
@@ -10476,7 +10476,7 @@ func TestStartServiceBrowserNoClone(t *testing.T) {
 	mustContain(t, "stdout", stdout, "Restarting Browser", "🚀 browser is up")
 	// The git-clone invariant covers a full start and the Archivist, which
 	// mounts /kb as the git WRITER: a non-clone would fail at its first
-	// `git add` instead. Every other service needs only the .semiont/ tree.
+	// `git add` instead. Every other service needs only the .xynolog/ tree.
 	if _, stderr, code := s.run(t, "start", "--service", "archivist"); code != 1 {
 		t.Errorf("archivist without git: want exit 1, got %d", code)
 	} else {
@@ -10504,11 +10504,11 @@ func TestStartServiceLibrarian(t *testing.T) {
 	mustContain(t, "stdout", stdout, "Restarting Librarian", "Librarian healthy (http://192.168.64.1:24104)")
 	log := string(s.mustLog(t))
 	mustContain(t, "argv", log,
-		"--name semiont-example.github.io-test-kb-librarian",
+		"--name xynolog-example.github.io-test-kb-librarian",
 		"--publish 192.168.64.1:24104:24104",
-		"librarian.json:/etc/semiont/librarian.json:ro",
-		filepath.Join(testKBKey, "librarian")+":/semiont-state",
-		"--env SEMIONT_OIDC_CLIENT_ID=semiont-librarian")
+		"librarian.json:/etc/xynolog/librarian.json:ro",
+		filepath.Join(testKBKey, "librarian")+":/xynolog-state",
+		"--env XYNOLOG_OIDC_CLIENT_ID=xynolog-librarian")
 	for _, banned := range []string{"JWT_SECRET", "LIBRARIAN_HOST", "GATEWAY_HOST", "XDG_STATE_HOME", ":/kb", "anchored-text:", filepath.Join(testKBKey, "state") + ":"} {
 		if strings.Contains(log, banned) {
 			t.Errorf("the Librarian must not receive %s:\n%s", banned, log)
@@ -10519,7 +10519,7 @@ func TestStartServiceLibrarian(t *testing.T) {
 	// librarian that never starts live.
 	mustContain(t, "staged librarian.json", stagedFile(t, s, "librarian.json"),
 		`"passwordEnv": "NEO4J_PASSWORD"`)
-	if v, _ := s.containerEnv(t, "semiont-example.github.io-test-kb-librarian", "NEO4J_PASSWORD"); len(v) < 32 {
+	if v, _ := s.containerEnv(t, "xynolog-example.github.io-test-kb-librarian", "NEO4J_PASSWORD"); len(v) < 32 {
 		t.Errorf("the Librarian's document names NEO4J_PASSWORD, and it was handed %q", v)
 	}
 }
@@ -10537,12 +10537,12 @@ func TestStartServiceArchivist(t *testing.T) {
 	mustContain(t, "stdout", stdout, "Restarting Archivist", "Archivist healthy (http://192.168.64.1:24103)")
 	log := string(s.mustLog(t))
 	mustContain(t, "argv", log,
-		"--name semiont-example.github.io-test-kb-archivist",
+		"--name xynolog-example.github.io-test-kb-archivist",
 		"--publish 192.168.64.1:24103:24103",
 		":/kb",
-		"archivist.json:/etc/semiont/archivist.json:ro",
+		"archivist.json:/etc/xynolog/archivist.json:ro",
 		"anchored-text:/anchored-text",
-		"--env SEMIONT_OIDC_CLIENT_ID=semiont-archivist")
+		"--env XYNOLOG_OIDC_CLIENT_ID=xynolog-archivist")
 	if strings.Contains(log, "JWT_SECRET") {
 		t.Errorf("the Archivist must not receive JWT_SECRET — it signs nothing:\n%s", log)
 	}
@@ -10556,16 +10556,16 @@ func TestStartServiceDryRunWorker(t *testing.T) {
 	}
 	mustContain(t, "stdout", s.norm(stdout),
 		"xynolog start --service worker --dry-run",
-		"container stop semiont-worker",
-		"container image pull ghcr.io/the-ai-alliance/semiont-worker:latest",
+		"container stop xynolog-worker",
+		"container image pull ghcr.io/xynolog/xynolog-worker:latest",
 		"# write <data-home>/shared/worker-knowledge-bases.json: the worker's list, example.github.io:test-kb (local)",
-		asThisSystemPrints("--volume <state-home>/shared/worker.json:/etc/semiont/worker.json:ro"),
+		asThisSystemPrints("--volume <state-home>/shared/worker.json:/etc/xynolog/worker.json:ro"),
 		"wait: http://<host-addr>:24100/health (30s)",
 	)
-	if strings.Contains(stdout, "semiont-example.github.io-test-kb-neo4j") {
+	if strings.Contains(stdout, "xynolog-example.github.io-test-kb-neo4j") {
 		t.Error("service plan leaked the wider stack")
 	}
-	// Dry run must execute nothing: worker needs only .semiont/ discovery
+	// Dry run must execute nothing: worker needs only .xynolog/ discovery
 	// (pure Go), not the git-clone invariant (a full start, gateway, archivist).
 	if got := s.argv(t); got != "" {
 		t.Errorf("dry-run executed commands:\n%s", got)
@@ -10620,7 +10620,7 @@ func TestStopGroupStopsWhatNeedsIt(t *testing.T) {
 	kb := func(names ...string) []string {
 		out := make([]string, len(names))
 		for i, n := range names {
-			out[i] = "semiont-" + testKBKey + "-" + n
+			out[i] = "xynolog-" + testKBKey + "-" + n
 		}
 		return out
 	}
@@ -10633,7 +10633,7 @@ func TestStopGroupStopsWhatNeedsIt(t *testing.T) {
 		kept      []string // and some it keeps
 		worker    bool     // the shared worker is still recorded
 	}{
-		{"index", false, slices.Concat(kb("weaver", "smelter", "librarian", "neo4j"), []string{"semiont-qdrant"}),
+		{"index", false, slices.Concat(kb("weaver", "smelter", "librarian", "neo4j"), []string{"xynolog-qdrant"}),
 			[]string{"index stopped: weaver, smelter, librarian, graph, vectors", "Qdrant stopped"}, []string{"stops too", "left running"},
 			[]string{"weaver", "smelter", "librarian", "vectors", "graph"},
 			[]string{"gateway", "archivist", "dispatcher", "messaging", "identity", "identity-store"}, true},
@@ -10641,7 +10641,7 @@ func TestStopGroupStopsWhatNeedsIt(t *testing.T) {
 			[]string{"index stopped: weaver, smelter, librarian, graph", "The shared Qdrant left running: another knowledge base's stack is recorded."}, []string{"stops too", "Qdrant stopped"},
 			[]string{"weaver", "smelter", "librarian", "graph"},
 			[]string{"vectors", "gateway", "archivist", "dispatcher", "messaging", "identity", "identity-store"}, true},
-		{"record", false, slices.Concat([]string{"semiont-worker"}, kb("weaver", "smelter", "dispatcher", "librarian", "archivist", "gateway", "nats")),
+		{"record", false, slices.Concat([]string{"xynolog-worker"}, kb("weaver", "smelter", "dispatcher", "librarian", "archivist", "gateway", "nats")),
 			[]string{"weaver stops too: it needs the gateway", "librarian stops too: it needs the gateway", "worker stops too: it needs the gateway"}, []string{"left running"},
 			[]string{"weaver", "smelter", "dispatcher", "librarian", "archivist", "gateway", "messaging"},
 			[]string{"graph", "vectors", "identity", "identity-store"}, false},
@@ -10701,7 +10701,7 @@ func TestStopGroupStopsWhatNeedsIt(t *testing.T) {
 					}
 				}
 			}
-			if _, kept := rec.Shared["semiont-worker"]; kept != c.worker {
+			if _, kept := rec.Shared["xynolog-worker"]; kept != c.worker {
 				t.Errorf("after stop --group %s the shared worker is recorded: %v, want %v", c.group, kept, c.worker)
 			}
 		})
@@ -10727,13 +10727,13 @@ func TestStopSharedGroupStopsItAlone(t *testing.T) {
 		group string
 		stops []string
 	}{
-		{"telemetry", []string{"semiont-otel-collector", "semiont-prometheus", "semiont-jaeger"}},
+		{"telemetry", []string{"xynolog-otel-collector", "xynolog-prometheus", "xynolog-jaeger"}},
 		// The server first, then the PostgreSQL it holds sessions in; each
 		// knowledge base's gateway stays up.
-		{"issuer", []string{"semiont-keycloak", "semiont-postgres"}},
-		{"knowledge-workers", []string{"semiont-browser", "semiont-worker"}},
+		{"issuer", []string{"xynolog-keycloak", "xynolog-postgres"}},
+		{"knowledge-workers", []string{"xynolog-browser", "xynolog-worker"}},
 		// Inference and embedding are one Ollama, stopped once.
-		{"providers", []string{"semiont-ollama"}},
+		{"providers", []string{"xynolog-ollama"}},
 	} {
 		before := s.argv(t)
 		stdout, stderr, code := s.run(t, "stop", "--group", c.group)
@@ -10782,7 +10782,7 @@ func TestStopGroupRefusalsAndDryRun(t *testing.T) {
 	if code != 0 {
 		t.Fatalf("stop --group telemetry --dry-run: exit %d\n%s", code, stdout)
 	}
-	mustContain(t, "shared dry run", stdout, "# stop the shared OTel collector:", "container stop semiont-otel-collector")
+	mustContain(t, "shared dry run", stdout, "# stop the shared OTel collector:", "container stop xynolog-otel-collector")
 	mustNotContain(t, "shared dry run", stdout, "telemetry stopped")
 	stdout, _, code = s.run(t, "stop", "--group", "issuer", "--dry-run")
 	if code != 0 {
@@ -10792,8 +10792,8 @@ func TestStopGroupRefusalsAndDryRun(t *testing.T) {
 		t.Errorf("a dry run stopped %q", got)
 	}
 	mustContain(t, "issuer dry run", stdout,
-		"# stop the shared Keycloak:", "container stop semiont-keycloak",
-		"# stop the shared PostgreSQL:", "container stop semiont-postgres")
+		"# stop the shared Keycloak:", "container stop xynolog-keycloak",
+		"# stop the shared PostgreSQL:", "container stop xynolog-postgres")
 	mustNotContain(t, "issuer dry run", stdout, "stops too", testKBKey, "issuer stopped")
 }
 
@@ -10814,7 +10814,7 @@ func TestStartGroupStartsWhatItNeeds(t *testing.T) {
 	kb := func(names ...string) []string {
 		out := make([]string, len(names))
 		for i, n := range names {
-			out[i] = "semiont-" + testKBKey + "-" + n
+			out[i] = "xynolog-" + testKBKey + "-" + n
 		}
 		return out
 	}
@@ -10879,7 +10879,7 @@ func TestStartGroupBesideAnotherKnowledgeBase(t *testing.T) {
 	own := func(names ...string) []string {
 		out := make([]string, len(names))
 		for i, n := range names {
-			out[i] = "semiont-example.github.io-other-kb-" + n
+			out[i] = "xynolog-example.github.io-other-kb-" + n
 		}
 		return out
 	}
@@ -10972,7 +10972,7 @@ func TestStartSharedGroup(t *testing.T) {
 	if code != 0 {
 		t.Fatalf("start --group telemetry outside a KB: exit %d\n%s%s", code, stdout, stderr)
 	}
-	if got, want := argvRuns(s.argv(t)), []string{"semiont-jaeger", "semiont-prometheus", "semiont-otel-collector"}; !slices.Equal(got, want) {
+	if got, want := argvRuns(s.argv(t)), []string{"xynolog-jaeger", "xynolog-prometheus", "xynolog-otel-collector"}; !slices.Equal(got, want) {
 		t.Errorf("start --group telemetry ran\n  %q\nwant\n  %q", got, want)
 	}
 	mustContain(t, "start --group telemetry", stdout, "🚀 telemetry is up", "it serves every KB here")
@@ -10999,8 +10999,8 @@ func TestStartGroupDryRunAndRefusals(t *testing.T) {
 	mustContain(t, "dry run", stdout,
 		"# xynolog start --group index --dry-run",
 		"# gateway starts too: the weaver needs it",
-		"container run -d --name semiont-"+testKBKey+"-gateway",
-		"container run -d --name semiont-"+testKBKey+"-weaver")
+		"container run -d --name xynolog-"+testKBKey+"-gateway",
+		"container run -d --name xynolog-"+testKBKey+"-weaver")
 	mustNotContain(t, "dry run", stdout, "-dispatcher")
 	for _, c := range []struct {
 		args []string
@@ -11029,7 +11029,7 @@ func TestStopService(t *testing.T) {
 	mustContain(t, "stdout", stdout,
 		"Sweeping 1 container(s) across container, docker, podman",
 		"weaver stopped (staged configs left in place; rest of the stack untouched).")
-	if strings.Contains(stdout, "Semiont stack stopped.") {
+	if strings.Contains(stdout, "Xynolog stack stopped.") {
 		t.Error("--service printed the full-stack message")
 	}
 	if _, err := os.Stat(stage); err != nil {
@@ -11037,9 +11037,9 @@ func TestStopService(t *testing.T) {
 	}
 	argv := s.argv(t)
 	for _, rt := range []string{"container", "docker", "podman"} {
-		mustContain(t, "argv", argv, rt+" stop semiont-example.github.io-test-kb-weaver", rt+" rm semiont-example.github.io-test-kb-weaver")
+		mustContain(t, "argv", argv, rt+" stop xynolog-example.github.io-test-kb-weaver", rt+" rm xynolog-example.github.io-test-kb-weaver")
 	}
-	if strings.Contains(argv, "semiont-example.github.io-test-kb-gateway") {
+	if strings.Contains(argv, "xynolog-example.github.io-test-kb-gateway") {
 		t.Error("--service weaver touched other containers")
 	}
 }
@@ -11075,7 +11075,7 @@ func TestEmbeddingIsAnExternalRole(t *testing.T) {
 		t.Errorf("stop: exit %d", code)
 	}
 	log, _ := os.ReadFile(s.log)
-	if strings.Contains(string(log), "semiont-embedding") {
+	if strings.Contains(string(log), "xynolog-embedding") {
 		t.Errorf("stop targeted a container embedding does not own:\n%s", log)
 	}
 }
@@ -11134,7 +11134,7 @@ func TestCodespaceRecordedGroupStartStaysLocal(t *testing.T) {
 		t.Fatalf("start --group telemetry: exit %d\nstdout:\n%s\nstderr:\n%s", code, stdout, stderr)
 	}
 	mustNotContain(t, "start --group telemetry", stdout+stderr, "Using recorded stack's platform")
-	mustContain(t, "argv log", string(s.mustLog(t)), "run -d --name semiont-otel-collector")
+	mustContain(t, "argv log", string(s.mustLog(t)), "run -d --name xynolog-otel-collector")
 }
 
 func TestBareResumeUsesRecordedRepoNotCwd(t *testing.T) {
@@ -11202,7 +11202,7 @@ func TestStartPullsMissingOllamaModels(t *testing.T) {
 	}
 	s.extraEnv = append(s.extraEnv,
 		"FAKERT_STATE_ollama=running",
-		"FAKERT_IMAGE_ollama="+readSharedRecords(t, s).Shared["semiont-ollama"].Image)
+		"FAKERT_IMAGE_ollama="+readSharedRecords(t, s).Shared["xynolog-ollama"].Image)
 	stdout, stderr, code := s.run(t, "start")
 	if code != 0 {
 		t.Fatalf("keeping start: exit %d\nstderr:\n%s", code, stderr)
@@ -11308,14 +11308,14 @@ func TestRemoteModelsAreNeverCheckedAgainstOllama(t *testing.T) {
 	// The stack records embedding as served by the shared Ollama, so
 	// --service embedding is what stops that Ollama alone; --service
 	// inference, which Claude performs, leaves it.
-	if m := readSharedRecords(t, s); m.Shared["semiont-ollama"] == nil || m.Stacks[localKey].Services["embedding"].Provided != "shared" {
+	if m := readSharedRecords(t, s); m.Shared["xynolog-ollama"] == nil || m.Stacks[localKey].Services["embedding"].Provided != "shared" {
 		t.Errorf("want the shared Ollama recorded and embedding provided by it, got %+v", m)
 	}
 	before := s.mustLog(t)
 	if _, stderr, code := s.run(t, "stop", "--service", "inference"); code != 0 {
 		t.Fatalf("stop --service inference: exit %d\nstderr:\n%s", code, stderr)
 	}
-	if fresh := strings.TrimPrefix(string(s.mustLog(t)), string(before)); strings.Contains(fresh, "semiont-ollama") {
+	if fresh := strings.TrimPrefix(string(s.mustLog(t)), string(before)); strings.Contains(fresh, "xynolog-ollama") {
 		t.Errorf("stop --service inference, which Claude performs, touched the embedding's Ollama:\n%s", fresh)
 	}
 	before = s.mustLog(t)
@@ -11324,7 +11324,7 @@ func TestRemoteModelsAreNeverCheckedAgainstOllama(t *testing.T) {
 		t.Fatalf("stop --service embedding: exit %d\nstderr:\n%s", code, stderr)
 	}
 	mustContain(t, "stop --service embedding", stdout, "Ollama stopped")
-	mustContain(t, "stop --service embedding's argv", strings.TrimPrefix(string(s.mustLog(t)), string(before)), "stop semiont-ollama")
+	mustContain(t, "stop --service embedding's argv", strings.TrimPrefix(string(s.mustLog(t)), string(before)), "stop xynolog-ollama")
 
 	// And a bare stop finds the embedding-owned Ollama — the one hazard of
 	// ownership sitting with a role other than inference.
@@ -11335,7 +11335,7 @@ func TestRemoteModelsAreNeverCheckedAgainstOllama(t *testing.T) {
 	if _, stderr, code := s.run(t, "stop"); code != 0 {
 		t.Fatalf("stop: exit %d\nstderr:\n%s", code, stderr)
 	}
-	if fresh := strings.TrimPrefix(string(s.mustLog(t)), string(before)); !strings.Contains(fresh, "stop semiont-ollama") {
+	if fresh := strings.TrimPrefix(string(s.mustLog(t)), string(before)); !strings.Contains(fresh, "stop xynolog-ollama") {
 		t.Errorf("stop never targeted the embedding-owned Ollama container:\n%s", fresh)
 	}
 }
@@ -11417,7 +11417,7 @@ func inferenceDocument(name, providers, engine string, overrides map[string]stri
 		return engine
 	}
 	var b strings.Builder
-	fmt.Fprintf(&b, "apiVersion: semiont.the-ai-alliance.github.io/v1alpha1\nkind: Inference\nmetadata:\n  name: %s\nspec:\n  providers:\n%s  engines:\n    actors:\n", name, providers)
+	fmt.Fprintf(&b, "apiVersion: xynolog.org/v1alpha1\nkind: Inference\nmetadata:\n  name: %s\nspec:\n  providers:\n%s  engines:\n    actors:\n", name, providers)
 	for _, actor := range []string{"gatherer", "matcher"} {
 		fmt.Fprintf(&b, "      %s: %s\n", actor, at("actors."+actor))
 	}
@@ -11709,7 +11709,7 @@ func TestBareStopFollowsCwd(t *testing.T) {
 	if strings.Contains(fresh, "gh codespace") {
 		t.Errorf("bare useradd in the local clone went to the codespace:\n%s", fresh)
 	}
-	if strings.Contains(fresh, "semiont-useradd") {
+	if strings.Contains(fresh, "xynolog-useradd") {
 		t.Errorf("the local path execs the gateway's bin:\n%s", fresh)
 	}
 
@@ -11757,7 +11757,7 @@ func TestFailedGateDumpsContainerLogs(t *testing.T) {
 	all := stdout + stderr
 	mustContain(t, "gate failure output", all,
 		"vectors (Qdrant) did not become ready",
-		"of semiont-qdrant's logs:",
+		"of xynolog-qdrant's logs:",
 		"qdrant out", // fakert's `logs` stdout — proof the tail is the container's own
 		"qdrant err",
 		"Full logs:  xynolog logs --service vectors")
@@ -11775,7 +11775,7 @@ func TestCrashedContainerStaysInspectable(t *testing.T) {
 	}
 	argv := s.argv(t)
 	for _, line := range strings.Split(argv, "\n") {
-		if strings.Contains(line, "run -d") && strings.Contains(line, "semiont-") {
+		if strings.Contains(line, "run -d") && strings.Contains(line, "xynolog-") {
 			if strings.Contains(line, "--rm") {
 				t.Errorf("service container launched with --rm — a crash would destroy its logs: %q", line)
 			}
@@ -11856,7 +11856,7 @@ func TestStatusBilling(t *testing.T) {
 	mustContain(t, "billing", stdout,
 		"CODESPACES BILLING",
 		"2026-01", "44.3 compute-hrs", "net $15.69",
-		"2026-07", "net $0.00", "semiont-template-kb")
+		"2026-07", "net $0.00", "kb-template")
 	if strings.Contains(stdout, "Copilot") || strings.Contains(stdout, "copilot") {
 		t.Errorf("a non-codespaces product leaked into the codespaces report:\n%s", stdout)
 	}
@@ -11907,7 +11907,7 @@ func TestDiscoveryFileTracksStacks(t *testing.T) {
 	mustContain(t, "local entry", disc(),
 		`"host": "localhost"`, `"port": 4000`, `"placement": "local"`,
 		`"did": "did:web:example.github.io:test-kb"`, `"siteName": "Test Knowledge Base"`,
-		`"managedBy": "semiont-launcher"`)
+		`"managedBy": "xynolog-launcher"`)
 	// The Browser mounts the directory, read-only.
 	mustContain(t, "browser mount", s.argv(t), asThisSystemRuns("-v <state-home>/discovery:/discovery:ro"))
 
@@ -12095,7 +12095,7 @@ func TestBrowserLifecycle(t *testing.T) {
 	if err := json.Unmarshal(rec, &placement); err != nil {
 		t.Fatalf("stack.json: %v", err)
 	}
-	if _, ok := placement.Shared["semiont-browser"]; !ok {
+	if _, ok := placement.Shared["xynolog-browser"]; !ok {
 		t.Errorf("no machine-level browser record:\n%s", rec)
 	}
 	if _, wrong := placement.Stacks[localKey].Services["browser"]; wrong {
@@ -12125,8 +12125,8 @@ func TestBrowserLifecycle(t *testing.T) {
 			Image string `json:"image"`
 		} `json:"shared"`
 	}
-	if err := json.Unmarshal(rec, &ran); err != nil || !strings.HasPrefix(ran.Shared["semiont-browser"].Image, "ghcr.io/the-ai-alliance/semiont-browser:latest@sha256:") {
-		t.Fatalf("the Browser was recorded as %q (%v): want the verified image, by its digest", ran.Shared["semiont-browser"].Image, err)
+	if err := json.Unmarshal(rec, &ran); err != nil || !strings.HasPrefix(ran.Shared["xynolog-browser"].Image, "ghcr.io/xynolog/xynolog-browser:latest@sha256:") {
+		t.Fatalf("the Browser was recorded as %q (%v): want the verified image, by its digest", ran.Shared["xynolog-browser"].Image, err)
 	}
 
 	// Stop: the stack and the Browser both, and both records. Slice the
@@ -12139,7 +12139,7 @@ func TestBrowserLifecycle(t *testing.T) {
 	}
 	mustContain(t, "stop stdout", stdout, "Browser stopped")
 	stopArgv := strings.TrimPrefix(string(s.mustLog(t)), string(preStop))
-	mustContain(t, "stop argv", stopArgv, "container stop semiont-browser", "container rm semiont-browser")
+	mustContain(t, "stop argv", stopArgv, "container stop xynolog-browser", "container rm xynolog-browser")
 	if left, err := os.ReadFile(statePathFor(s.home)); !os.IsNotExist(err) {
 		t.Errorf("stack.json after a stop: %v\n%s", err, left)
 	}
@@ -12155,7 +12155,7 @@ func TestBrowserLifecycle(t *testing.T) {
 	// ran.
 	s.extraEnv = append(s.extraEnv,
 		"FAKERT_STATE_browser=running",
-		"FAKERT_IMAGE_browser="+ran.Shared["semiont-browser"].Image)
+		"FAKERT_IMAGE_browser="+ran.Shared["xynolog-browser"].Image)
 	before := s.mustLog(t)
 	stdout, stderr, code = s.run(t, "start")
 	if code != 0 {
@@ -12163,7 +12163,7 @@ func TestBrowserLifecycle(t *testing.T) {
 	}
 	fresh := strings.TrimPrefix(string(s.mustLog(t)), string(before))
 	mustContain(t, "keep message", stdout+stderr, "Browser already running")
-	if strings.Contains(fresh, "run -d --name semiont-browser") {
+	if strings.Contains(fresh, "run -d --name xynolog-browser") {
 		t.Errorf("current Browser was churned:\n%s", fresh)
 	}
 
@@ -12171,7 +12171,7 @@ func TestBrowserLifecycle(t *testing.T) {
 	// restart.
 	for i, e := range s.extraEnv {
 		if strings.HasPrefix(e, "FAKERT_IMAGE_browser=") {
-			s.extraEnv[i] = "FAKERT_IMAGE_browser=ghcr.io/the-ai-alliance/semiont-browser:old"
+			s.extraEnv[i] = "FAKERT_IMAGE_browser=ghcr.io/xynolog/xynolog-browser:old"
 		}
 	}
 	before = s.mustLog(t)
@@ -12180,7 +12180,7 @@ func TestBrowserLifecycle(t *testing.T) {
 		t.Fatalf("stale-image start: exit %d\nstderr:\n%s", code, stderr)
 	}
 	fresh = strings.TrimPrefix(string(s.mustLog(t)), string(before))
-	if !strings.Contains(fresh, "run -d --name semiont-browser") {
+	if !strings.Contains(fresh, "run -d --name xynolog-browser") {
 		t.Errorf("stale Browser was not restarted:\n%s", fresh)
 	}
 
@@ -12199,7 +12199,7 @@ func TestBrowserLifecycle(t *testing.T) {
 // --- xynolog init ---
 
 func TestInitBirthsIdentity(t *testing.T) {
-	// Flag-driven birth, prompt-free: .semiont/config.yaml carries the exact
+	// Flag-driven birth, prompt-free: .xynolog/config.yaml carries the exact
 	// identity, and no TOML project file is written; git init + stage
 	// happen, the root registers, and a second init refuses without --force.
 	s := newScenario(t, "container")
@@ -12210,16 +12210,16 @@ func TestInitBirthsIdentity(t *testing.T) {
 	if code != 0 {
 		t.Fatalf("init: exit %d\nstdout:\n%s\nstderr:\n%s", code, stdout, stderr)
 	}
-	cfg, err := os.ReadFile(filepath.Join(s.cwd, ".semiont", "config.yaml"))
+	cfg, err := os.ReadFile(filepath.Join(s.cwd, ".xynolog", "config.yaml"))
 	if err != nil {
-		t.Fatalf(".semiont/config.yaml not written: %v", err)
+		t.Fatalf(".xynolog/config.yaml not written: %v", err)
 	}
-	mustContain(t, ".semiont/config.yaml", string(cfg),
+	mustContain(t, ".xynolog/config.yaml", string(cfg),
 		`name: "family-kb"`,
 		`domain: "pingel-org.github.io:family-kb"`,
 		`siteName: "Family KB"`,
 		`sync: true`)
-	if _, err := os.Stat(filepath.Join(s.cwd, ".semiont", "config")); !os.IsNotExist(err) {
+	if _, err := os.Stat(filepath.Join(s.cwd, ".xynolog", "config")); !os.IsNotExist(err) {
 		t.Errorf("init wrote the TOML project file beside config.yaml (%v)", err)
 	}
 	// Two fields the fleet's KBs do not carry, so a born KB must not either:
@@ -12230,11 +12230,11 @@ func TestInitBirthsIdentity(t *testing.T) {
 		}
 	}
 	// The launcher runs git with -C <dir>; assert the subcommands.
-	mustContain(t, "argv", s.argv(t), " init", " add .semiont")
+	mustContain(t, "argv", s.argv(t), " init", " add .xynolog")
 	roots, _ := os.ReadFile(rootsPathFor(s.home))
 	mustContain(t, "roots.json", string(roots), "family-kb")
 
-	// Refuse a second birth without --force — .semiont/ is not overwritable
+	// Refuse a second birth without --force — .xynolog/ is not overwritable
 	// by accident.
 	_, stderr, code = s.run(t, "init", "--name", "x", "--domain", "d:x", "--yes")
 	if code != 1 {
@@ -12254,7 +12254,7 @@ func TestInitIdentityLadderAndRefusals(t *testing.T) {
 	if code != 0 {
 		t.Fatalf("origin-derived init: exit %d\nstderr:\n%s", code, stderr)
 	}
-	cfg, _ := os.ReadFile(filepath.Join(s.cwd, ".semiont", "config.yaml"))
+	cfg, _ := os.ReadFile(filepath.Join(s.cwd, ".xynolog", "config.yaml"))
 	// Owner lowercased (Pages hosts are lowercase); repo name kept as-is.
 	mustContain(t, "derived did", string(cfg), `domain: "pingel-org.github.io:family-kb"`)
 	mustContain(t, "derivation announced", stdout+stderr, "pingel-org.github.io:family-kb")
@@ -12277,7 +12277,7 @@ func TestInitNoGitAndDryRun(t *testing.T) {
 	if code != 0 {
 		t.Fatalf("init --no-git: exit %d\nstderr:\n%s", code, stderr)
 	}
-	cfg, _ := os.ReadFile(filepath.Join(s.cwd, ".semiont", "config.yaml"))
+	cfg, _ := os.ReadFile(filepath.Join(s.cwd, ".xynolog", "config.yaml"))
 	mustContain(t, "config", string(cfg), `sync: false`)
 	mustContain(t, "consequences", stdout+stderr, "--no-git")
 	for _, line := range strings.Split(s.argv(t), "\n") {
@@ -12294,9 +12294,9 @@ func TestInitNoGitAndDryRun(t *testing.T) {
 	if code != 0 {
 		t.Fatalf("init --dry-run: exit %d\nstderr:\n%s", code, stderr)
 	}
-	mustContain(t, "plan", stdout, ".semiont/config.yaml", "git init")
-	if _, err := os.Stat(filepath.Join(s3.cwd, ".semiont")); !os.IsNotExist(err) {
-		t.Error("--dry-run wrote .semiont/")
+	mustContain(t, "plan", stdout, ".xynolog/config.yaml", "git init")
+	if _, err := os.Stat(filepath.Join(s3.cwd, ".xynolog")); !os.IsNotExist(err) {
+		t.Error("--dry-run wrote .xynolog/")
 	}
 	if got := s3.argv(t); strings.Contains(got, " init") || strings.Contains(got, " add") {
 		t.Errorf("--dry-run executed git:\n%s", got)
@@ -12314,7 +12314,7 @@ func TestInitInteractivePrompts(t *testing.T) {
 		t.Fatalf("interactive init: exit %d\nstdout:\n%s\nstderr:\n%s", code, stdout, stderr)
 	}
 	mustContain(t, "identity warning shown", stdout, "permanent")
-	cfg, _ := os.ReadFile(filepath.Join(s.cwd, ".semiont", "config.yaml"))
+	cfg, _ := os.ReadFile(filepath.Join(s.cwd, ".xynolog", "config.yaml"))
 	mustContain(t, "prompted values", string(cfg),
 		`domain: "d.example.org:kb"`, `siteName: "My KB"`)
 }
@@ -12338,7 +12338,7 @@ func TestInitGeneratesStartableDocuments(t *testing.T) {
 	if code != 0 {
 		t.Fatalf("init: exit %d\nstderr:\n%s", code, stderr)
 	}
-	stackDir := filepath.Join(s.cwd, ".semiont", "stack")
+	stackDir := filepath.Join(s.cwd, ".xynolog", "stack")
 	inference, err := os.ReadFile(filepath.Join(stackDir, "inference", "anthropic.yaml"))
 	if err != nil {
 		t.Fatalf("generated Inference document missing: %v", err)
@@ -12354,7 +12354,7 @@ func TestInitGeneratesStartableDocuments(t *testing.T) {
 	if err != nil {
 		t.Fatalf("generated KnowledgeIndex missing: %v", err)
 	}
-	mustContain(t, "index.yaml", string(index), "model: nomic-embed-text", "semiont-librarian:latest")
+	mustContain(t, "index.yaml", string(index), "model: nomic-embed-text", "xynolog-librarian:latest")
 	kb, err := os.ReadFile(filepath.Join(stackDir, "knowledge-base.yaml"))
 	if err != nil {
 		t.Fatalf("generated KnowledgeBase missing: %v", err)
@@ -12491,7 +12491,7 @@ func TestInitAnthropicPickerValidatesAgainstLiveList(t *testing.T) {
 		t.Fatalf("default pick: exit %d\nstderr:\n%s", code, stderr)
 	}
 	mustContain(t, "default announced", stdout+stderr, "claude-sonnet-4-9")
-	inference, _ := os.ReadFile(filepath.Join(s2.cwd, ".semiont", "stack", "inference", "anthropic.yaml"))
+	inference, _ := os.ReadFile(filepath.Join(s2.cwd, ".xynolog", "stack", "inference", "anthropic.yaml"))
 	mustContain(t, "inference/anthropic.yaml", string(inference), "model: claude-sonnet-4-9")
 
 	// Keyless: typed model accepted, plainly marked unvalidated.
@@ -12551,7 +12551,7 @@ func TestInitOllamaModelsValidatedByRegistry(t *testing.T) {
 	mustContain(t, "offline warning", stdout+stderr, "could not be verified")
 }
 
-// templateFixture builds a fake semiont-template-kb tree: the fixture's own
+// templateFixture builds a fake kb-template tree: the fixture's own
 // documents (the same files the parser tests trust) plus a devcontainer set
 // with the template's display name. includeBad names a graph store no driver
 // runs, so no document of it can start.
@@ -12562,14 +12562,14 @@ func templateFixture(t *testing.T, includeBad bool) string {
 		if name == "config.yaml" {
 			continue
 		}
-		b, err := os.ReadFile(libraryTestdata("kb", ".semiont", filepath.FromSlash(name)))
+		b, err := os.ReadFile(libraryTestdata("kb", ".xynolog", filepath.FromSlash(name)))
 		if err != nil {
 			t.Fatal(err)
 		}
 		if includeBad && name == "stack/index.yaml" {
 			b = []byte(strings.Replace(string(b), "type: neo4j", "type: janusgraph", 1))
 		}
-		target := filepath.Join(root, ".semiont", filepath.FromSlash(name))
+		target := filepath.Join(root, ".xynolog", filepath.FromSlash(name))
 		if err := os.MkdirAll(filepath.Dir(target), 0o755); err != nil {
 			t.Fatal(err)
 		}
@@ -12582,9 +12582,9 @@ func templateFixture(t *testing.T, includeBad bool) string {
 		t.Fatal(err)
 	}
 	files := map[string]string{
-		"devcontainer.json": `{"name": "Semiont Template KB", "postStartCommand": ".devcontainer/post-start.sh"}`,
+		"devcontainer.json": `{"name": "Xynolog Template KB", "postStartCommand": ".devcontainer/post-start.sh"}`,
 		"post-create.sh":    "#!/bin/sh\necho hi\n",
-		"post-start.sh":     "#!/bin/sh\nsemiont start --runtime docker\n",
+		"post-start.sh":     "#!/bin/sh\nxynolog start --runtime docker\n",
 	}
 	for n, c := range files {
 		if err := os.WriteFile(filepath.Join(dc, n), []byte(c), 0o644); err != nil {
@@ -12592,8 +12592,8 @@ func templateFixture(t *testing.T, includeBad bool) string {
 		}
 	}
 	// Template identity — must NEVER reach the newborn.
-	if err := os.WriteFile(filepath.Join(root, ".semiont", "config.yaml"),
-		[]byte("project:\n  name: Semiont Template KB\ngit:\n  sync: true\nsite:\n  domain: the-ai-alliance.github.io:semiont-template-kb\n  siteName: Semiont Template KB\n"), 0o644); err != nil {
+	if err := os.WriteFile(filepath.Join(root, ".xynolog", "config.yaml"),
+		[]byte("project:\n  name: Xynolog Template KB\ngit:\n  sync: true\nsite:\n  domain: xynolog.github.io:kb-template\n  siteName: Xynolog Template KB\n"), 0o644); err != nil {
 		t.Fatal(err)
 	}
 	return root
@@ -12617,13 +12617,13 @@ func TestInitFromTemplateCopiesAndVets(t *testing.T) {
 		if name == "config.yaml" {
 			continue
 		}
-		if _, err := os.Stat(filepath.Join(s.cwd, ".semiont", filepath.FromSlash(name))); err != nil {
+		if _, err := os.Stat(filepath.Join(s.cwd, ".xynolog", filepath.FromSlash(name))); err != nil {
 			t.Errorf("%s not copied: %v", name, err)
 		}
 	}
-	cfg, _ := os.ReadFile(filepath.Join(s.cwd, ".semiont", "config.yaml"))
+	cfg, _ := os.ReadFile(filepath.Join(s.cwd, ".xynolog", "config.yaml"))
 	mustContain(t, "identity is init's own", string(cfg), `domain: "d.io:kb"`)
-	if strings.Contains(string(cfg), "semiont-template-kb") {
+	if strings.Contains(string(cfg), "kb-template") {
 		t.Errorf("template identity leaked into the newborn:\n%s", cfg)
 	}
 	if _, _, code := s.run(t, "start", "--config", "anthropic", "--dry-run"); code != 0 {
@@ -12641,8 +12641,8 @@ func TestInitFromTemplateCopiesAndVets(t *testing.T) {
 		t.Fatalf("bad template: want refusal, got %d", code)
 	}
 	mustContain(t, "the deriver's own refusal", stderr, "janusgraph")
-	if _, err := os.Stat(filepath.Join(s2.cwd, ".semiont", "stack")); !os.IsNotExist(err) {
-		t.Error("refusal left a partial .semiont/stack tree")
+	if _, err := os.Stat(filepath.Join(s2.cwd, ".xynolog", "stack")); !os.IsNotExist(err) {
+		t.Error("refusal left a partial .xynolog/stack tree")
 	}
 
 	// Two sources of documents are contradictory.
@@ -12674,7 +12674,7 @@ func TestInitDevcontainerCopy(t *testing.T) {
 		t.Fatalf("devcontainer.json not copied: %v", err)
 	}
 	mustContain(t, "renamed", string(dj), `"name": "myk"`)
-	if strings.Contains(string(dj), "Semiont Template KB") {
+	if strings.Contains(string(dj), "Xynolog Template KB") {
 		t.Errorf("template display name survived:\n%s", dj)
 	}
 	for _, n := range []string{"post-create.sh", "post-start.sh"} {
@@ -12699,12 +12699,12 @@ func TestInitFromTemplateURLClones(t *testing.T) {
 	s.cwd = t.TempDir()
 	s.extraEnv = append(s.extraEnv, "FAKERT_TEMPLATE_DIR="+tpl)
 	_, stderr, code := s.run(t, "init", "--name", "kb", "--domain", "d.io:kb", "--yes",
-		"--from-template", "https://github.com/The-AI-Alliance/semiont-template-kb")
+		"--from-template", "https://github.com/xynolog/kb-template")
 	if code != 0 {
 		t.Fatalf("url template: exit %d\nstderr:\n%s", code, stderr)
 	}
 	mustContain(t, "argv", s.argv(t), "clone --depth 1")
-	if _, err := os.Stat(filepath.Join(s.cwd, ".semiont", "stack", "inference", "anthropic.yaml")); err != nil {
+	if _, err := os.Stat(filepath.Join(s.cwd, ".xynolog", "stack", "inference", "anthropic.yaml")); err != nil {
 		t.Errorf("cloned document missing: %v", err)
 	}
 }
@@ -12722,11 +12722,11 @@ func TestInitHardeningRules(t *testing.T) {
 		t.Fatalf("traversal config-name: want refusal, got %d", code)
 	}
 	mustContain(t, "traversal refused", stderr, "simple file stem")
-	if _, err := os.Stat(filepath.Join(s.cwd, ".semiont", "stack", "escape.yaml")); err == nil {
-		t.Error("traversal wrote outside .semiont/stack/inference")
+	if _, err := os.Stat(filepath.Join(s.cwd, ".xynolog", "stack", "escape.yaml")); err == nil {
+		t.Error("traversal wrote outside .xynolog/stack/inference")
 	}
 
-	// (2) Transactional: a failure after .semiont/config.yaml leaves NOTHING —
+	// (2) Transactional: a failure after .xynolog/config.yaml leaves NOTHING —
 	// a bogus model is rejected, and the dir is rolled back so a rerun does
 	// not need --force.
 	s2 := newScenario(t, "container")
@@ -12738,14 +12738,14 @@ func TestInitHardeningRules(t *testing.T) {
 	if code != 1 {
 		t.Fatalf("bad model: want refusal, got %d", code)
 	}
-	if _, err := os.Stat(filepath.Join(s2.cwd, ".semiont")); !os.IsNotExist(err) {
-		t.Error("a failed init left a partial .semiont/ (not rolled back)")
+	if _, err := os.Stat(filepath.Join(s2.cwd, ".xynolog")); !os.IsNotExist(err) {
+		t.Error("a failed init left a partial .xynolog/ (not rolled back)")
 	}
 
 	// (3) --force removes the old tree — no stale document survives.
 	s3 := newScenario(t, "container")
 	s3.cwd = t.TempDir()
-	stale := filepath.Join(s3.cwd, ".semiont", "stack", "inference", "stale.yaml")
+	stale := filepath.Join(s3.cwd, ".xynolog", "stack", "inference", "stale.yaml")
 	if err := os.MkdirAll(filepath.Dir(stale), 0o755); err != nil {
 		t.Fatal(err)
 	}
@@ -12763,7 +12763,7 @@ func TestInitHardeningRules(t *testing.T) {
 	// --dry-run, and not when init refuses before it writes.
 	reborn := newScenario(t, "container")
 	reborn.cwd = t.TempDir()
-	events := filepath.Join(reborn.cwd, ".semiont", "events")
+	events := filepath.Join(reborn.cwd, ".xynolog", "events")
 	if err := os.MkdirAll(events, 0o755); err != nil {
 		t.Fatal(err)
 	}
@@ -12774,13 +12774,13 @@ func TestInitHardeningRules(t *testing.T) {
 		t.Fatalf("--force --dry-run failed: %d", code)
 	}
 	if _, err := os.Stat(filepath.Join(events, "kept.jsonl")); err != nil {
-		t.Errorf("--force --dry-run removed the existing .semiont/: %v", err)
+		t.Errorf("--force --dry-run removed the existing .xynolog/: %v", err)
 	}
 	if _, _, code := reborn.run(t, "init", "--name", "kb", "--yes", "--force"); code != 1 {
 		t.Fatalf("--force with no domain: want refusal, got %d", code)
 	}
 	if _, err := os.Stat(filepath.Join(events, "kept.jsonl")); err != nil {
-		t.Errorf("--force removed the existing .semiont/ before refusing: %v", err)
+		t.Errorf("--force removed the existing .xynolog/ before refusing: %v", err)
 	}
 
 	// (4) devcontainer name with a quote stays valid JSON.
@@ -12799,7 +12799,7 @@ func TestInitHardeningRules(t *testing.T) {
 
 	// (5) a symlinked template document is refused.
 	tpl2 := templateFixture(t, false)
-	if err := os.Symlink("/etc/hosts", filepath.Join(tpl2, ".semiont", "stack", "inference", "evil.yaml")); err != nil {
+	if err := os.Symlink("/etc/hosts", filepath.Join(tpl2, ".xynolog", "stack", "inference", "evil.yaml")); err != nil {
 		t.Fatalf("this test needs a symlink in the template, and making one failed: %v", err)
 	}
 	s5 := newScenario(t, "container")
@@ -12821,7 +12821,7 @@ func TestInitHardeningRules(t *testing.T) {
 		"--ollama-base", "http://127.0.0.1:1", "--ollama-registry", "http://127.0.0.1:1"); code != 0 {
 		t.Fatalf("endpoint init: %d\n%s", code, stderr)
 	}
-	inference, _ := os.ReadFile(filepath.Join(s6.cwd, ".semiont", "stack", "inference", "anthropic.yaml"))
+	inference, _ := os.ReadFile(filepath.Join(s6.cwd, ".xynolog", "stack", "inference", "anthropic.yaml"))
 	mustContain(t, "endpoint honored", string(inference), "baseURL: "+anthURL)
 }
 
@@ -12876,14 +12876,14 @@ func TestLogsDiscovery(t *testing.T) {
 	follows := append([]string{}, lines[2:]...)
 	sort.Strings(follows)
 	want := []string{
-		"docker logs --follow semiont-browser",
-		"docker logs --follow semiont-example.github.io-test-kb-archivist",
-		"docker logs --follow semiont-example.github.io-test-kb-dispatcher",
-		"docker logs --follow semiont-example.github.io-test-kb-gateway",
-		"docker logs --follow semiont-example.github.io-test-kb-librarian",
-		"docker logs --follow semiont-example.github.io-test-kb-smelter",
-		"docker logs --follow semiont-example.github.io-test-kb-weaver",
-		"docker logs --follow semiont-worker",
+		"docker logs --follow xynolog-browser",
+		"docker logs --follow xynolog-example.github.io-test-kb-archivist",
+		"docker logs --follow xynolog-example.github.io-test-kb-dispatcher",
+		"docker logs --follow xynolog-example.github.io-test-kb-gateway",
+		"docker logs --follow xynolog-example.github.io-test-kb-librarian",
+		"docker logs --follow xynolog-example.github.io-test-kb-smelter",
+		"docker logs --follow xynolog-example.github.io-test-kb-weaver",
+		"docker logs --follow xynolog-worker",
 	}
 	if strings.Join(follows, "\n") != strings.Join(want, "\n") {
 		t.Errorf("wrong follow set:\n%s", strings.Join(follows, "\n"))
@@ -12906,7 +12906,7 @@ func TestLogsNoStack(t *testing.T) {
 	if code != 1 {
 		t.Fatalf("want exit 1, got %d", code)
 	}
-	mustContain(t, "stderr", stderr, "No running Semiont stack found in any runtime (container/docker/podman).")
+	mustContain(t, "stderr", stderr, "No running Xynolog stack found in any runtime (container/docker/podman).")
 }
 
 func TestLogsRuntimeNotOnPath(t *testing.T) {
@@ -12940,14 +12940,14 @@ func TestAbout(t *testing.T) {
 	if code != 0 {
 		t.Fatalf("want exit 0, got %d", code)
 	}
-	if !strings.HasPrefix(stdout, "Xynoplex · xynolog\n") {
-		t.Errorf("about must begin with the Semiont title line, got:\n%s", stdout)
+	if !strings.HasPrefix(stdout, "Xynolog · xynolog\n") {
+		t.Errorf("about must begin with the Xynolog title line, got:\n%s", stdout)
 	}
 	mustContain(t, "stdout", stdout,
-		"Xynoplex's command-line tool",
-		"local Semiont stacks",
-		"https://github.com/Xynoplex/cli",
-		"ghcr.io/the-ai-alliance",
+		"Xynolog's command-line tool",
+		"local Xynolog stacks",
+		"https://github.com/xynolog/cli",
+		"ghcr.io/xynolog",
 		"Apache-2.0",
 		"container, docker",
 		"xynolog start --help",
@@ -13787,7 +13787,7 @@ func TestLauncherRunDaemonsGetGeneratedPasswords(t *testing.T) {
 	if _, stderr, code := s.run(t, "start", "--config", "ollama-gemma"); code != 0 {
 		t.Fatalf("start: exit %d\n%s", code, stderr)
 	}
-	neo, _ := s.containerEnv(t, "semiont-example.github.io-test-kb-neo4j", "NEO4J_AUTH")
+	neo, _ := s.containerEnv(t, "xynolog-example.github.io-test-kb-neo4j", "NEO4J_AUTH")
 	graphPw, ok := strings.CutPrefix(neo, "neo4j/")
 	if !ok || len(graphPw) < 32 {
 		t.Fatalf("Neo4j was not given a generated password: NEO4J_AUTH=%q", neo)
@@ -13827,7 +13827,7 @@ func TestLauncherRunDaemonsGetGeneratedPasswords(t *testing.T) {
 	if _, stderr, code := s.run(t, "start", "--config", "ollama-gemma"); code != 0 {
 		t.Fatalf("second start: exit %d\n%s", code, stderr)
 	}
-	if again, _ := s.containerEnv(t, "semiont-example.github.io-test-kb-neo4j", "NEO4J_AUTH"); again != neo {
+	if again, _ := s.containerEnv(t, "xynolog-example.github.io-test-kb-neo4j", "NEO4J_AUTH"); again != neo {
 		t.Errorf("the Neo4j password changed across starts: %q then %q", neo, again)
 	}
 }
@@ -13842,24 +13842,24 @@ func TestLauncherRunBrokerIsAuthenticated(t *testing.T) {
 	if _, stderr, code := s.run(t, "start"); code != 0 {
 		t.Fatalf("start: exit %d\n%s", code, stderr)
 	}
-	pw, _ := s.containerEnv(t, "semiont-example.github.io-test-kb-dispatcher", "NATS_PASSWORD")
+	pw, _ := s.containerEnv(t, "xynolog-example.github.io-test-kb-dispatcher", "NATS_PASSWORD")
 	if len(pw) < 32 {
 		t.Fatalf("the dispatcher was not given a generated password: %q", pw)
 	}
-	mustContain(t, "argv log", s.argv(t), "-c /etc/nats/semiont.conf")
-	for _, c := range []string{"semiont-example.github.io-test-kb-dispatcher", "semiont-example.github.io-test-kb-gateway"} {
-		if u, _ := s.containerEnv(t, c, "NATS_USER"); u != "semiont" {
-			t.Errorf("%s: NATS_USER=%q, want semiont", c, u)
+	mustContain(t, "argv log", s.argv(t), "-c /etc/nats/xynolog.conf")
+	for _, c := range []string{"xynolog-example.github.io-test-kb-dispatcher", "xynolog-example.github.io-test-kb-gateway"} {
+		if u, _ := s.containerEnv(t, c, "NATS_USER"); u != "xynolog" {
+			t.Errorf("%s: NATS_USER=%q, want xynolog", c, u)
 		}
 		if v, _ := s.containerEnv(t, c, "NATS_PASSWORD"); v != pw {
 			t.Errorf("%s: NATS_PASSWORD=%q, want the dispatcher's", c, v)
 		}
 	}
-	if u, _ := s.containerEnv(t, "semiont-example.github.io-test-kb-nats", "NATS_USER"); u != `"semiont"` {
-		t.Errorf(`semiont-nats: NATS_USER=%s, want "semiont" in its quotes`, u)
+	if u, _ := s.containerEnv(t, "xynolog-example.github.io-test-kb-nats", "NATS_USER"); u != `"xynolog"` {
+		t.Errorf(`xynolog-nats: NATS_USER=%s, want "xynolog" in its quotes`, u)
 	}
-	if v, _ := s.containerEnv(t, "semiont-example.github.io-test-kb-nats", "NATS_PASSWORD"); v != `"`+pw+`"` {
-		t.Errorf("semiont-nats: NATS_PASSWORD=%s, want the clients' password in quotes", v)
+	if v, _ := s.containerEnv(t, "xynolog-example.github.io-test-kb-nats", "NATS_PASSWORD"); v != `"`+pw+`"` {
+		t.Errorf("xynolog-nats: NATS_PASSWORD=%s, want the clients' password in quotes", v)
 	}
 	mustContain(t, "the dispatcher's document", stagedFile(t, s, "dispatcher.json"), `"passwordEnv": "NATS_PASSWORD"`)
 	mustContain(t, "the gateway's document", stagedFile(t, s, "gateway.json"), `"passwordEnv": "NATS_PASSWORD"`)
@@ -13919,7 +13919,7 @@ func TestStartRefusesAJobsDriverTheDispatcherCannotRun(t *testing.T) {
 		t.Fatalf("start accepted a jobs driver the dispatcher cannot run")
 	}
 	mustContain(t, "fs-jobs refusal", stderr, "dispatcher", "jetstream")
-	if strings.Contains(s.argv(t), "run -d --name semiont-example.github.io-test-kb-dispatcher") {
+	if strings.Contains(s.argv(t), "run -d --name xynolog-example.github.io-test-kb-dispatcher") {
 		t.Errorf("the dispatcher was started before the refusal")
 	}
 }
@@ -13979,7 +13979,7 @@ func TestStartKeycloakIdentityBoot(t *testing.T) {
 	if err != nil {
 		t.Fatalf("no client-credentials grant reached the issuer — the identity preflight did not run: %v", err)
 	}
-	if got := strings.TrimSpace(string(cc)); !strings.HasPrefix(got, "semiont-") {
+	if got := strings.TrimSpace(string(cc)); !strings.HasPrefix(got, "xynolog-") {
 		t.Errorf("preflight presented an unexpected client id: %q", got)
 	}
 }
@@ -13990,7 +13990,7 @@ func TestStartKeycloakIdentityBoot(t *testing.T) {
 func externalIssuer(t *testing.T, s *scenario) {
 	t.Helper()
 	editDocument(t, s, "knowledge-base.yaml",
-		"    shared:\n      accessTokenLifespan: 300\n", "    external: { type: oidc, url: \"https://id.example.com/realms/semiont\" }\n")
+		"    shared:\n      accessTokenLifespan: 300\n", "    external: { type: oidc, url: \"https://id.example.com/realms/xynolog\" }\n")
 }
 
 // An issuer someone else runs gets the SAME preflight as one the launcher
@@ -14008,15 +14008,15 @@ func TestStartDryRunExternalIssuerIsPreflighted(t *testing.T) {
 	if code != 0 {
 		t.Fatalf("dry-run: exit %d\nstderr:\n%s", code, stderr)
 	}
-	const iss = "https://id.example.com/realms/semiont"
+	const iss = "https://id.example.com/realms/xynolog"
 	mustContain(t, "plan", stdout,
 		// the six machine identities, against the CONFIGURED issuer rather
 		// than identityEndpoint's localhost form
-		"client-credentials grant at "+iss+" as semiont-gateway",
-		"client-credentials grant at "+iss+" as semiont-worker-local, by an assertion signed with the shared worker key",
+		"client-credentials grant at "+iss+" as xynolog-gateway",
+		"client-credentials grant at "+iss+" as xynolog-worker-local, by an assertion signed with the shared worker key",
 		// and the two clients people sign in through
-		"device authorization at "+iss+" as "+xynoplex.ScriptClientID,
-		"authorization request at "+iss+" as "+xynoplex.BrowserClientID,
+		"device authorization at "+iss+" as "+xynolog.ScriptClientID,
+		"authorization request at "+iss+" as "+xynolog.BrowserClientID,
 		"PKCE is enforced rather than merely offered",
 		"sending no credential — require both to refuse it",
 	)

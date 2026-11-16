@@ -6,8 +6,8 @@ import (
 	"regexp"
 	"testing"
 
-	"github.com/Xynoplex/cli/internal/launcher/harness"
-	"github.com/Xynoplex/cli/internal/launcher/stack"
+	"github.com/xynolog/cli/internal/launcher/harness"
+	"github.com/xynolog/cli/internal/launcher/stack"
 )
 
 // A moved KB re-registers its did at the new path; the old path's row is
@@ -19,11 +19,11 @@ func TestReRegistrationDropsMovedKBCorpse(t *testing.T) {
 	harness.Home(t)
 
 	kb := filepath.Join(t.TempDir(), "family")
-	if err := os.MkdirAll(filepath.Join(kb, ".semiont"), 0o755); err != nil {
+	if err := os.MkdirAll(filepath.Join(kb, ".xynolog"), 0o755); err != nil {
 		t.Fatal(err)
 	}
 	cfg := "project:\n  name: family\ngit:\n  sync: false\nsite:\n  domain: pingel.org\n  siteName: Family\n"
-	if err := os.WriteFile(filepath.Join(kb, ".semiont", projectFileYAML), []byte(cfg), 0o644); err != nil {
+	if err := os.WriteFile(filepath.Join(kb, ".xynolog", projectFileYAML), []byte(cfg), 0o644); err != nil {
 		t.Fatal(err)
 	}
 

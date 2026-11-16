@@ -18,7 +18,7 @@ import (
 	"slices"
 	"strings"
 
-	xynoplex "github.com/Xynoplex/sdk/go"
+	xynolog "github.com/xynolog/sdk/go"
 )
 
 const workerUsage = `Usage: xynolog worker key [--pem]
@@ -173,7 +173,7 @@ func workerKBAdd(u *UI, args []string) int {
 		return 1
 	}
 	domain := positional[0]
-	if _, err := xynoplex.KbDid(domain); err != nil {
+	if _, err := xynolog.KbDid(domain); err != nil {
 		u.Fail("%q is not a knowledge base's domain: %v", domain, err)
 		return 1
 	}

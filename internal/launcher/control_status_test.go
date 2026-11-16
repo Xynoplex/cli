@@ -35,8 +35,8 @@ func TestWorkloadStatusUsesHealthyServicesAndAvailableReadings(t *testing.T) {
 		{
 			name:     "dispatcher without outcome counters",
 			services: []ControlServiceStatus{service("dispatcher", true)},
-			readout: `semiont_job_queue_size{job="semiont-dispatcher",job_status="pending",semiont_kb="` + kbA + `"} 2
-semiont_job_queue_size{job="semiont-dispatcher",job_status="running",semiont_kb="` + kbA + `"} 1`,
+			readout: `xynolog_job_queue_size{job="xynolog-dispatcher",job_status="pending",xynolog_kb="` + kbA + `"} 2
+xynolog_job_queue_size{job="xynolog-dispatcher",job_status="running",xynolog_kb="` + kbA + `"} 1`,
 			want: ControlWorkloadStatus{Queue: &ControlWorkloadStatusQueue{Pending: 2, Running: 1}},
 		},
 	}

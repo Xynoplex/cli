@@ -18,11 +18,11 @@ import (
 	"syscall"
 	"time"
 
-	launcher "github.com/Xynoplex/cli/internal/launcher"
+	launcher "github.com/xynolog/cli/internal/launcher"
 
-	xynoplex "github.com/Xynoplex/sdk/go"
-	"github.com/Xynoplex/sdk/go/api"
-	"github.com/Xynoplex/sdk/go/bus"
+	xynolog "github.com/xynolog/sdk/go"
+	"github.com/xynolog/sdk/go/api"
+	"github.com/xynolog/sdk/go/bus"
 )
 
 const listenUsage = `Usage: xynolog listen [--channel <name>]... [options]
@@ -177,7 +177,7 @@ func Listen(args []string) int {
 
 	opened := false
 	for state := range c.Transport.State().Changes(ctx) {
-		if state == xynoplex.ConnectionStateOpen {
+		if state == xynolog.ConnectionStateOpen {
 			opened = true
 			break
 		}
@@ -237,7 +237,7 @@ func prefetchResourceNames(c *launcher.VerbClient) map[string]string {
 	names := map[string]string{}
 	ctx, cancel := context.WithTimeout(c.Context(), prefetchTimeout)
 	defer cancel()
-	page, err := c.Browse.Resources(xynoplex.ResourceFilters{Limit: prefetchLimit}).Fresh(ctx)
+	page, err := c.Browse.Resources(xynolog.ResourceFilters{Limit: prefetchLimit}).Fresh(ctx)
 	if err != nil {
 		return names
 	}
@@ -247,7 +247,7 @@ func prefetchResourceNames(c *launcher.VerbClient) map[string]string {
 	return names
 }
 
-func printEvent(u *launcher.UI, render *listenRenderer, frame xynoplex.Frame, asJSON bool) {
+func printEvent(u *launcher.UI, render *listenRenderer, frame xynolog.Frame, asJSON bool) {
 	if asJSON {
 		// UNCHANGED, deliberately: scripts parse this. The human rendering must
 		// never leak into the machine one.

@@ -2,7 +2,7 @@ package launcher
 
 // initcmd.go — `xynolog init`: birth a KB locally with correct identity AT
 // birth (the template path assigns identity by post-fork rewrite — a
-// workaround this command exists to not need). Identity + .semiont/config.yaml +
+// workaround this command exists to not need). Identity + .xynolog/config.yaml +
 // git + roots, the generative stack-document builder with a derivePlan vet
 // (confgen.go), live model validation (initmodels.go), and the explicit
 // template-copy paths (inittemplate.go) all land here.
@@ -14,13 +14,13 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/Xynoplex/cli/internal/launcher/stack"
+	"github.com/xynolog/cli/internal/launcher/stack"
 )
 
 const initUsage = `Usage: xynolog init [options]
 
-Create a new Semiont KB in the current directory: its permanent identity
-(.semiont/config.yaml), a git repository (the /kb mount requires a clone), and a
+Create a new Xynolog KB in the current directory: its permanent identity
+(.xynolog/config.yaml), a git repository (the /kb mount requires a clone), and a
 registration in the launcher's roots.
 
 Interactive by design — every prompt has a flag twin, so callers can run it
@@ -40,7 +40,7 @@ With --yes and neither source, init refuses rather than guessing.
   --model-light <id>  Emitted as a commented per-job example, not a binding
   --embedding <e>     ollama:<model> (voyage: not yet — no established key var)
   --config-name <n>   The Inference document's name (default: the provider name)
-  --from-template [s] Copy .semiont/stack from the template instead of building
+  --from-template [s] Copy .xynolog/stack from the template instead of building
                       (s: URL or local dir; default the canonical template repo;
                       every copy is vetted by the plan deriver pre-write)
   --template-ref <r>  Git ref for a URL template source (default main)
@@ -50,7 +50,7 @@ With --yes and neither source, init refuses rather than guessing.
   --ollama-base <u>         Local Ollama base (default http://localhost:11434)
   --ollama-registry <u>     Ollama registry base (default https://registry.ollama.ai)
   --no-git            Skip git init/add; sets git.sync = false (stated consequences)
-  --force             Re-initialize over an existing .semiont/
+  --force             Re-initialize over an existing .xynolog/
   --yes               Accept defaults; never prompt (refuses where no safe default exists)
   --dry-run           Print what would be created; write and execute nothing
   --help, -h          Show this help
@@ -256,13 +256,13 @@ func Init(args []string) int {
 	if name == "" {
 		name = filepath.Base(dir)
 	}
-	semiontDir := filepath.Join(dir, ".semiont")
-	// reborn: --force over an existing .semiont/, which the write phase
+	xynologDir := filepath.Join(dir, ".xynolog")
+	// reborn: --force over an existing .xynolog/, which the write phase
 	// removes, and nothing before it.
 	reborn := false
-	if _, err := os.Stat(semiontDir); err == nil {
+	if _, err := os.Stat(xynologDir); err == nil {
 		if !force {
-			u.Fail(".semiont/ already exists here — this KB is already born. Re-initialize with --force.")
+			u.Fail(".xynolog/ already exists here — this KB is already born. Re-initialize with --force.")
 			return 1
 		}
 		reborn = true
@@ -335,7 +335,7 @@ site:
 `, name, !noGit, domain, siteName)
 	// Read back by the launcher's own reader before anything is written: what
 	// it writes holds to the schema and says what it was given.
-	born, err := yamlKBIdentity(filepath.Join(".semiont", projectFileYAML), []byte(cfg))
+	born, err := yamlKBIdentity(filepath.Join(".xynolog", projectFileYAML), []byte(cfg))
 	if err != nil {
 		u.Fail("%v", err)
 		return 1
@@ -348,15 +348,15 @@ site:
 	if dryRun {
 		fmt.Println("# xynolog init --dry-run — what a real run would create. Nothing is written.")
 		if reborn {
-			fmt.Println("# remove the existing .semiont/ (--force)")
+			fmt.Println("# remove the existing .xynolog/ (--force)")
 		}
-		fmt.Println("# .semiont/config.yaml:")
+		fmt.Println("# .xynolog/config.yaml:")
 		for _, l := range strings.Split(strings.TrimRight(cfg, "\n"), "\n") {
 			fmt.Println("#   " + l)
 		}
 		if !noGit {
 			fmt.Println("git init")
-			fmt.Println("git add .semiont")
+			fmt.Println("git add .xynolog")
 		}
 		if inference != "" {
 			cn := configName
@@ -384,7 +384,7 @@ site:
 	// ── Decide everything BEFORE touching disk: init must be
 	// transactional. Interactive prompts, model validation,
 	// and config generation all happen here; the writes come after, guarded
-	// by a rollback so a failure never leaves a half-born .semiont/.
+	// by a rollback so a failure never leaves a half-born .xynolog/.
 	if inference == "" && !yes && fromTemplate == "" {
 		fmt.Println("Configure inference now? The config is built from the launcher's own")
 		fmt.Println("knowledge — nothing is copied, and the file is yours from its first byte.")
@@ -433,7 +433,7 @@ site:
 			genName = inference
 		}
 		// The name becomes a file name, and --config-name is the user's: a
-		// separator or ".." would escape .semiont/stack/inference.
+		// separator or ".." would escape .xynolog/stack/inference.
 		if genName == "." || strings.ContainsAny(genName, `/\`) || strings.Contains(genName, "..") {
 			u.Fail("Config name %q must be a simple file stem (no path separators).", genName)
 			return 1
@@ -470,7 +470,7 @@ site:
 	var startedWriting, success bool
 	defer func() {
 		if startedWriting && !success {
-			_ = os.RemoveAll(semiontDir)
+			_ = os.RemoveAll(xynologDir)
 			if devcontainer {
 				_ = os.RemoveAll(filepath.Join(dir, ".devcontainer"))
 			}
@@ -482,7 +482,7 @@ site:
 	}
 
 	if noGit {
-		u.Warn("--no-git: git init is skipped, git.sync = false, and .semiont/ is not staged — xynolog start requires a git clone, so this KB cannot run the full stack until it becomes a clone.")
+		u.Warn("--no-git: git init is skipped, git.sync = false, and .xynolog/ is not staged — xynolog start requires a git clone, so this KB cannot run the full stack until it becomes a clone.")
 	}
 	startedWriting = true
 	if reborn {
@@ -490,18 +490,18 @@ site:
 		// no stale document survives beside the new identity.
 		// This is destructive by request, and done only once every decision
 		// above has held.
-		if err := os.RemoveAll(semiontDir); err != nil {
-			return fail("--force: could not remove the existing .semiont/: %v", err)
+		if err := os.RemoveAll(xynologDir); err != nil {
+			return fail("--force: could not remove the existing .xynolog/: %v", err)
 		}
-		u.Warn("--force: removed the existing .semiont/ — re-initializing from scratch.")
+		u.Warn("--force: removed the existing .xynolog/ — re-initializing from scratch.")
 	}
-	if err := os.MkdirAll(semiontDir, 0o755); err != nil {
-		return fail("Creating .semiont/: %v", err)
+	if err := os.MkdirAll(xynologDir, 0o755); err != nil {
+		return fail("Creating .xynolog/: %v", err)
 	}
-	if err := os.WriteFile(filepath.Join(semiontDir, projectFileYAML), []byte(cfg), 0o644); err != nil {
-		return fail("Writing .semiont/config.yaml: %v", err)
+	if err := os.WriteFile(filepath.Join(xynologDir, projectFileYAML), []byte(cfg), 0o644); err != nil {
+		return fail("Writing .xynolog/config.yaml: %v", err)
 	}
-	u.Ok(".semiont/config.yaml written %s", u.Dim("("+domain+")"))
+	u.Ok(".xynolog/config.yaml written %s", u.Dim("("+domain+")"))
 
 	if genFiles != nil {
 		if !writeVettedStack(u, dir, genFiles) {
@@ -527,7 +527,7 @@ site:
 				return fail("git init: %s", strings.TrimSpace(out))
 			}
 			u.Ok("git init")
-			addArgs := []string{"-C", dir, "add", ".semiont"}
+			addArgs := []string{"-C", dir, "add", ".xynolog"}
 			if devcontainer {
 				addArgs = append(addArgs, ".devcontainer")
 			}
@@ -553,7 +553,7 @@ site:
 	fmt.Println("  Next steps:")
 	step := 1
 	if inference == "" {
-		fmt.Printf("    %d. %s %s\n", step, u.Bold("add a config"), u.Dim("(rerun with --inference, or write .semiont/stack/)"))
+		fmt.Printf("    %d. %s %s\n", step, u.Bold("add a config"), u.Dim("(rerun with --inference, or write .xynolog/stack/)"))
 		step++
 	}
 	// Only when the key is neither exported nor registered: telling someone

@@ -25,10 +25,10 @@ func TestLogOptArgsPerRuntime(t *testing.T) {
 // leaves runtimes without log options untouched — the same argv a builder
 // produced is the argv Apple container receives.
 func TestWithLogOpts(t *testing.T) {
-	run := []string{"run", "-d", "--name", "semiont-gateway", "img"}
+	run := []string{"run", "-d", "--name", "xynolog-gateway", "img"}
 
 	got := withLogOpts("docker", run)
-	want := []string{"run", "--log-opt", "max-size=10m", "--log-opt", "max-file=3", "-d", "--name", "semiont-gateway", "img"}
+	want := []string{"run", "--log-opt", "max-size=10m", "--log-opt", "max-file=3", "-d", "--name", "xynolog-gateway", "img"}
 	if !reflect.DeepEqual(got, want) {
 		t.Fatalf("docker injection = %v, want %v", got, want)
 	}
@@ -36,7 +36,7 @@ func TestWithLogOpts(t *testing.T) {
 	if got := withLogOpts("container", run); !reflect.DeepEqual(got, run) {
 		t.Fatalf("container argv must pass through untouched, got %v", got)
 	}
-	notRun := []string{"logs", "--follow", "semiont-gateway"}
+	notRun := []string{"logs", "--follow", "xynolog-gateway"}
 	if got := withLogOpts("docker", notRun); !reflect.DeepEqual(got, notRun) {
 		t.Fatalf("non-run argv must pass through untouched, got %v", got)
 	}
@@ -79,7 +79,7 @@ func TestPruneSnapshotsKeepsNewest(t *testing.T) {
 // A rootless call must be a silent no-op — evidence capture never blocks a
 // teardown, and never writes outside a known root's state area.
 func TestWriteLogSnapshotHomelessRootIsNoop(t *testing.T) {
-	dir, n := writeLogSnapshot("docker", "", []string{"semiont-gateway"})
+	dir, n := writeLogSnapshot("docker", "", []string{"xynolog-gateway"})
 	if dir != "" || n != 0 {
 		t.Fatalf("empty root must write nothing, got dir=%q n=%d", dir, n)
 	}

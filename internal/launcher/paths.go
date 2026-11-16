@@ -7,7 +7,7 @@ package launcher
 //
 // The state home is the one another program finds too (the Rust SDK reads
 // tokens.json there), so its rule is the spec's, and the SDK's
-// (semiont.StateDir, which StateDir in statefile.go calls).
+// (xynolog.StateDir, which StateDir in statefile.go calls).
 // The data home and the log dir are this launcher's own.
 
 import (
@@ -54,28 +54,28 @@ func localAppDataFor(home, localAppData string) string {
 }
 
 // dataDirFor: the launcher's data home — the databases and stores of each
-// knowledge base. The same ~/Library/Application Support/semiont the state
+// knowledge base. The same ~/Library/Application Support/xynolog the state
 // home uses on macOS (Apple keeps one home for both) and the same
-// %LOCALAPPDATA%\semiont on Windows; $XDG_DATA_HOME/semiont (default
-// ~/.local/share/semiont) elsewhere — database contents are XDG data, not
+// %LOCALAPPDATA%\xynolog on Windows; $XDG_DATA_HOME/xynolog (default
+// ~/.local/share/xynolog) elsewhere — database contents are XDG data, not
 // XDG state. "" when there is no home.
 func dataDirFor(system, home, xdgDataHome, localAppData string) string {
 	switch {
 	case home == "":
 		return ""
 	case system == "macos":
-		return pathUnder(system, home, "Library", "Application Support", "semiont")
+		return pathUnder(system, home, "Library", "Application Support", "xynolog")
 	case system == "windows":
-		return pathUnder(system, localAppDataFor(home, localAppData), "semiont")
+		return pathUnder(system, localAppDataFor(home, localAppData), "xynolog")
 	case xdgDataHome != "":
-		return pathUnder(system, xdgDataHome, "semiont")
+		return pathUnder(system, xdgDataHome, "xynolog")
 	}
-	return pathUnder(system, home, ".local", "share", "semiont")
+	return pathUnder(system, home, ".local", "share", "xynolog")
 }
 
-// logDirFor: where launcher logs live — ~/Library/Logs/semiont on macOS (the
-// platform's log home), %LOCALAPPDATA%\semiont\logs on Windows, and
-// $XDG_STATE_HOME/semiont (default ~/.local/state/semiont) elsewhere: the XDG
+// logDirFor: where launcher logs live — ~/Library/Logs/xynolog on macOS (the
+// platform's log home), %LOCALAPPDATA%\xynolog\logs on Windows, and
+// $XDG_STATE_HOME/xynolog (default ~/.local/state/xynolog) elsewhere: the XDG
 // base-dir spec assigns logs and history to the state dir. "" when there is no
 // home.
 func logDirFor(system, home, xdgStateHome, localAppData string) string {
@@ -83,13 +83,13 @@ func logDirFor(system, home, xdgStateHome, localAppData string) string {
 	case home == "":
 		return ""
 	case system == "macos":
-		return pathUnder(system, home, "Library", "Logs", "semiont")
+		return pathUnder(system, home, "Library", "Logs", "xynolog")
 	case system == "windows":
-		return pathUnder(system, localAppDataFor(home, localAppData), "semiont", "logs")
+		return pathUnder(system, localAppDataFor(home, localAppData), "xynolog", "logs")
 	case xdgStateHome != "":
-		return pathUnder(system, xdgStateHome, "semiont")
+		return pathUnder(system, xdgStateHome, "xynolog")
 	}
-	return pathUnder(system, home, ".local", "state", "semiont")
+	return pathUnder(system, home, ".local", "state", "xynolog")
 }
 
 // userHome: the person's home directory, or "" when the system names none.
@@ -104,13 +104,13 @@ func userHome() string {
 // stagingPattern: every staging dir a start made, of every knowledge base —
 // what status prints, and what a stop with no knowledge base to go by sweeps.
 func stagingPattern() string {
-	return pathUnder(systemName(), stagingParent(), "semiont-config.*")
+	return pathUnder(systemName(), stagingParent(), "xynolog-config.*")
 }
 
 // stagingPrefix: what each staging dir a start of the knowledge base keyed key
 // makes is named with; os.MkdirTemp adds its digits.
 func stagingPrefix(key string) string {
-	return "semiont-config." + key + "."
+	return "xynolog-config." + key + "."
 }
 
 // keyStagingPattern: the staging dirs of the knowledge base keyed key, as a

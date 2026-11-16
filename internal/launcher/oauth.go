@@ -3,7 +3,7 @@ package launcher
 // oauth.go — what of signing in is the launcher's own: the issuer a
 // knowledge base advertises, read before anything dials it; the one-time code
 // shown to a person and the browser offered to them, during `xynolog login`'s
-// device grant, which the Go SDK makes (semiont.Issuer); and a small JSON
+// device grant, which the Go SDK makes (xynolog.Issuer); and a small JSON
 // read. Nothing here names a vendor, and no process ever holds a password.
 
 import (
@@ -18,7 +18,7 @@ import (
 	"runtime"
 	"time"
 
-	xynoplex "github.com/Xynoplex/sdk/go"
+	xynolog "github.com/xynolog/sdk/go"
 	"golang.org/x/term"
 )
 
@@ -26,9 +26,9 @@ import (
 // resource metadata: the gateway's word, read before anything dials the issuer
 // itself. Asked with no token, by a transport that opens no stream without one.
 func advertisedIssuer(base string) (string, error) {
-	asker := xynoplex.NewHTTPTransport(xynoplex.HTTPTransportConfig{
-		BaseURL: base, Token: xynoplex.NewVariable(""),
-		HTTP: &http.Client{Transport: launcherTransport}, Timing: xynoplex.DefaultTiming(),
+	asker := xynolog.NewHTTPTransport(xynolog.HTTPTransportConfig{
+		BaseURL: base, Token: xynolog.NewVariable(""),
+		HTTP: &http.Client{Transport: launcherTransport}, Timing: xynolog.DefaultTiming(),
 	})
 	defer asker.Close()
 	metadata, err := asker.GetProtectedResourceMetadata(context.Background())
@@ -56,7 +56,7 @@ func advertisedIssuer(base string) (string, error) {
 // Nothing is opened when stdin is not a terminal. `xynolog login` runs from
 // scripts, and a CI box either has no browser or should not be sent to one —
 // there nothing is asked, and the poll starts immediately.
-func promptToOpen(u *UI, code xynoplex.DeviceCode) {
+func promptToOpen(u *UI, code xynolog.DeviceCode) {
 	valid := u.Dim("(valid " + code.ExpiresIn.Round(time.Second).String() + ")")
 	u.Log("Your one-time code: %s %s", u.Bold(code.UserCode), valid)
 

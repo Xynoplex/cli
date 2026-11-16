@@ -47,7 +47,7 @@ var keyUnsafe = regexp.MustCompile(`[^a-zA-Z0-9._-]+`)
 //
 // It takes the did the caller already holds: the identity a command read when
 // it resolved its root, or a record's (stack.json's kbDid/kbRoot), where
-// re-reading .semiont/config.yaml would answer for the wrong tree (or none,
+// re-reading .xynolog/config.yaml would answer for the wrong tree (or none,
 // for an orphan).
 func rootKey(did, root string) string {
 	if d, ok := strings.CutPrefix(did, "did:web:"); ok && d != "" {
@@ -195,7 +195,7 @@ var stateStores = map[string]stateStoreSpec{
 		owner:      "archivist",
 	},
 	// The gateway's and the Librarian's supervisors' events logs: supervise.sh
-	// keeps one at /semiont-state/<name>-supervisor/events.log so a death
+	// keeps one at /xynolog-state/<name>-supervisor/events.log so a death
 	// record outlives the container. Each service mounts a store of its own
 	// at that path, because no store is mounted by two containers: under
 	// Apple container each is its own VM, and a second mounter of a host
@@ -231,7 +231,7 @@ var stateStores = map[string]stateStoreSpec{
 // attached shares.
 //
 // A container clears it, as root, because containers wrote it: neo4j as
-// 7474, postgres as 70, qdrant and nats as root, Semiont's images as 1001.
+// 7474, postgres as 70, qdrant and nats as root, Xynolog's images as 1001.
 // On Linux the invoker is none of those, and a host-side RemoveAll fails on
 // the first subdir a container created. macOS runtimes map ownership and
 // hide it. Only the store dir is mounted — never the root dir, which holds

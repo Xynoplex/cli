@@ -28,7 +28,7 @@ type opBackend struct {
 
 // opItemTitle: the title of a root's item. A person or a skill reads a value
 // at op://<vault>/<title>/<name>.
-func opItemTitle(key string) string { return "Semiont — " + key }
+func opItemTitle(key string) string { return "Xynolog — " + key }
 
 func (o *opBackend) where(name string) string {
 	return "op://" + o.vault + "/" + o.title + "/" + name

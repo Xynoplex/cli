@@ -4,10 +4,10 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/Xynoplex/cli/internal/launcher/images"
+	"github.com/xynolog/cli/internal/launcher/images"
 )
 
-// The launcher's health probe for one of Semiont's own services is a MIRROR
+// The launcher's health probe for one of Xynolog's own services is a MIRROR
 // of that service's image, which declares the same route twice — as the
 // HEALTHCHECK the container runtime runs, and as the SUPERVISE_PROBE its
 // entrypoint watches.
@@ -23,7 +23,7 @@ func TestLauncherProbesWhatTheImageDeclares(t *testing.T) {
 	const root = "../.."
 	check := func(role, want string) {
 		t.Helper()
-		if got := healthEndpoint(role, driverSemiont, nil, exposure{}); got != want {
+		if got := healthEndpoint(role, driverXynolog, nil, exposure{}); got != want {
 			t.Errorf("%s: the launcher probes %s, the image declares %s — one of them is wrong and only the image is running",
 				role, got, want)
 		}
