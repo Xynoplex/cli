@@ -10,7 +10,7 @@ require (
 	github.com/santhosh-tekuri/jsonschema/v6 v6.0.3
 	github.com/sigstore/protobuf-specs v0.5.2
 	github.com/sigstore/sigstore-go v1.4.0
-	github.com/xynolog/sdk/go v0.7.3
+	github.com/xynolog/sdk/go v0.7.4
 	go.yaml.in/yaml/v3 v3.0.6
 	golang.org/x/sys v0.50.0
 	golang.org/x/term v0.48.0
