@@ -45,13 +45,10 @@ type workerList struct {
 // TestAnAddedKnowledgeBaseIsAWorkerEntryButItsEngines holds the two to one
 // shape.
 type addedKB struct {
-	Domain     string `json:"domain"`
-	GatewayUrl string `json:"gatewayUrl"`
-	Identity   struct {
-		ClientId string `json:"clientId"`
-		Issuer   string `json:"issuer"`
-	} `json:"identity"`
-	EnginesOf string `json:"enginesOf"`
+	Domain     string                                `json:"domain"`
+	GatewayUrl string                                `json:"gatewayUrl"`
+	Identity   api.WorkerKnowledgeBaseConfigIdentity `json:"identity"`
+	EnginesOf  string                                `json:"enginesOf"`
 }
 
 // entry: k's entry in the worker's document, offered engines.
