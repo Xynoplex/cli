@@ -52,7 +52,7 @@ func embeddingConfig(p placement, who string) (embedding api.EmbeddingConfig, er
 	e := p.st.KnowledgeIndex.Spec.Embedding
 	switch e.Type {
 	case string(api.OllamaEmbeddingConfigTypeOllama):
-		err = embedding.FromOllamaEmbeddingConfig(api.OllamaEmbeddingConfig{Model: e.Model, BaseUrl: p.ollama(e.Endpoint)})
+		err = embedding.From(api.OllamaEmbeddingConfig{Model: e.Model, BaseUrl: p.ollama(e.Endpoint)})
 	case string(api.VoyageEmbeddingConfigTypeVoyage):
 		voyage := api.VoyageEmbeddingConfig{Model: e.Model, Endpoint: voyageEmbeddingsEndpoint}
 		if e.Endpoint != nil {
@@ -62,7 +62,7 @@ func embeddingConfig(p placement, who string) (embedding api.EmbeddingConfig, er
 			return embedding, planErr(p.st.Files.KnowledgeIndex, "spec.embedding.apiKey", "is not stated: name the variable that holds Voyage's key ({ fromEnv: NAME }), and %s's document names it", who)
 		}
 		voyage.ApiKeyEnv = e.ApiKey.FromEnv
-		err = embedding.FromVoyageEmbeddingConfig(voyage)
+		err = embedding.From(voyage)
 	default:
 		err = planErr(p.st.Files.KnowledgeIndex, "spec.embedding.type", "is %q: the launcher writes %s's document for an ollama or a voyage embedding alone", e.Type, who)
 	}
@@ -81,7 +81,7 @@ func vectorsConfig(p placement, who, tokenEnv string) (vectors api.VectorsConfig
 	var qdrant api.QdrantVectorsConfig
 	qdrant.Host, qdrant.Port = p.vectors()
 	qdrant.TokenEnv = tokenEnv
-	err = vectors.FromQdrantVectorsConfig(qdrant)
+	err = vectors.From(qdrant)
 	return vectors, err
 }
 

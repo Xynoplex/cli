@@ -561,8 +561,10 @@ func TestControlFaultKeywordsAreTheSchemas(t *testing.T) {
 	}
 	used := map[string]bool{}
 	for _, name := range names {
+		// The directory's tables, and the schema Protocol states each by.
 		switch filepath.Base(name) {
-		case "cli.json", "methods.json", "request-cases.json":
+		case "cli.json", "methods.json", "request-cases.json",
+			"ControlCli.json", "ControlMethods.json", "ControlRequestCases.json":
 			continue
 		}
 		var schema map[string]any

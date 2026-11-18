@@ -5,15 +5,17 @@ package launcher
 import (
 	"fmt"
 
+	xynolog "github.com/xynolog/sdk/go"
 	"golang.org/x/sys/windows"
 )
 
 // Unix modes are no-ops on Windows: what keeps another local user out of a
 // file is its access control list. These give a directory or a file the
-// sign-in store's access list (ownerOnlyDirAccessList, ownerOnlyFileAccessList):
-// a protected list, one that inherits nothing from its parent, naming the
-// person who runs the launcher, the system and the administrators, which is
-// the Windows analogue of the owner-only mode (root reads those too).
+// sign-in store's access list (xynolog.OwnerOnlyDirAccessList,
+// xynolog.OwnerOnlyFileAccessList): a protected list, one that inherits
+// nothing from its parent, naming the person who runs the launcher, the
+// system and the administrators, which is the Windows analogue of the
+// owner-only mode (root reads those too).
 
 // ownerOnly gives path the list that list names for the user this process runs
 // as.
@@ -36,7 +38,7 @@ func ownerOnly(path string, list func(owner string) string) error {
 
 // ownerOnlyDir keeps a directory, and everything created beneath it from then
 // on, to its owner.
-func ownerOnlyDir(dir string) error { return ownerOnly(dir, ownerOnlyDirAccessList) }
+func ownerOnlyDir(dir string) error { return ownerOnly(dir, xynolog.OwnerOnlyDirAccessList) }
 
 // ownerOnlyFile keeps a file to its owner.
-func ownerOnlyFile(path string) error { return ownerOnly(path, ownerOnlyFileAccessList) }
+func ownerOnlyFile(path string) error { return ownerOnly(path, xynolog.OwnerOnlyFileAccessList) }

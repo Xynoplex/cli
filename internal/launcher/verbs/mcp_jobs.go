@@ -158,8 +158,8 @@ func storedProgressText(progress *api.JobStoredProgress) (string, error) {
 	if progress == nil {
 		return "", nil
 	}
-	reported, err := progress.AsJobProgress()
-	if err != nil {
+	var reported api.JobProgress
+	if err := progress.As(&reported); err != nil {
 		return "", err
 	}
 	return progressText(reported.Message), nil

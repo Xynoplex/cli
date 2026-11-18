@@ -472,10 +472,8 @@ xynolog stop
   localhost endpoint, placement, did:web and site name; `managedBy:
   xynolog-launcher` so the Browser can split managed from manual entries.
   Endpoints and identity only, never a secret. The schema authority is
-  `protocol/specs/src/discovery/DiscoveryDocument.json`, and BOTH languages
-  generate from it — @xynolog/core's types.ts via the OpenAPI pipeline, and
-  this launcher's `discovery_types_gen.go` via go-jsonschema (go:generate in
-  discovery.go), and CI fails when the committed file drifts from the schema. The
+  `protocol/specs/src/discovery/DiscoveryDocument.json`; the launcher writes
+  it with the Go SDK's types, which the SDK generates from that file. The
   Browser container mounts the directory read-only at `/discovery`, where the
   Browser image's server serves it; an empty stack set writes an empty list,
   because an absent file is ambiguous.
@@ -950,9 +948,9 @@ the other clients' form. What the server does that a verb does not:
 - **The tools are a curated set**, named by the verbs, in
   `internal/launcher/verbs/mcp-tools.json`, which names the SDK methods each tool calls
   and gives a reason for every method of the client surface no tool calls.
-  Each tool's input and output schema is the spec's, made self-contained by
-  `scripts/generate-mcp-tools.mjs` into `mcp_tools_gen.go`, and CI
-  fails when either drifts. `TestMCPToolsCensus` holds the table to
+  Each tool's input and output schema is the spec's, made self-contained in
+  `mcp_tools_gen.go` by `make generate`, and CI fails when either drifts.
+  `TestMCPToolsCensus` holds the table to
   `protocol/specs/src/client/surface.json` both ways.
 - **A call is checked before anything is sent**, and a refusal names every
   fault at once: the MCP library's typed tools stop at the first, so each tool
@@ -993,8 +991,8 @@ existing knowledge base.
 
 - **The spec is `protocol/specs/src/control`.** `methods.json` names each
   method and the schemas of its params and result.
-  `scripts/generate-control.mjs` generates the launcher's types and the
-  schemas it validates against; Desktop generates its own types from the same
+  `make generate` writes the launcher's types and the schemas it validates
+  against; Desktop generates its own types from the same
   spec. Each repository's CI fails when its generated files drift.
 - **Every command-line option has a stated place in the API.** `cli.json`
   maps each option to a params field or a method, or says why it has none.
@@ -1218,6 +1216,8 @@ make        # build darwin, linux, and windows binaries for amd64 and arm64
 make help   # list build, verification, and cleanup targets
 make test   # run all package tests
 make vet    # run go vet
+make generate         # write the generated Go with the pinned SDK's generator
+make check-generated  # fail when a committed generated file drifts
 make clean  # remove generated build and staged SDK artifacts
 ```
 

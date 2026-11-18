@@ -38,9 +38,9 @@ func jobFilter(job string) (filter api.JobFilter, err error) {
 	case jobType == string(api.MarkJobFilterJobTypeMark) && api.Motivation(motivation).Valid():
 		var mark api.MarkJobFilter
 		mark.Params.Motivation = api.Motivation(motivation)
-		err = filter.FromMarkJobFilter(mark)
+		err = filter.From(mark)
 	case job == string(api.YieldJobFilterJobTypeYield):
-		err = filter.FromYieldJobFilter(api.YieldJobFilter{})
+		err = filter.From(api.YieldJobFilter{})
 	default:
 		err = fmt.Errorf("the engines can give %q an engine, and no job filter names that job", job)
 	}

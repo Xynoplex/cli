@@ -83,7 +83,7 @@ func graphConfig(p placement, served api.KbIdentity, who string) (graph api.Grap
 		// and keeps; the service is handed it under the launcher's own name.
 		neo4j.PasswordEnv = daemonCredentials["graph"].env
 	}
-	err = graph.FromNeo4jGraphConfig(neo4j)
+	err = graph.From(neo4j)
 	return graph, err
 }
 

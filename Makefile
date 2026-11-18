@@ -1,6 +1,6 @@
 .DEFAULT_GOAL := build
 
-.PHONY: help build test vet clean
+.PHONY: help build generate check-generated test vet clean
 
 # `make help` prints the `##` lines below, in order (build-tools/make-help.awk).
 ##@ Xynolog CLI (xynolog): make [target] [VARIABLE=value ...]
@@ -54,6 +54,15 @@ build:
 	  printf 'Host executable: %s\n' "$(CURDIR)/dist/xynolog$(HOST_EXTENSION)"; \
 	fi
 	@printf 'Release binaries are under: %s/dist\n' "$(CURDIR)"
+
+##@ Generate
+## generate: Write the launcher's generated files with the pinned SDK's generator, from the pinned Protocol
+generate:
+	bash scripts/generated.sh generate
+
+## check-generated: Fail when a committed generated file differs from what the generator writes, or no run writes it
+check-generated:
+	bash scripts/generated.sh check
 
 ##@ Verify
 ## test: The Go test suite

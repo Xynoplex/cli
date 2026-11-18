@@ -15,6 +15,8 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+
+	xynolog "github.com/xynolog/sdk/go"
 )
 
 // errLockHeld: another process holds the lock, and the caller asked not to
@@ -38,7 +40,7 @@ func exclusively(file string, change func()) error {
 	if err := os.MkdirAll(filepath.Dir(file), 0o755); err != nil {
 		return fmt.Errorf("cannot make the lock %s: %w", lock, err)
 	}
-	f, err := os.OpenFile(lock, os.O_RDONLY|os.O_CREATE, ownerOnlyFileMode)
+	f, err := os.OpenFile(lock, os.O_RDONLY|os.O_CREATE, xynolog.OwnerOnlyFileMode)
 	if err != nil {
 		return fmt.Errorf("cannot make the lock %s: %w", lock, err)
 	}

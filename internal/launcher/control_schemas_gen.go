@@ -1,6 +1,6 @@
 // Code generated from protocol/specs/src/control/methods.json and the schemas it names — DO NOT EDIT.
 //
-// Regenerate: node scripts/generate-control.mjs
+// Regenerate: make generate (xynolog/sdk's codegen/lib/cli/control.ml)
 
 package launcher
 
@@ -152,7 +152,8 @@ var controlNotifications = []controlNotification{
 	{name: "notifications/cancelled", from: "client", params: "protocol/specs/src/control/Cancelled.json"},
 }
 
-// The control group of protocol/specs/src/errors/codes.json: why a request failed.
+// The control group of protocol/specs/src/errors/codes.json: why a request
+// failed.
 const (
 	// The request's params are not what its method's schema admits. The error's
 	// fields name each fault; JSON-RPC's own invalid-params code (-32602)

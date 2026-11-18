@@ -160,7 +160,7 @@ func TestMarkedTextSaysWhatAMarkJobDid(t *testing.T) {
 		// The last line counts what the job's last progress message counted,
 		// in the words that message is given.
 		var created api.JobProgressMessage
-		if err := created.FromJobProgressCompleteCreated(api.JobProgressCompleteCreated{Count: c.result.Persisted, Motivation: c.motivation}); err != nil {
+		if err := created.From(api.JobProgressCompleteCreated{Count: c.result.Persisted, Motivation: c.motivation}); err != nil {
 			t.Fatalf("%s: not a progress message: %v", c.motivation, err)
 		}
 		progress := progressText(&created)

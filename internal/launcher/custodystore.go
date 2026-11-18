@@ -9,6 +9,8 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
+
+	xynolog "github.com/xynolog/sdk/go"
 )
 
 // custodyStore: one KB root's custody values, by custody name. Every read,
@@ -223,15 +225,15 @@ func (f fileBackend) put(u *UI, name, value string) bool {
 }
 
 // writeOwnerOnly writes b to path atomically, a temporary file renamed over
-// it, and keeps the file to its owner: ownerOnlyFileMode, and on Windows its
-// access list (ownerOnlyFile). What the launcher keeps this way no reader ever sees
-// half of.
+// it, and keeps the file to its owner: xynolog.OwnerOnlyFileMode, and on
+// Windows its access list (ownerOnlyFile). What the launcher keeps this way no
+// reader ever sees half of.
 func writeOwnerOnly(path string, b []byte) error {
 	if err := os.MkdirAll(filepath.Dir(path), 0o755); err != nil {
 		return err
 	}
 	tmp := path + ".tmp"
-	if err := os.WriteFile(tmp, b, ownerOnlyFileMode); err != nil {
+	if err := os.WriteFile(tmp, b, xynolog.OwnerOnlyFileMode); err != nil {
 		return err
 	}
 	if err := os.Rename(tmp, path); err != nil {

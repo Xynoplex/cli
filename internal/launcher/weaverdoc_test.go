@@ -35,8 +35,8 @@ func weaverDocumentFrom(t *testing.T, b []byte) (api.WeaverConfig, api.Neo4jGrap
 	if err := dec.Decode(&doc); err != nil {
 		t.Fatalf("the document is not a WeaverConfig: %v\n%s", err, b)
 	}
-	graph, err := doc.Graph.AsNeo4jGraphConfig()
-	if err != nil {
+	var graph api.Neo4jGraphConfig
+	if err := doc.Graph.As(&graph); err != nil {
 		t.Fatalf("the document's graph is not a Neo4jGraphConfig: %v\n%s", err, b)
 	}
 	return doc, graph
