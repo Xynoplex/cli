@@ -9,6 +9,7 @@ import (
 	"strings"
 
 	xynolog "github.com/xynolog/sdk/go"
+	"github.com/xynolog/sdk/go/api"
 )
 
 // statusSnapshot: each knowledge base of views and of codespaces, and the
@@ -34,7 +35,7 @@ func statusSnapshot(ss *StackSet, views []stackView, cwd kbRoot, codespaces []*S
 // cwd's, discovered by its containers' names.
 func knowledgeBaseStatus(v stackView, ss *StackSet, cwd kbRoot, published []publishedKB, tokens map[string]xynolog.SignIn) ControlKnowledgeBaseStatus {
 	kb := ControlKnowledgeBaseStatus{Name: v.name, Key: v.key, Recorded: v.st != nil,
-		Placement: DiscoveredKBPlacementLocal, Services: []ControlServiceStatus{}}
+		Placement: api.DiscoveredKBPlacementLocal, Services: []ControlServiceStatus{}}
 	st := v.st
 	root := cwd.dir
 	if st != nil {
@@ -138,7 +139,7 @@ func serviceHealthy(services []ControlServiceStatus, role string) bool {
 func codespaceStatus(c *StackState, recorded bool, published []publishedKB, tokens map[string]xynolog.SignIn) ControlKnowledgeBaseStatus {
 	repo := c.Codespace.Repo
 	kb := ControlKnowledgeBaseStatus{Name: repo, Key: StackKey(c), Recorded: recorded,
-		Placement: DiscoveredKBPlacementCodespace, Repo: &repo, Did: stated(c.KBDid), Services: []ControlServiceStatus{}}
+		Placement: api.DiscoveredKBPlacementCodespace, Repo: &repo, Did: stated(c.KBDid), Services: []ControlServiceStatus{}}
 	if base, err := CodespaceBase(c); err == nil {
 		kb.Gateway = &base
 		kb.Healthy = httpOK(base + "/api/health")
@@ -149,7 +150,7 @@ func codespaceStatus(c *StackState, recorded bool, published []publishedKB, toke
 }
 
 // publishedEntry: st's entry in the discovery document, nil when it has none.
-func publishedEntry(published []publishedKB, st *StackState) *DiscoveredKB {
+func publishedEntry(published []publishedKB, st *StackState) *api.DiscoveredKB {
 	for _, p := range published {
 		if p.stack == st {
 			kb := p.kb

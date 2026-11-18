@@ -12,6 +12,7 @@ import (
 
 	"github.com/xynolog/cli/internal/launcher/stack"
 	xynolog "github.com/xynolog/sdk/go"
+	"github.com/xynolog/sdk/go/api"
 )
 
 // controlHandler runs one request's operation, saying what it does through u:
@@ -132,7 +133,7 @@ func controlRootsList(req *controlRequest, u *UI) (any, *controlFailure) {
 // control: r as roots.list states it.
 func (r *knownRoot) control() ControlRoot {
 	path, present := r.path, !r.missing
-	root := ControlRoot{Placement: DiscoveredKBPlacementLocal, Path: &path, Present: &present,
+	root := ControlRoot{Placement: api.DiscoveredKBPlacementLocal, Path: &path, Present: &present,
 		Current: stated(r.current), Registered: r.entry != nil, Running: r.running,
 		Did: stated(r.did), SiteName: stated(r.siteName), Config: stated(r.config)}
 	if r.identityErr != nil {
@@ -150,7 +151,7 @@ func (r *knownRoot) control() ControlRoot {
 // control: c as roots.list states it.
 func (c knownCodespace) control() ControlRoot {
 	cs := c.stack.Codespace
-	root := ControlRoot{Placement: DiscoveredKBPlacementCodespace, Running: true,
+	root := ControlRoot{Placement: api.DiscoveredKBPlacementCodespace, Running: true,
 		Repo: stated(cs.Repo), Codespace: stated(cs.Name), Did: stated(c.stack.KBDid), CodespaceState: stated(c.state)}
 	if cs.ForwardPort != 0 {
 		port, forwarded, reachable := cs.ForwardPort, c.forwarded, c.reachable

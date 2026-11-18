@@ -1944,11 +1944,11 @@ func fakeCompletion(description map[string]any, as, jobID, resourceID, scripted 
 		} else {
 			var generated api.ResourceId
 			if generated, err = api.ParseResourceId("res-new"); err == nil {
-				err = result.FromYieldJobDone(api.YieldJobDone{ResourceId: generated, ResourceName: "Generated"})
+				err = result.From(api.YieldJobDone{ResourceId: generated, ResourceName: "Generated"})
 			}
 		}
 		if err == nil {
-			err = completion.FromYieldJobCompleteCommand(api.YieldJobCompleteCommand{JobId: job, ResourceId: resource, Result: &result})
+			err = completion.From(api.YieldJobCompleteCommand{JobId: job, ResourceId: resource, Result: &result})
 		}
 	case api.JobTypeMark:
 		var result api.MarkJobResult
@@ -1959,12 +1959,12 @@ func fakeCompletion(description map[string]any, as, jobID, resourceID, scripted 
 		case scripted != "":
 			err = result.UnmarshalJSON([]byte(scripted))
 		case counted:
-			err = result.FromMarkJobDone(counts)
+			err = result.From(counts)
 		default:
 			return completion, false
 		}
 		if err == nil {
-			err = completion.FromMarkJobCompleteCommand(api.MarkJobCompleteCommand{JobId: job, ResourceId: resource, Result: &result})
+			err = completion.From(api.MarkJobCompleteCommand{JobId: job, ResourceId: resource, Result: &result})
 		}
 	default:
 		return completion, false
@@ -1983,7 +1983,7 @@ func fakeCreated(description map[string]any) (message api.JobProgressMessage, ok
 	if api.JobType(jobType) != api.JobTypeMark || !counted {
 		return message, false
 	}
-	err := message.FromJobProgressCompleteCreated(api.JobProgressCompleteCreated{
+	err := message.From(api.JobProgressCompleteCreated{
 		Count: counts.Persisted, Motivation: api.Motivation(motivation),
 	})
 	return message, err == nil

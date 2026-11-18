@@ -1,10 +1,14 @@
 // Code generated from protocol/specs/src/control/methods.json and the schemas it names — DO NOT EDIT.
 //
-// Regenerate: node scripts/generate-control.mjs
+// Regenerate: make generate (xynolog/sdk's codegen/lib/cli/control.ml)
 
 package launcher
 
-import "encoding/json"
+import (
+	"encoding/json"
+
+	"github.com/xynolog/sdk/go/api"
+)
 
 // ControlAboutParams: launcher.about's params.
 type ControlAboutParams struct {
@@ -75,7 +79,7 @@ type ControlRootsListResult struct {
 type ControlRoot struct {
 	// Where the stack actually runs. "local": containers on this machine.
 	// "codespace": a GitHub-hosted VM whose KB is port-forwarded here.
-	Placement DiscoveredKBPlacement `json:"placement"`
+	Placement api.DiscoveredKBPlacement `json:"placement"`
 
 	// For a local root: the clone's path.
 	Path *string `json:"path,omitempty"`
@@ -286,7 +290,7 @@ type ControlKnowledgeBaseStatus struct {
 
 	// Where the stack actually runs. "local": containers on this machine.
 	// "codespace": a GitHub-hosted VM whose KB is port-forwarded here.
-	Placement DiscoveredKBPlacement `json:"placement"`
+	Placement api.DiscoveredKBPlacement `json:"placement"`
 
 	// Its clone, for a local stack.
 	Root *string `json:"root,omitempty"`
@@ -315,7 +319,7 @@ type ControlKnowledgeBaseStatus struct {
 	IdentityError *string `json:"identityError,omitempty"`
 
 	// The knowledge base as the discovery document publishes it, when it does.
-	Kb *DiscoveredKB `json:"kb,omitempty"`
+	Kb *api.DiscoveredKB `json:"kb,omitempty"`
 
 	// The runtime its record names.
 	Runtime *string `json:"runtime,omitempty"`

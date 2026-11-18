@@ -132,7 +132,7 @@ options:
 	purpose := api.BodyPurpose("linking")
 	// No `type` literal: AnnotationBody's discriminator means the generated
 	// FromSpecificResource stamps it (see mark.go).
-	if err := item.FromSpecificResource(api.SpecificResource{
+	if err := item.From(api.SpecificResource{
 		Source: tid, Purpose: &purpose,
 	}); err != nil {
 		u.Fail("could not build the body item: %v", err)

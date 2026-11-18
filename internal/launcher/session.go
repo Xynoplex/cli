@@ -269,7 +269,7 @@ func kbTarget(key, base string) (api.KbTarget, error) {
 		return api.KbTarget{}, fmt.Errorf("%s names no port: %w", base, err)
 	}
 	var endpoint api.KbEndpoint
-	err = endpoint.FromHttpEndpoint(api.HttpEndpoint{Kind: api.HttpEndpointKindHttp, Protocol: api.HttpEndpointProtocol(at.Scheme), Host: at.Hostname(), Port: number})
+	err = endpoint.From(api.HttpEndpoint{Kind: api.HttpEndpointKindHttp, Protocol: api.HttpEndpointProtocol(at.Scheme), Host: at.Hostname(), Port: number})
 	return api.KbTarget{Id: key, Label: key, Endpoint: endpoint}, err
 }
 

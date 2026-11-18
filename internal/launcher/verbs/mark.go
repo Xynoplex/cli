@@ -390,11 +390,11 @@ options:
 		if suffix != "" {
 			sel.Suffix = &suffix
 		}
-		if err := one.FromTextQuoteSelector(sel); err != nil {
+		if err := one.From(sel); err != nil {
 			return markBuildFail(err)
 		}
 	case start >= 0:
-		if err := one.FromTextPositionSelector(api.TextPositionSelector{
+		if err := one.From(api.TextPositionSelector{
 			Start: start, End: end,
 		}); err != nil {
 			return markBuildFail(err)
@@ -403,7 +403,7 @@ options:
 	if quote != "" || start >= 0 {
 		// A selector is one selector or a list of them: this is one.
 		var selector api.AnnotationSelector
-		if err := selector.FromSelector(one); err != nil {
+		if err := selector.From(one); err != nil {
 			return markBuildFail(err)
 		}
 		target.Selector = &selector
@@ -413,7 +413,7 @@ options:
 	if bodyText != "" {
 		var b api.AnnotationBody
 		purpose := api.BodyPurpose("commenting")
-		if err := b.FromTextualBody(api.TextualBody{
+		if err := b.From(api.TextualBody{
 			Value: bodyText, Purpose: &purpose,
 		}); err != nil {
 			return markBuildFail(err)
@@ -423,7 +423,7 @@ options:
 	if link != "" {
 		var b api.AnnotationBody
 		purpose := api.BodyPurpose("linking")
-		if err := b.FromSpecificResource(api.SpecificResource{
+		if err := b.From(api.SpecificResource{
 			Source: lid, Purpose: &purpose,
 		}); err != nil {
 			return markBuildFail(err)
@@ -433,7 +433,7 @@ options:
 	for _, et := range entityTypes {
 		var b api.AnnotationBody
 		purpose := api.BodyPurpose("tagging")
-		if err := b.FromTextualBody(api.TextualBody{
+		if err := b.From(api.TextualBody{
 			Value: et, Purpose: &purpose,
 		}); err != nil {
 			return markBuildFail(err)
@@ -449,13 +449,13 @@ options:
 	// models both, so use the list form only when there is more than one.
 	if len(bodies) == 1 {
 		var body api.AnnotationBodies
-		if err := body.FromAnnotationBody(bodies[0]); err != nil {
+		if err := body.From(bodies[0]); err != nil {
 			return markBuildFail(err)
 		}
 		request.Body = &body
 	} else if len(bodies) > 1 {
 		var body api.AnnotationBodies
-		if err := body.FromAnnotationBodies1(bodies); err != nil {
+		if err := body.From(api.AnnotationBodiesList(bodies)); err != nil {
 			return markBuildFail(err)
 		}
 		request.Body = &body

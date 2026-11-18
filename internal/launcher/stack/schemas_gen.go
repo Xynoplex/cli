@@ -1,6 +1,6 @@
 // Code generated from protocol/specs/src/stack and protocol/specs/src/kb-identity/ProjectConfig.json — DO NOT EDIT.
 //
-// Regenerate: node scripts/generate-stack.mjs
+// Regenerate: make generate (xynolog/sdk's codegen/lib/cli/stack.ml)
 
 package stack
 

@@ -26,6 +26,8 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
+
+	"github.com/xynolog/sdk/go/api"
 )
 
 // writeDiscovery renders the view. An EMPTY stack set writes an empty list —
@@ -36,11 +38,11 @@ func writeDiscovery(ss *StackSet) {
 	if dir == "" {
 		return
 	}
-	kbs := []DiscoveredKB{}
+	kbs := []api.DiscoveredKB{}
 	for _, p := range publishedKBs(ss) {
 		kbs = append(kbs, p.kb)
 	}
-	b, err := json.MarshalIndent(DiscoveryDocument{Version: 1, Kbs: kbs}, "", "  ")
+	b, err := json.MarshalIndent(api.DiscoveryDocument{Version: 1, Kbs: kbs}, "", "  ")
 	if err != nil {
 		return
 	}
@@ -58,7 +60,7 @@ func writeDiscovery(ss *StackSet) {
 // publishedKB: an entry of the discovery document, and the stack it is of.
 type publishedKB struct {
 	stack *StackState
-	kb    DiscoveredKB
+	kb    api.DiscoveredKB
 }
 
 // publishedKBs: the entries the discovery document publishes for ss, each
@@ -94,7 +96,7 @@ func publishedKBs(ss *StackSet) []publishedKB {
 		if st.KBDid == "" {
 			continue
 		}
-		e := DiscoveredKB{Host: "localhost", Port: 4000, Placement: DiscoveredKBPlacementLocal,
+		e := api.DiscoveredKB{Host: "localhost", Port: 4000, Placement: api.DiscoveredKBPlacementLocal,
 			Did: st.KBDid, ManagedBy: "xynolog-launcher"}
 		// The gateway endpoint carries the real port when the config moved it.
 		if b, ok := st.Services["gateway"]; ok {
@@ -141,8 +143,8 @@ func publishedKBs(ss *StackSet) []publishedKB {
 			continue // someone with a better claim already published it
 		}
 		claimed[c.Codespace.ForwardPort] = true
-		kbs = append(kbs, publishedKB{stack: c, kb: DiscoveredKB{
-			Host: "localhost", Port: c.Codespace.ForwardPort, Placement: DiscoveredKBPlacementCodespace,
+		kbs = append(kbs, publishedKB{stack: c, kb: api.DiscoveredKB{
+			Host: "localhost", Port: c.Codespace.ForwardPort, Placement: api.DiscoveredKBPlacementCodespace,
 			Repo: opt(c.Codespace.Repo), Did: c.KBDid, ManagedBy: "xynolog-launcher",
 		}})
 	}
