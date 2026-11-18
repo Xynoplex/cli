@@ -5,7 +5,7 @@ runtime (Apple `container`, Docker, or Podman) directly: the platform's seven
 services (gateway, dispatcher, archivist, librarian, worker, smelter, weaver)
 and the Browser, and beside them Keycloak, PostgreSQL, NATS, Neo4j, Qdrant,
 the telemetry containers and, when a model runs locally, Ollama. The operator's
-[service catalog](https://github.com/xynolog/images#images) says what each is
+[service catalog](https://github.com/xynolog/docs/blob/main/operator/services/OVERVIEW.md) says what each is
 for.
 
 ## What this is for
@@ -17,7 +17,7 @@ it is not a dependency of the service images.
 The published images are standalone artifacts. They run against whatever
 PostgreSQL, Neo4j, Qdrant and inference you already have, under Kubernetes, ECS
 or Nomad, with no launcher involved — see the
-[Xynolog protocol contracts](https://github.com/xynolog/protocol/tree/main/contract)
+[Deployment](https://github.com/xynolog/docs/blob/main/operator/administration/DEPLOYMENT.md)
 for the interfaces each deployment must satisfy.
 
 What the launcher adds on top of `run` is the part those platforms leave to
@@ -938,7 +938,7 @@ signed in, through the Go SDK. Setting it up is one line,
 claude mcp add xynolog -- xynolog mcp
 ```
 
-and [Xynolog Go SDK guide](https://github.com/xynolog/sdk/blob/main/go/sdk/README.md) has
+and [Connecting an AI application](https://github.com/xynolog/docs/blob/main/builder/AI-APPLICATIONS.md) has
 the other clients' form. What the server does that a verb does not:
 
 - **One session for each KB, held across calls.** The KBs are the recorded
@@ -1025,7 +1025,7 @@ leave it unlimited inside its shared VM). A container a document describes
 runs at the `resources.limits.memory` that document states, which `xynolog
 init` writes from one table in the launcher; Ollama, the telemetry containers
 and the Browser run at that table's own
-([stack schemas](https://github.com/xynolog/protocol/tree/main/specs/src/stack)).
+([Configuration](https://github.com/xynolog/docs/blob/main/operator/administration/CONFIGURATION.md#memory)).
 The gateway's capacity follows the ceiling it runs with, and the Smelter
 works on the PDFs at once its `pdfsAtOnce` states. The ceilings are visible in
 every `--dry-run` line.
