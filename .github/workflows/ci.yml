@@ -59,7 +59,7 @@ jobs:
     if: ${{ !cancelled() && (github.event_name != 'schedule' || needs.nightly-due.outputs.due == 'true') }}
     runs-on: ubuntu-latest
     env:
-      SDK_LANGUAGES: go
+      SDK_LANGUAGES: go codegen
     steps:
       - uses: actions/checkout@v7.0.1
 
@@ -121,24 +121,13 @@ jobs:
           submodules: recursive
       - name: Make help lists every public target
         run: python3 build-tools/test_make_help.py --root .
-      - name: The generated Go matches the spec
-        run: |
-          for generator in control owner-only stack mcp-tools; do
-            node "scripts/generate-$generator.mjs" --check
-          done
       - uses: ./.github/actions/sdk-go-proxy
+      - name: The generated Go is what the pinned SDK's generator writes
+        run: make check-generated SDK_ARTIFACTS="$RUNNER_TEMP/sdk-artifacts"
       - uses: actions/setup-go@v5
         with:
           go-version-file: go.mod
           cache: true
-      - name: go generate leaves the tree as committed
-        run: |
-          go generate ./...
-          if [ -n "$(git status --porcelain)" ]; then
-            git status --porcelain
-            git diff
-            exit 1
-          fi
       - name: go vet for each release platform
         run: |
           for goos in darwin linux windows; do

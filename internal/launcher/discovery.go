@@ -11,15 +11,11 @@ package launcher
 // SCHEMA AUTHORITY: protocol/specs/src/discovery/DiscoveryDocument.json (and
 // DiscoveredKB.json) — the multi-language contract of record: a standalone
 // contract directory in specs (per-directory ref-closure by rule, so binding
-// it never drags in the API surface; see protocol/specs/src/discovery/README.md). TypeScript
-// consumers get their types from @xynolog/core (the OpenAPI pipeline); THIS
-// side gets discovery_types_gen.go from the same files via the go:generate
-// below — the Go equivalent of core's generated types.ts, so schema drift is
-// a compile error here, not a review promise. Change the schema first, then
-// regenerate both sides. version is the compatibility gate: consumers must
-// ignore documents they do not understand.
-
-//go:generate sh -c "cd ../.. && go run github.com/atombender/go-jsonschema@v0.23.1 -p launcher --tags json --struct-name-from-title --capitalization KB -o internal/launcher/discovery_types_gen.go protocol/specs/src/discovery/DiscoveryDocument.json"
+// it never drags in the API surface; see protocol/specs/src/discovery/README.md).
+// The types are the Go SDK's, generated from the same files
+// (api.DiscoveryDocument, api.DiscoveredKB), so schema drift is a compile
+// error here, not a review promise. version is the compatibility gate:
+// consumers must ignore documents they do not understand.
 
 import (
 	"encoding/json"
