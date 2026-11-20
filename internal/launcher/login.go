@@ -15,6 +15,7 @@ import (
 	"strings"
 
 	xynolog "github.com/xynolog/sdk/go"
+	"github.com/xynolog/sdk/go/api"
 	"golang.org/x/term"
 )
 
@@ -76,7 +77,7 @@ func Login(args []string) int {
 	if !ok {
 		return 1
 	}
-	if _, ok := signIn(context.Background(), u, target, func(code xynolog.DeviceCode) {
+	if _, ok := signIn(context.Background(), u, target, func(code api.DeviceCode) {
 		promptToOpen(u, code)
 		u.Log("Waiting for approval at the issuer...")
 	}); !ok {
@@ -89,7 +90,7 @@ func Login(args []string) int {
 // chose, through the issuer it trusts, and keeps the session. shown is given
 // the one-time code the person approves the sign-in with. ok=false: refused,
 // and said.
-func signIn(ctx context.Context, u *UI, target *StackState, shown func(xynolog.DeviceCode)) (ControlAuthLoginResult, bool) {
+func signIn(ctx context.Context, u *UI, target *StackState, shown func(api.DeviceCode)) (ControlAuthLoginResult, bool) {
 	base, ok := StackBase(u, target, "login")
 	if !ok {
 		return ControlAuthLoginResult{}, false

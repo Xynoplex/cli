@@ -11,7 +11,6 @@ import (
 	"time"
 
 	"github.com/xynolog/cli/internal/launcher/stack"
-	xynolog "github.com/xynolog/sdk/go"
 	"github.com/xynolog/sdk/go/api"
 )
 
@@ -452,10 +451,10 @@ func controlAuthLogin(req *controlRequest, u *UI) (any, *controlFailure) {
 		u.Refuse(controlCodeAlreadySignedIn, "Already signed in to %s: the gateway accepts the stored session.", key)
 		return nil, failed(u, controlCodeAlreadySignedIn)
 	}
-	signedIn, ok := signIn(req.ctx, u, target, func(code xynolog.DeviceCode) {
-		action := ControlUserAction{RequestId: req.id, VerificationUri: code.VerificationURI,
-			VerificationUriComplete: stated(code.VerificationURIComplete), UserCode: code.UserCode,
-			ExpiresInSeconds: int(code.ExpiresIn.Seconds())}
+	signedIn, ok := signIn(req.ctx, u, target, func(code api.DeviceCode) {
+		action := ControlUserAction{RequestId: req.id, VerificationUri: code.VerificationUri,
+			VerificationUriComplete: code.VerificationUriComplete, UserCode: code.UserCode,
+			ExpiresInSeconds: code.ExpiresIn}
 		req.server.notify(req, "notifications/userAction", action)
 		u.Log("Waiting for approval at the issuer...")
 		// The wait is a person's: the next request takes its turn meanwhile.

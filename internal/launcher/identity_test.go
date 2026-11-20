@@ -21,7 +21,7 @@ import (
 // the shared one, nor the PostgreSQL it keeps its realms in.
 func trustExternalIssuer(st *stack.Stack, typ, url string) {
 	st.KnowledgeBase.Spec.Issuer.Shared = nil
-	st.KnowledgeBase.Spec.Issuer.External = &stack.KnowledgeBaseIssuerExternal{Type: typ, Url: url}
+	st.KnowledgeBase.Spec.Issuer.External = &stack.StackKnowledgeBaseIssuerExternal{Type: typ, Url: url}
 }
 
 func TestDerivePlanIdentityKeycloakProvided(t *testing.T) {

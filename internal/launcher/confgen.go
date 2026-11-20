@@ -82,7 +82,7 @@ func generateStack(p genParams, name string) (map[string][]byte, error) {
 		return stack.APIVersion, kind, stack.Metadata{Name: name}
 	}
 
-	var kb stack.KnowledgeBase
+	var kb stack.StackKnowledgeBase
 	kb.ApiVersion, kb.Kind, kb.Metadata = meta("KnowledgeBase", initKnowledgeBase)
 	kb.Spec.LogLevel = api.LogLevelInfo
 	kb.Spec.Gateway.Image, kb.Spec.Gateway.Resources = service("gateway")
@@ -96,7 +96,7 @@ func generateStack(p genParams, name string) (map[string][]byte, error) {
 	// in-process plane would hold them in one gateway's memory.
 	kb.Spec.Messaging.Jobs.Type, kb.Spec.Messaging.Signal.Type = "jetstream", "nats"
 	kb.Spec.Messaging.Image, kb.Spec.Messaging.Resources = daemon("messaging", "jetstream")
-	kb.Spec.Issuer.Shared = &stack.KnowledgeBaseIssuerShared{AccessTokenLifespan: keycloakAccessTokenLifespan}
+	kb.Spec.Issuer.Shared = &stack.StackKnowledgeBaseIssuerShared{AccessTokenLifespan: keycloakAccessTokenLifespan}
 	kb.Spec.Issuer.SubjectClaim = "sub"
 
 	var index stack.KnowledgeIndex

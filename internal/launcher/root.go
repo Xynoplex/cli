@@ -371,16 +371,16 @@ func anotherOnBroker(kb kbRoot, servers string) (rootEntry, bool) {
 // otherKnowledgeBases: the row and the KnowledgeBase document of each root
 // this machine knows but root. A root whose KnowledgeBase document is gone,
 // or does not hold, has none to say anything with.
-func otherKnowledgeBases(root string) iter.Seq2[rootEntry, stack.KnowledgeBase] {
+func otherKnowledgeBases(root string) iter.Seq2[rootEntry, stack.StackKnowledgeBase] {
 	if abs, err := filepath.Abs(root); err == nil {
 		root = abs
 	}
-	return func(yield func(rootEntry, stack.KnowledgeBase) bool) {
+	return func(yield func(rootEntry, stack.StackKnowledgeBase) bool) {
 		for _, e := range loadRoots().Roots {
 			if e.Path == root {
 				continue
 			}
-			kb, err := stack.Read[stack.KnowledgeBase](filepath.Join(e.Path, stack.Dir, stack.KnowledgeBaseFile), "KnowledgeBase")
+			kb, err := stack.Read[stack.StackKnowledgeBase](filepath.Join(e.Path, stack.Dir, stack.KnowledgeBaseFile), "KnowledgeBase")
 			if err != nil {
 				continue
 			}

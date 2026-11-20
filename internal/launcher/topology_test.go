@@ -17,7 +17,7 @@ import (
 // login.example.com, and not the shared one.
 func externalIssuer(st *stack.Stack) {
 	st.KnowledgeBase.Spec.Issuer.Shared = nil
-	st.KnowledgeBase.Spec.Issuer.External = &stack.KnowledgeBaseIssuerExternal{Type: "keycloak", Url: "https://login.example.com/realms/kb"}
+	st.KnowledgeBase.Spec.Issuer.External = &stack.StackKnowledgeBaseIssuerExternal{Type: "keycloak", Url: "https://login.example.com/realms/kb"}
 }
 
 // A daemon whose document states no `external` is the launcher's to run and

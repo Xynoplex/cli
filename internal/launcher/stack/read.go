@@ -146,22 +146,22 @@ func (c *compiledSchemas) compile(url string) (*jsonschema.Schema, error) {
 }
 
 // compiled: each kind's schema, compiled once from the text schemas_gen.go
-// carries, under the path its relative references resolve against.
+// carries, each under the $id a reference names it by.
 var compiled = sync.OnceValues(func() (*compiledSchemas, error) {
 	compiler := jsonschema.NewCompiler()
 	compiler.DefaultDraft(jsonschema.Draft2020)
-	for path, text := range schemaFiles {
+	for id, text := range schemaFiles {
 		document, err := jsonschema.UnmarshalJSON(strings.NewReader(text))
 		if err != nil {
-			return nil, fmt.Errorf("%s: %v", path, err)
+			return nil, fmt.Errorf("%s: %v", id, err)
 		}
-		if err := compiler.AddResource(schemaURL(path), document); err != nil {
+		if err := compiler.AddResource(id, document); err != nil {
 			return nil, err
 		}
 	}
 	schemas := &compiledSchemas{kinds: map[string]*jsonschema.Schema{}, with: compiler}
-	for name, path := range schemaOf {
-		schema, err := compiler.Compile(schemaURL(path))
+	for name, id := range schemaOf {
+		schema, err := compiler.Compile(id)
 		if err != nil {
 			return nil, err
 		}
@@ -169,8 +169,6 @@ var compiled = sync.OnceValues(func() (*compiledSchemas, error) {
 	}
 	return schemas, nil
 })
-
-func schemaURL(path string) string { return "file:///" + path }
 
 func schemaFor(kindName string) (*jsonschema.Schema, error) {
 	schemas, err := compiled()

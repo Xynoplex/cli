@@ -8,18 +8,6 @@ import (
 	"go.yaml.in/yaml/v3"
 )
 
-// APIVersion: the apiVersion every kind's document states — ApiVersion.json's
-// const, read from the schema rather than restated.
-var APIVersion = func() string {
-	var schema struct {
-		Const string `json:"const"`
-	}
-	if err := json.Unmarshal([]byte(schemaFiles["protocol/specs/src/stack/ApiVersion.json"]), &schema); err != nil || schema.Const == "" {
-		panic(fmt.Sprintf("protocol/specs/src/stack/ApiVersion.json states no const: %v", err))
-	}
-	return schema.Const
-}()
-
 // Marshal writes a document as YAML, its fields in the order its type gives
 // them, as a person would: block style, each value plain where YAML reads it
 // back as the same value.

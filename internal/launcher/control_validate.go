@@ -29,44 +29,42 @@ type controlSchemas struct {
 func compileControlSchemas() (*controlSchemas, error) {
 	compiler := jsonschema.NewCompiler()
 	compiler.DefaultDraft(jsonschema.Draft2020)
-	for path, text := range controlSchemaFiles {
+	for id, text := range controlSchemaFiles {
 		document, err := jsonschema.UnmarshalJSON(strings.NewReader(text))
 		if err != nil {
-			return nil, fmt.Errorf("%s: %v", path, err)
+			return nil, fmt.Errorf("%s: %v", id, err)
 		}
-		if err := compiler.AddResource(controlSchemaURL(path), document); err != nil {
+		if err := compiler.AddResource(id, document); err != nil {
 			return nil, err
 		}
 	}
 	s := &controlSchemas{compiler: compiler, compiled: map[string]*jsonschema.Schema{}}
-	paths := []string{controlErrorDataSchema}
+	ids := []string{controlErrorDataSchema}
 	for _, m := range controlMethods {
-		paths = append(paths, m.params, m.result)
+		ids = append(ids, m.params, m.result)
 	}
 	for _, n := range controlNotifications {
-		paths = append(paths, n.params)
+		ids = append(ids, n.params)
 	}
-	for _, path := range paths {
-		if _, err := s.schema(path); err != nil {
+	for _, id := range ids {
+		if _, err := s.schema(id); err != nil {
 			return nil, err
 		}
 	}
 	return s, nil
 }
 
-func controlSchemaURL(path string) string { return "file:///" + path }
-
-func (s *controlSchemas) schema(path string) (*jsonschema.Schema, error) {
+func (s *controlSchemas) schema(id string) (*jsonschema.Schema, error) {
 	s.mu.Lock()
 	defer s.mu.Unlock()
-	if compiled, ok := s.compiled[path]; ok {
+	if compiled, ok := s.compiled[id]; ok {
 		return compiled, nil
 	}
-	compiled, err := s.compiler.Compile(controlSchemaURL(path))
+	compiled, err := s.compiler.Compile(id)
 	if err != nil {
 		return nil, err
 	}
-	s.compiled[path] = compiled
+	s.compiled[id] = compiled
 	return compiled, nil
 }
 
@@ -101,9 +99,9 @@ func (s *controlSchemas) checkParams(method controlMethod, params json.RawMessag
 	return nil
 }
 
-// check holds text to the schema at path: nil when it holds, else each fault.
-func (s *controlSchemas) check(path string, text []byte) *controlFailure {
-	schema, err := s.schema(path)
+// check holds text to the schema id names: nil when it holds, else each fault.
+func (s *controlSchemas) check(id string, text []byte) *controlFailure {
+	schema, err := s.schema(id)
 	if err != nil {
 		return &controlFailure{message: err.Error()}
 	}

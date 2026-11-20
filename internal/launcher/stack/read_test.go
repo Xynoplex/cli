@@ -111,9 +111,28 @@ func TestEveryCaseIsReadAsItSays(t *testing.T) {
 	}
 }
 
+// kindOf: the kind of document whose schema is the one a case names by its
+// title.
+func kindOf(t *testing.T, title string) string {
+	t.Helper()
+	for kind, id := range schemaOf {
+		var schema struct {
+			Title string `json:"title"`
+		}
+		if err := json.Unmarshal([]byte(schemaFiles[id]), &schema); err != nil {
+			t.Fatalf("%s: %v", id, err)
+		}
+		if schema.Title == title {
+			return kind
+		}
+	}
+	t.Fatalf("no kind of document is read against a schema titled %s", title)
+	return ""
+}
+
 func readAsItSays(t *testing.T, c stackCase) {
 	t.Helper()
-	refusals, err := Check(c.Schema, documentOf(t, c))
+	refusals, err := Check(kindOf(t, c.Schema), documentOf(t, c))
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -173,7 +192,7 @@ func TestTheFixtureDocumentsReadIntoTheirTypes(t *testing.T) {
 	xynolog := fixturePath("internal/launcher/testdata/kb/.xynolog")
 	stack := filepath.Join(xynolog, "stack")
 
-	kb, err := Read[KnowledgeBase](filepath.Join(stack, "knowledge-base.yaml"), "KnowledgeBase")
+	kb, err := Read[StackKnowledgeBase](filepath.Join(stack, "knowledge-base.yaml"), "KnowledgeBase")
 	if err != nil {
 		t.Fatal(err)
 	}

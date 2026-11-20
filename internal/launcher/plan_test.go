@@ -82,7 +82,7 @@ func asSomebodyElses(st *stack.Stack, issuer *issuerDocument, role string) {
 	case "messaging":
 		m := &st.KnowledgeBase.Spec.Messaging
 		m.Image, m.Resources = nil, nil
-		m.External = &stack.KnowledgeBaseMessagingExternal{Servers: "nats.example.com:4223",
+		m.External = &stack.StackKnowledgeBaseMessagingExternal{Servers: "nats.example.com:4223",
 			User: stack.SecretRef{FromEnv: "EXT_NATS_USER"}, Password: stack.SecretRef{FromEnv: "EXT_NATS_PASSWORD"}}
 	default:
 		panic("no daemon of the fixture is " + role)
@@ -406,12 +406,12 @@ func TestDerivePlanExplainsWhyMemoryIsNotAvailableHere(t *testing.T) {
 func TestPlanRefusesAMessagingTypeItHasNoDriverFor(t *testing.T) {
 	for _, c := range []struct {
 		field string
-		state func(m *stack.KnowledgeBaseMessaging)
+		state func(m *stack.StackKnowledgeBaseMessaging)
 		want  []string
 	}{
-		{"spec.messaging.jobs.type", func(m *stack.KnowledgeBaseMessaging) { m.Jobs.Type = "fs" },
+		{"spec.messaging.jobs.type", func(m *stack.StackKnowledgeBaseMessaging) { m.Jobs.Type = "fs" },
 			[]string{`"fs"`, "dispatcher's queue is JetStream", `write "jetstream"`}},
-		{"spec.messaging.signal.type", func(m *stack.KnowledgeBaseMessaging) { m.Signal.Type = "redis" },
+		{"spec.messaging.signal.type", func(m *stack.StackKnowledgeBaseMessaging) { m.Signal.Type = "redis" },
 			[]string{`"redis"`, `"in-process"`, `"nats"`}},
 	} {
 		st := fixtureStack(t, "anthropic")

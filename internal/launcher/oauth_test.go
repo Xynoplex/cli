@@ -6,11 +6,10 @@ package launcher
 import (
 	"strings"
 	"testing"
-	"time"
 
 	"github.com/xynolog/cli/internal/launcher/harness"
 
-	xynolog "github.com/xynolog/sdk/go"
+	"github.com/xynolog/sdk/go/api"
 )
 
 // `xynolog login` shows the one-time code AND the verification URI, always,
@@ -23,11 +22,12 @@ import (
 // step's stdin is commonly /dev/null, which IS a character device, and would
 // read as interactive.
 func TestPromptToOpenAlwaysShowsTheCodeAndURI(t *testing.T) {
-	code := xynolog.DeviceCode{
+	complete := "https://issuer.test/device?user_code=ABCD-1234"
+	code := api.DeviceCode{
 		UserCode:                "ABCD-1234",
-		VerificationURI:         "https://issuer.test/device",
-		VerificationURIComplete: "https://issuer.test/device?user_code=ABCD-1234",
-		ExpiresIn:               10 * time.Minute,
+		VerificationUri:         "https://issuer.test/device",
+		VerificationUriComplete: &complete,
+		ExpiresIn:               600,
 	}
 	s := harness.CaptureStdout(t, func() {
 		promptToOpen(NewUI(false), code)

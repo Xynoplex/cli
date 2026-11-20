@@ -990,7 +990,7 @@ permanent identity; it does not request template copying or overwrite an
 existing knowledge base.
 
 - **The spec is `protocol/specs/src/control`.** `methods.json` names each
-  method and the schemas of its params and result.
+  method and, by `$id`, the schemas of its params and result.
   `make generate` writes the launcher's types and the schemas it validates
   against; Desktop generates its own types from the same
   spec. Each repository's CI fails when its generated files drift.
