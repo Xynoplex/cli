@@ -34,7 +34,7 @@ const (
 // Stack: a knowledge base's documents, each held to its schema, and the names
 // by which they refer to one another held to one another.
 type Stack struct {
-	KnowledgeBase  KnowledgeBase
+	KnowledgeBase  StackKnowledgeBase
 	KnowledgeIndex KnowledgeIndex
 	Inference      Inference
 	// Files: where each document was read, relative to the root, for the
@@ -78,7 +78,7 @@ func Load(root, inference string) (*Stack, error) {
 	at := func(path string) string { return filepath.Join(root, path) }
 	st := &Stack{Files: files}
 	var err error
-	if st.KnowledgeBase, err = Read[KnowledgeBase](at(files.KnowledgeBase), "KnowledgeBase"); err != nil {
+	if st.KnowledgeBase, err = Read[StackKnowledgeBase](at(files.KnowledgeBase), "KnowledgeBase"); err != nil {
 		return nil, err
 	}
 	if st.KnowledgeIndex, err = Read[KnowledgeIndex](at(files.KnowledgeIndex), "KnowledgeIndex"); err != nil {

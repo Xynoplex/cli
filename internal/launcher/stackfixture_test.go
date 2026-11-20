@@ -115,7 +115,7 @@ var catalogWorkerPoolDocument = workerPoolDocument{spec: catalogWorkerPool().Spe
 // pin nothing moves is refused by lint:nats-version; this is what moves it.
 func TestTheFixtureStackNamesTheDescriptorsImages(t *testing.T) {
 	dir := filepath.Join(fixtureRoot, ".xynolog", "stack")
-	kb, err := stack.Read[stack.KnowledgeBase](filepath.Join(dir, "knowledge-base.yaml"), "KnowledgeBase")
+	kb, err := stack.Read[stack.StackKnowledgeBase](filepath.Join(dir, "knowledge-base.yaml"), "KnowledgeBase")
 	if err != nil {
 		t.Fatal(err)
 	}

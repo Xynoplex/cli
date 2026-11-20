@@ -137,7 +137,7 @@ func TestTheKnowledgeBaseHereThatNamesTheSameBrokerIsFound(t *testing.T) {
 			other := kbWithDocument(t, domain, brokerDocument(t, c.theirs, false))
 			launchers := kbWithDocument(t, "example.org:launchers", fixtureKnowledgeBase(t))
 			broken := kbWithDocument(t, "example.org:broken", brokerDocument(t, c.ours, true))
-			if _, err := stack.Read[stack.KnowledgeBase](filepath.Join(broken, stack.Dir, stack.KnowledgeBaseFile), "KnowledgeBase"); err == nil {
+			if _, err := stack.Read[stack.StackKnowledgeBase](filepath.Join(broken, stack.Dir, stack.KnowledgeBaseFile), "KnowledgeBase"); err == nil {
 				t.Fatal("a document naming both brokers holds: the broken root would prove nothing")
 			}
 			var reg rootsRegistry

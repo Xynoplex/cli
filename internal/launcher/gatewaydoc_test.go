@@ -15,7 +15,7 @@ import (
 func externalBroker(st *stack.Stack) {
 	m := &st.KnowledgeBase.Spec.Messaging
 	m.Image, m.Resources = nil, nil
-	m.External = &stack.KnowledgeBaseMessagingExternal{
+	m.External = &stack.StackKnowledgeBaseMessagingExternal{
 		Servers:  "nats.internal:4222",
 		User:     stack.SecretRef{FromEnv: "BROKER_USER"},
 		Password: stack.SecretRef{FromEnv: "BROKER_PASSWORD"},

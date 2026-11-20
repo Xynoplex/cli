@@ -155,7 +155,7 @@ func TestMarshalWritesADocumentThatReadsBack(t *testing.T) {
 		document any
 		read     func([]byte) (any, error)
 	}{
-		{"KnowledgeBase", st.KnowledgeBase, func(text []byte) (any, error) { return Parse[KnowledgeBase]("kb", "KnowledgeBase", text) }},
+		{"KnowledgeBase", st.KnowledgeBase, func(text []byte) (any, error) { return Parse[StackKnowledgeBase]("kb", "KnowledgeBase", text) }},
 		{"KnowledgeIndex", st.KnowledgeIndex, func(text []byte) (any, error) { return Parse[KnowledgeIndex]("index", "KnowledgeIndex", text) }},
 		{"Issuer", issuer, func(text []byte) (any, error) { return Parse[Issuer]("issuer", "Issuer", text) }},
 		{"Inference", st.Inference, func(text []byte) (any, error) { return Parse[Inference]("inference", "Inference", text) }},

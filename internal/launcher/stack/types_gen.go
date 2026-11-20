@@ -209,192 +209,6 @@ type IssuerDatabaseExternal struct {
 	Password SecretRef `json:"password"`
 }
 
-// KnowledgeBase: A knowledge base's record and the services that keep it: the
-// Gateway, the Dispatcher, the Archivist, and the broker between them. They
-// live and die with the knowledge base.
-type KnowledgeBase struct {
-	// The group and version of Xynolog's kinds. The group names who defines a
-	// kind, under the domain the knowledge bases' DIDs use; which knowledge base
-	// a document is about is said inside it.
-	ApiVersion string `json:"apiVersion"`
-
-	Kind string `json:"kind"`
-
-	// What names a document, as Kubernetes names an object. Documents refer to
-	// one another by `name`.
-	Metadata Metadata `json:"metadata"`
-
-	// The knowledge base's services, and how each runs.
-	Spec KnowledgeBaseSpec `json:"spec"`
-}
-
-// KnowledgeBaseSpec: The knowledge base's services, and how each runs.
-type KnowledgeBaseSpec struct {
-	// How much a service logs: the least severe level it writes, from error, the
-	// most severe, to debug.
-	LogLevel api.LogLevel `json:"logLevel"`
-
-	// The Gateway: where every client and every service reaches the knowledge
-	// base.
-	Gateway KnowledgeBaseGateway `json:"gateway"`
-
-	// The Dispatcher: it hands queued jobs to workers.
-	Dispatcher KnowledgeBaseDispatcher `json:"dispatcher"`
-
-	// The Archivist: it keeps the knowledge base's record in its working tree.
-	Archivist KnowledgeBaseArchivist `json:"archivist"`
-
-	// The broker the job queue and the signal plane share: the launcher's, run
-	// from `image`, or somebody else's, at `external`.
-	Messaging KnowledgeBaseMessaging `json:"messaging"`
-
-	// The issuer the knowledge base trusts: the one the launcher runs for the
-	// knowledge bases on a machine, at `shared`, with the knowledge base's own
-	// realm in it, or somebody else's, at `external`.
-	Issuer KnowledgeBaseIssuer `json:"issuer"`
-}
-
-// KnowledgeBaseGateway: The Gateway: where every client and every service
-// reaches the knowledge base.
-type KnowledgeBaseGateway struct {
-	// The container image a service runs, as a registry names it:
-	// `ghcr.io/xynolog/xynolog-gateway:latest`.
-	Image string `json:"image"`
-
-	// What a container is given, in Kubernetes' spelling.
-	Resources Resources `json:"resources"`
-
-	// The port the Gateway is published on.
-	Port int `json:"port"`
-
-	// Where clients reach the Gateway: the server its API document names. A
-	// service of the stack reaches it where the launcher places it, on `port`.
-	PublicURL string `json:"publicURL"`
-}
-
-// KnowledgeBaseDispatcher: The Dispatcher: it hands queued jobs to workers.
-type KnowledgeBaseDispatcher struct {
-	// The container image a service runs, as a registry names it:
-	// `ghcr.io/xynolog/xynolog-gateway:latest`.
-	Image string `json:"image"`
-
-	// What a container is given, in Kubernetes' spelling.
-	Resources Resources `json:"resources"`
-}
-
-// KnowledgeBaseArchivist: The Archivist: it keeps the knowledge base's record
-// in its working tree.
-type KnowledgeBaseArchivist struct {
-	// The container image a service runs, as a registry names it:
-	// `ghcr.io/xynolog/xynolog-gateway:latest`.
-	Image string `json:"image"`
-
-	// What a container is given, in Kubernetes' spelling.
-	Resources Resources `json:"resources"`
-
-	// Where the stack's services reach the Archivist, when that is somewhere the
-	// launcher cannot see. Absent, they reach it where the launcher places it.
-	Address *HostPort `json:"address,omitempty"`
-}
-
-// HostPort: Where somebody else's daemon listens.
-type HostPort struct {
-	// A host name or address the stack's containers can reach.
-	Host string `json:"host"`
-
-	// The port it listens on.
-	Port int `json:"port"`
-}
-
-// KnowledgeBaseMessaging: The broker the job queue and the signal plane
-// share: the launcher's, run from `image`, or somebody else's, at `external`.
-type KnowledgeBaseMessaging struct {
-	// The Dispatcher's queue.
-	Jobs KnowledgeBaseMessagingJobs `json:"jobs"`
-
-	// The Gateway's signal plane.
-	Signal KnowledgeBaseMessagingSignal `json:"signal"`
-
-	// The container image a service runs, as a registry names it:
-	// `ghcr.io/xynolog/xynolog-gateway:latest`.
-	Image *string `json:"image,omitempty"`
-
-	// What a container is given, in Kubernetes' spelling.
-	Resources *Resources `json:"resources,omitempty"`
-
-	// A broker somebody else runs, serving this knowledge base alone: a second
-	// knowledge base on it would share the job queue and, on a `nats` signal
-	// plane, the frames and the gateway's record of pending replies. The
-	// launcher refuses to start a knowledge base whose `servers` another
-	// knowledge base on its machine names.
-	External *KnowledgeBaseMessagingExternal `json:"external,omitempty"`
-}
-
-// KnowledgeBaseMessagingJobs: The Dispatcher's queue.
-type KnowledgeBaseMessagingJobs struct {
-	// The queue's driver: `jetstream`.
-	Type string `json:"type"`
-}
-
-// KnowledgeBaseMessagingSignal: The Gateway's signal plane.
-type KnowledgeBaseMessagingSignal struct {
-	// `in-process`, one Gateway on its own fabric, or `nats`, on the broker.
-	Type string `json:"type"`
-}
-
-// KnowledgeBaseMessagingExternal: A broker somebody else runs, serving this
-// knowledge base alone: a second knowledge base on it would share the job
-// queue and, on a `nats` signal plane, the frames and the gateway's record of
-// pending replies. The launcher refuses to start a knowledge base whose
-// `servers` another knowledge base on its machine names.
-type KnowledgeBaseMessagingExternal struct {
-	// Where it listens: `host:port`.
-	Servers string `json:"servers"`
-
-	// A secret the document names and does not hold. The launcher hands it to
-	// the service that needs it, from where the reference says it is.
-	User SecretRef `json:"user"`
-
-	// A secret the document names and does not hold. The launcher hands it to
-	// the service that needs it, from where the reference says it is.
-	Password SecretRef `json:"password"`
-}
-
-// KnowledgeBaseIssuer: The issuer the knowledge base trusts: the one the
-// launcher runs for the knowledge bases on a machine, at `shared`, with the
-// knowledge base's own realm in it, or somebody else's, at `external`.
-type KnowledgeBaseIssuer struct {
-	// The issuer the launcher runs for the knowledge bases on a machine (the
-	// state home's Issuer document). The launcher creates the knowledge base's
-	// realm in it.
-	Shared *KnowledgeBaseIssuerShared `json:"shared,omitempty"`
-
-	// An issuer somebody else runs.
-	External *KnowledgeBaseIssuerExternal `json:"external,omitempty"`
-
-	// The claim a person's DID is built from: did:web:<site domain>:users:<its
-	// value>.
-	SubjectClaim string `json:"subjectClaim"`
-}
-
-// KnowledgeBaseIssuerShared: The issuer the launcher runs for the knowledge
-// bases on a machine (the state home's Issuer document). The launcher creates
-// the knowledge base's realm in it.
-type KnowledgeBaseIssuerShared struct {
-	// How long a token the realm mints stays valid, in seconds: the window in
-	// which a disabled account can still act.
-	AccessTokenLifespan int `json:"accessTokenLifespan"`
-}
-
-// KnowledgeBaseIssuerExternal: An issuer somebody else runs.
-type KnowledgeBaseIssuerExternal struct {
-	// `oidc`, or `keycloak`.
-	Type string `json:"type"`
-
-	// The URL in its tokens' `iss` claim.
-	Url string `json:"url"`
-}
-
 // KnowledgeIndex: What a knowledge base's record is indexed into, and the
 // services that keep and read the indexes: the Weaver's graph, the Smelter's
 // vectors and anchored text, and the Librarian that answers from them. Each
@@ -620,6 +434,193 @@ type KnowledgeIndexWeaver struct {
 
 	// What a container is given, in Kubernetes' spelling.
 	Resources Resources `json:"resources"`
+}
+
+// StackKnowledgeBase: A knowledge base's record and the services that keep
+// it: the Gateway, the Dispatcher, the Archivist, and the broker between
+// them. They live and die with the knowledge base.
+type StackKnowledgeBase struct {
+	// The group and version of Xynolog's kinds. The group names who defines a
+	// kind, under the domain the knowledge bases' DIDs use; which knowledge base
+	// a document is about is said inside it.
+	ApiVersion string `json:"apiVersion"`
+
+	Kind string `json:"kind"`
+
+	// What names a document, as Kubernetes names an object. Documents refer to
+	// one another by `name`.
+	Metadata Metadata `json:"metadata"`
+
+	// The knowledge base's services, and how each runs.
+	Spec StackKnowledgeBaseSpec `json:"spec"`
+}
+
+// StackKnowledgeBaseSpec: The knowledge base's services, and how each runs.
+type StackKnowledgeBaseSpec struct {
+	// How much a service logs: the least severe level it writes, from error, the
+	// most severe, to debug.
+	LogLevel api.LogLevel `json:"logLevel"`
+
+	// The Gateway: where every client and every service reaches the knowledge
+	// base.
+	Gateway StackKnowledgeBaseGateway `json:"gateway"`
+
+	// The Dispatcher: it hands queued jobs to workers.
+	Dispatcher StackKnowledgeBaseDispatcher `json:"dispatcher"`
+
+	// The Archivist: it keeps the knowledge base's record in its working tree.
+	Archivist StackKnowledgeBaseArchivist `json:"archivist"`
+
+	// The broker the job queue and the signal plane share: the launcher's, run
+	// from `image`, or somebody else's, at `external`.
+	Messaging StackKnowledgeBaseMessaging `json:"messaging"`
+
+	// The issuer the knowledge base trusts: the one the launcher runs for the
+	// knowledge bases on a machine, at `shared`, with the knowledge base's own
+	// realm in it, or somebody else's, at `external`.
+	Issuer StackKnowledgeBaseIssuer `json:"issuer"`
+}
+
+// StackKnowledgeBaseGateway: The Gateway: where every client and every
+// service reaches the knowledge base.
+type StackKnowledgeBaseGateway struct {
+	// The container image a service runs, as a registry names it:
+	// `ghcr.io/xynolog/xynolog-gateway:latest`.
+	Image string `json:"image"`
+
+	// What a container is given, in Kubernetes' spelling.
+	Resources Resources `json:"resources"`
+
+	// The port the Gateway is published on.
+	Port int `json:"port"`
+
+	// Where clients reach the Gateway: the server its API document names. A
+	// service of the stack reaches it where the launcher places it, on `port`.
+	PublicURL string `json:"publicURL"`
+}
+
+// StackKnowledgeBaseDispatcher: The Dispatcher: it hands queued jobs to
+// workers.
+type StackKnowledgeBaseDispatcher struct {
+	// The container image a service runs, as a registry names it:
+	// `ghcr.io/xynolog/xynolog-gateway:latest`.
+	Image string `json:"image"`
+
+	// What a container is given, in Kubernetes' spelling.
+	Resources Resources `json:"resources"`
+}
+
+// StackKnowledgeBaseArchivist: The Archivist: it keeps the knowledge base's
+// record in its working tree.
+type StackKnowledgeBaseArchivist struct {
+	// The container image a service runs, as a registry names it:
+	// `ghcr.io/xynolog/xynolog-gateway:latest`.
+	Image string `json:"image"`
+
+	// What a container is given, in Kubernetes' spelling.
+	Resources Resources `json:"resources"`
+
+	// Where the stack's services reach the Archivist, when that is somewhere the
+	// launcher cannot see. Absent, they reach it where the launcher places it.
+	Address *HostPort `json:"address,omitempty"`
+}
+
+// HostPort: Where somebody else's daemon listens.
+type HostPort struct {
+	// A host name or address the stack's containers can reach.
+	Host string `json:"host"`
+
+	// The port it listens on.
+	Port int `json:"port"`
+}
+
+// StackKnowledgeBaseMessaging: The broker the job queue and the signal plane
+// share: the launcher's, run from `image`, or somebody else's, at `external`.
+type StackKnowledgeBaseMessaging struct {
+	// The Dispatcher's queue.
+	Jobs StackKnowledgeBaseMessagingJobs `json:"jobs"`
+
+	// The Gateway's signal plane.
+	Signal StackKnowledgeBaseMessagingSignal `json:"signal"`
+
+	// The container image a service runs, as a registry names it:
+	// `ghcr.io/xynolog/xynolog-gateway:latest`.
+	Image *string `json:"image,omitempty"`
+
+	// What a container is given, in Kubernetes' spelling.
+	Resources *Resources `json:"resources,omitempty"`
+
+	// A broker somebody else runs, serving this knowledge base alone: a second
+	// knowledge base on it would share the job queue and, on a `nats` signal
+	// plane, the frames and the gateway's record of pending replies. The
+	// launcher refuses to start a knowledge base whose `servers` another
+	// knowledge base on its machine names.
+	External *StackKnowledgeBaseMessagingExternal `json:"external,omitempty"`
+}
+
+// StackKnowledgeBaseMessagingJobs: The Dispatcher's queue.
+type StackKnowledgeBaseMessagingJobs struct {
+	// The queue's driver: `jetstream`.
+	Type string `json:"type"`
+}
+
+// StackKnowledgeBaseMessagingSignal: The Gateway's signal plane.
+type StackKnowledgeBaseMessagingSignal struct {
+	// `in-process`, one Gateway on its own fabric, or `nats`, on the broker.
+	Type string `json:"type"`
+}
+
+// StackKnowledgeBaseMessagingExternal: A broker somebody else runs, serving
+// this knowledge base alone: a second knowledge base on it would share the
+// job queue and, on a `nats` signal plane, the frames and the gateway's
+// record of pending replies. The launcher refuses to start a knowledge base
+// whose `servers` another knowledge base on its machine names.
+type StackKnowledgeBaseMessagingExternal struct {
+	// Where it listens: `host:port`.
+	Servers string `json:"servers"`
+
+	// A secret the document names and does not hold. The launcher hands it to
+	// the service that needs it, from where the reference says it is.
+	User SecretRef `json:"user"`
+
+	// A secret the document names and does not hold. The launcher hands it to
+	// the service that needs it, from where the reference says it is.
+	Password SecretRef `json:"password"`
+}
+
+// StackKnowledgeBaseIssuer: The issuer the knowledge base trusts: the one the
+// launcher runs for the knowledge bases on a machine, at `shared`, with the
+// knowledge base's own realm in it, or somebody else's, at `external`.
+type StackKnowledgeBaseIssuer struct {
+	// The issuer the launcher runs for the knowledge bases on a machine (the
+	// state home's Issuer document). The launcher creates the knowledge base's
+	// realm in it.
+	Shared *StackKnowledgeBaseIssuerShared `json:"shared,omitempty"`
+
+	// An issuer somebody else runs.
+	External *StackKnowledgeBaseIssuerExternal `json:"external,omitempty"`
+
+	// The claim a person's DID is built from: did:web:<site domain>:users:<its
+	// value>.
+	SubjectClaim string `json:"subjectClaim"`
+}
+
+// StackKnowledgeBaseIssuerShared: The issuer the launcher runs for the
+// knowledge bases on a machine (the state home's Issuer document). The
+// launcher creates the knowledge base's realm in it.
+type StackKnowledgeBaseIssuerShared struct {
+	// How long a token the realm mints stays valid, in seconds: the window in
+	// which a disabled account can still act.
+	AccessTokenLifespan int `json:"accessTokenLifespan"`
+}
+
+// StackKnowledgeBaseIssuerExternal: An issuer somebody else runs.
+type StackKnowledgeBaseIssuerExternal struct {
+	// `oidc`, or `keycloak`.
+	Type string `json:"type"`
+
+	// The URL in its tokens' `iss` claim.
+	Url string `json:"url"`
 }
 
 // VectorStore: The vector store the launcher runs for the knowledge bases on

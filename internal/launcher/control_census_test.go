@@ -6,6 +6,7 @@ package launcher
 
 import (
 	"encoding/json"
+	"fmt"
 	"go/ast"
 	"go/parser"
 	gotoken "go/token"
@@ -15,6 +16,7 @@ import (
 	"sort"
 	"strconv"
 	"strings"
+	"sync"
 	"testing"
 )
 
@@ -129,9 +131,54 @@ func methodParams(t *testing.T) map[string]string {
 	readControlSpec(t, "methods.json", &table)
 	out := map[string]string{}
 	for _, m := range table.Methods {
-		out[m.Name] = m.Params
+		out[m.Name] = controlSchemaFile(t, m.Params)
 	}
 	return out
+}
+
+// controlSchemaIDs: each $id a schema of the control directory states, and the
+// file that states it. Its tables state none; an $id two files state is
+// refused.
+var controlSchemaIDs = sync.OnceValues(func() (map[string]string, error) {
+	names, err := filepath.Glob(filepath.Join(controlSpecDir, "*.json"))
+	if err != nil {
+		return nil, err
+	}
+	files := map[string]string{}
+	for _, name := range names {
+		text, err := os.ReadFile(name)
+		if err != nil {
+			return nil, err
+		}
+		var schema struct {
+			ID string `json:"$id"`
+		}
+		if err := json.Unmarshal(text, &schema); err != nil {
+			return nil, fmt.Errorf("%s: %v", name, err)
+		}
+		if schema.ID == "" {
+			continue
+		}
+		if other, twice := files[schema.ID]; twice {
+			return nil, fmt.Errorf("%s and %s both state the $id %s", other, filepath.Base(name), schema.ID)
+		}
+		files[schema.ID] = filepath.Base(name)
+	}
+	return files, nil
+})
+
+// controlSchemaFile: the file of the control directory whose schema states id.
+func controlSchemaFile(t *testing.T, id string) string {
+	t.Helper()
+	files, err := controlSchemaIDs()
+	if err != nil {
+		t.Fatal(err)
+	}
+	file, ok := files[id]
+	if !ok {
+		t.Fatalf("no schema of the control directory states the $id %s", id)
+	}
+	return file
 }
 
 // schemaProperty: the schema of the member path names in the schema file
@@ -150,24 +197,32 @@ func schemaProperty(t *testing.T, file string, path []string) (map[string]any, b
 	return schema, true
 }
 
-// schemaAt: the schema of the file of protocol/specs/src/control named as
-// methods.json and a $ref name it, its own $ref followed.
+// schemaAt: the schema of a file of protocol/specs/src/control, its own $ref
+// followed.
 func schemaAt(t *testing.T, file string) map[string]any {
 	t.Helper()
 	var schema map[string]any
-	readControlSpec(t, strings.TrimPrefix(file, "./"), &schema)
+	readControlSpec(t, file, &schema)
 	return referenced(t, schema)
 }
 
-// referenced: schema, or, when it is a $ref to another file of the control
-// directory, that file's schema.
+// referenced: schema, or, when it is a $ref to the $id of another schema of
+// the control directory, that schema.
 func referenced(t *testing.T, schema map[string]any) map[string]any {
 	t.Helper()
 	ref, isRef := schema["$ref"].(string)
-	if !isRef || strings.Contains(ref, "#") || strings.HasPrefix(ref, "../") {
+	if !isRef || strings.Contains(ref, "#") {
 		return schema
 	}
-	return schemaAt(t, ref)
+	files, err := controlSchemaIDs()
+	if err != nil {
+		t.Fatal(err)
+	}
+	file, inControl := files[ref]
+	if !inControl {
+		return schema
+	}
+	return schemaAt(t, file)
 }
 
 // splitField: a cli.json field, <method>.<path>, as its method and path.
@@ -471,8 +526,9 @@ func TestEveryControlMethodHasAHandler(t *testing.T) {
 }
 
 // applyingKeywords: the JSON Schema keywords that never refuse a value
-// themselves: they annotate, or apply a schema whose own keywords refuse.
-var applyingKeywords = []string{"$comment", "$ref", "description", "items", "properties", "title"}
+// themselves: they identify or annotate a schema, or apply one whose own
+// keywords refuse.
+var applyingKeywords = []string{"$comment", "$id", "$ref", "$schema", "description", "items", "properties", "title"}
 
 // schemaKeywords: the keywords schema uses, its subschemas' included.
 func schemaKeywords(schema map[string]any, into map[string]bool) {

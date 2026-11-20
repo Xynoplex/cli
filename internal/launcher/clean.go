@@ -326,7 +326,7 @@ func onSharedIssuer(kbDir string) (bool, error) {
 	if kbDir == "" {
 		return true, nil
 	}
-	kb, err := stack.Read[stack.KnowledgeBase](filepath.Join(kbDir, stack.Dir, stack.KnowledgeBaseFile), "KnowledgeBase")
+	kb, err := stack.Read[stack.StackKnowledgeBase](filepath.Join(kbDir, stack.Dir, stack.KnowledgeBaseFile), "KnowledgeBase")
 	if err != nil {
 		return false, err
 	}

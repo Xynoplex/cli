@@ -19,6 +19,7 @@ import (
 	"time"
 
 	xynolog "github.com/xynolog/sdk/go"
+	"github.com/xynolog/sdk/go/api"
 	"golang.org/x/term"
 )
 
@@ -56,19 +57,19 @@ func advertisedIssuer(base string) (string, error) {
 // Nothing is opened when stdin is not a terminal. `xynolog login` runs from
 // scripts, and a CI box either has no browser or should not be sent to one —
 // there nothing is asked, and the poll starts immediately.
-func promptToOpen(u *UI, code xynolog.DeviceCode) {
-	valid := u.Dim("(valid " + code.ExpiresIn.Round(time.Second).String() + ")")
+func promptToOpen(u *UI, code api.DeviceCode) {
+	valid := u.Dim("(valid " + (time.Duration(code.ExpiresIn) * time.Second).String() + ")")
 	u.Log("Your one-time code: %s %s", u.Bold(code.UserCode), valid)
 
-	where := code.VerificationURIComplete
-	if where == "" {
-		where = code.VerificationURI
+	where := code.VerificationUri
+	if code.VerificationUriComplete != nil {
+		where = *code.VerificationUriComplete
 	}
 	// The URI is printed UNCONDITIONALLY, before any question of opening it.
 	// It is what a person needs when the browser does not open, opens on the
 	// wrong machine, or is not where they want to approve — so it must not be
 	// gated on detecting a terminal correctly.
-	u.Log("To sign in, open %s and enter it.", u.Bold(code.VerificationURI))
+	u.Log("To sign in, open %s and enter it.", u.Bold(code.VerificationUri))
 
 	if !stdinIsTerminal() {
 		return
