@@ -8759,7 +8759,7 @@ func TestStackStateLifecycle(t *testing.T) {
 	if code != 0 {
 		t.Errorf("status on healthy stack: exit %d", code)
 	}
-	mustContain(t, "status header", statusOut, "images latest")
+	mustContain(t, "status header", statusOut, "images "+imagesRelease)
 	statusArgv := strings.TrimPrefix(s.argv(t), preStatus)
 	mustContain(t, "status argv", statusArgv, "container inspect fid-xynolog-example.github.io-test-kb-gateway")
 	for _, bad := range []string{"docker inspect", "podman inspect"} {
